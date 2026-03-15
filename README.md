@@ -36,7 +36,7 @@ rectfill(x, y, w, h, c)      -- draw filled rectangle
 circ(x, y, r, c)              -- draw circle outline
 circfill(x, y, r, c)          -- draw filled circle
 spr(n, x, y, [sw, sh])        -- draw sprite n at x,y (sw/sh = tile count)
-map(tx, ty, sx, sy, tw, th)   -- draw a region of the tilemap
+map(tx,ty,sx,sy,tw,th[,id])   -- draw a region of the tilemap
 print(str, x, y, c)           -- draw text
 
 -- Input
