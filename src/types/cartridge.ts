@@ -11,7 +11,8 @@ export interface HardwareConfig {
   inputs: InputBinding[];
   maxSprites: number;
   maxSounds: number;
-  maxCpuHz: number;      // virtual CPU clock in Hz (e.g. 8_000_000 = 8 MHz reference)
+  maxFps: number;        // target frames per second (e.g. 60, 30, 15)
+  maxIps: number;        // virtual CPU speed in IPS (e.g. 8_000_000 = 8 MIPS reference)
   maxMemBytes: number;   // bytes — warns/stops if estimated memory exceeds this
   maxStorageBytes: number; // bytes — max serialized cartridge size (sprites + code + sounds + maps)
 }
