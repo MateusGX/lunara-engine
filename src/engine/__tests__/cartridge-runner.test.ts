@@ -137,6 +137,20 @@ describe("CartridgeRunner", () => {
     });
   });
 
+  describe("hardware config defaults (?? fallbacks)", () => {
+    it("uses built-in defaults when hardware limits are absent", async () => {
+      // Cast required fields to undefined to simulate an old cartridge format
+      const cartridge = makeCartridge({
+        maxFps: undefined as unknown as number,
+        maxIps: undefined as unknown as number,
+        maxMemBytes: undefined as unknown as number,
+        maxStorageBytes: undefined as unknown as number,
+      });
+      await runner.start(cartridge, makeCanvas());
+      expect(runner.running).toBe(true);
+    });
+  });
+
   describe("storage limit enforcement", () => {
     it("calls onCrash and aborts when storage is over limit", async () => {
       const { calcStorageBytes } = await import("@/lib/export-lun");
@@ -173,11 +187,219 @@ describe("CartridgeRunner", () => {
     });
   });
 
+  describe("stop() called concurrently during start()", () => {
+    it("aborts after runtime.init() when stop() is called during init", async () => {
+      runtimeImpl.init.mockImplementationOnce(async () => {
+        runner.stop(); // sets this.runtime = null while init awaits
+      });
+      await runner.start(makeCartridge(), makeCanvas());
+      expect(runner.running).toBe(false);
+    });
+
+    it("aborts after loadScripts() when stop() is called during loadScripts", async () => {
+      runtimeImpl.loadScripts.mockImplementationOnce(async () => {
+        runner.stop();
+      });
+      await runner.start(makeCartridge(), makeCanvas());
+      expect(runner.running).toBe(false);
+    });
+
+    it("aborts after callInit() when stop() is called during callInit", async () => {
+      runtimeImpl.callInit.mockImplementationOnce(async () => {
+        runner.stop();
+      });
+      await runner.start(makeCartridge(), makeCanvas());
+      expect(runner.running).toBe(false);
+    });
+  });
+
   describe("stop()", () => {
     it("cancels the pending animation frame", async () => {
       await runner.start(makeCartridge(), makeCanvas());
       runner.stop();
       expect(cancelAnimationFrame).toHaveBeenCalled();
+    });
+  });
+
+  describe("runtime.init() callbacks", () => {
+    it("getSprite finds a sprite by id", async () => {
+      let capturedOpts: Parameters<typeof runtimeImpl.init>[0] | undefined;
+      runtimeImpl.init.mockImplementationOnce(async (opts) => { capturedOpts = opts; });
+
+      const cartridge = makeCartridge();
+      cartridge.sprites = [{ id: 3, name: "hero", width: 8, height: 8, pixels: [] }];
+      await runner.start(cartridge, makeCanvas());
+
+      expect(capturedOpts!.getSprite(3)).toEqual(expect.objectContaining({ id: 3 }));
+      expect(capturedOpts!.getSprite(99)).toBeUndefined();
+    });
+
+    it("getTime returns a non-negative number of seconds", async () => {
+      let capturedOpts: Parameters<typeof runtimeImpl.init>[0] | undefined;
+      runtimeImpl.init.mockImplementationOnce(async (opts) => { capturedOpts = opts; });
+      await runner.start(makeCartridge(), makeCanvas());
+
+      expect(capturedOpts!.getTime()).toBeGreaterThanOrEqual(0);
+    });
+
+    it("getStats returns cpu and mem fields", async () => {
+      let capturedOpts: Parameters<typeof runtimeImpl.init>[0] | undefined;
+      runtimeImpl.init.mockImplementationOnce(async (opts) => { capturedOpts = opts; });
+      await runner.start(makeCartridge(), makeCanvas());
+
+      const stats = capturedOpts!.getStats();
+      expect(stats).toHaveProperty("cpu");
+      expect(stats).toHaveProperty("mem");
+    });
+  });
+
+  describe("loop()", () => {
+    // Override RAF to capture callbacks instead of calling them immediately.
+    type RafCb = (now: number) => void;
+    let rafQueue: RafCb[];
+
+    beforeEach(() => {
+      rafQueue = [];
+      vi.stubGlobal(
+        "requestAnimationFrame",
+        vi.fn((cb: RafCb) => { rafQueue.push(cb); return rafQueue.length; }),
+      );
+      runtimeImpl.callUpdate.mockClear();
+      runtimeImpl.callDraw.mockClear();
+    });
+
+    async function runOneFrame(now = 1_000_000) {
+      const cb = rafQueue.shift();
+      if (cb) await cb(now);
+    }
+
+    it("executes callUpdate and callDraw each frame", async () => {
+      await runner.start(makeCartridge(), makeCanvas());
+      await runOneFrame();
+      expect(runtimeImpl.callUpdate).toHaveBeenCalled();
+      expect(runtimeImpl.callDraw).toHaveBeenCalled();
+    });
+
+    it("skips tick and re-schedules when elapsed < frameDuration", async () => {
+      await runner.start(makeCartridge({ maxFps: 30 }), makeCanvas());
+      await runOneFrame(1); // now=1 → elapsed is deeply negative → < 33ms
+      expect(runtimeImpl.callUpdate).not.toHaveBeenCalled();
+      expect(rafQueue.length).toBeGreaterThan(0); // next RAF was scheduled
+    });
+
+    it("does not tick if _running is false when the RAF fires", async () => {
+      await runner.start(makeCartridge(), makeCanvas());
+      runner.stop();
+      await runOneFrame();
+      expect(runtimeImpl.callUpdate).not.toHaveBeenCalled();
+    });
+
+    it("calls onCrash and stops when callUpdate throws", async () => {
+      runtimeImpl.callUpdate.mockRejectedValueOnce(new Error("update crash"));
+      await runner.start(makeCartridge(), makeCanvas());
+      await runOneFrame();
+      expect(vi.mocked(callbacks.onCrash)).toHaveBeenCalled();
+      expect(runner.running).toBe(false);
+    });
+
+    it("calls onCrash and stops when callDraw throws", async () => {
+      runtimeImpl.callDraw.mockRejectedValueOnce(new Error("draw crash"));
+      await runner.start(makeCartridge(), makeCanvas());
+      await runOneFrame();
+      expect(vi.mocked(callbacks.onCrash)).toHaveBeenCalled();
+      expect(runner.running).toBe(false);
+    });
+
+    it("calls onStats after each frame", async () => {
+      await runner.start(makeCartridge(), makeCanvas());
+      await runOneFrame();
+      expect(vi.mocked(callbacks.onStats)).toHaveBeenCalled();
+    });
+
+    it("calls onCrash when memory limit is exceeded in loop", async () => {
+      runtimeImpl.getLuaMemBytes.mockResolvedValue(500 * 1024);
+      await runner.start(makeCartridge({ maxMemBytes: 100 * 1024 }), makeCanvas());
+      await runOneFrame();
+      expect(vi.mocked(callbacks.onCrash)).toHaveBeenCalledWith(
+        expect.stringContaining("Memory limit exceeded"),
+      );
+      expect(runner.running).toBe(false);
+    });
+
+    it("emits onError with MIPS label on first over-budget frame", async () => {
+      // maxIps=2M, maxFps=30 → budget = 66 666 instr/frame; return 1M to exceed
+      runtimeImpl.getFrameInstructions.mockReturnValue(1_000_000);
+      await runner.start(makeCartridge({ maxIps: 2_000_000, maxFps: 30 }), makeCanvas());
+      await runOneFrame();
+      expect(vi.mocked(callbacks.onError)).toHaveBeenCalledWith(
+        expect.stringContaining("MIPS"),
+      );
+    });
+
+    it("emits onError with KIPS label for sub-million IPS budget", async () => {
+      runtimeImpl.getFrameInstructions.mockReturnValue(50_000);
+      await runner.start(makeCartridge({ maxIps: 500_000, maxFps: 30 }), makeCanvas());
+      await runOneFrame();
+      expect(vi.mocked(callbacks.onError)).toHaveBeenCalledWith(
+        expect.stringContaining("KIPS"),
+      );
+    });
+
+    it("emits onError with plain IPS label for sub-1000 IPS budget", async () => {
+      runtimeImpl.getFrameInstructions.mockReturnValue(500);
+      await runner.start(makeCartridge({ maxIps: 100, maxFps: 30 }), makeCanvas());
+      await runOneFrame();
+      expect(vi.mocked(callbacks.onError)).toHaveBeenCalledWith(
+        expect.stringContaining("IPS"),
+      );
+    });
+
+    it("crashes after 3 consecutive over-budget frames", async () => {
+      runtimeImpl.getFrameInstructions.mockReturnValue(1_000_000);
+      await runner.start(makeCartridge({ maxIps: 2_000_000, maxFps: 30 }), makeCanvas());
+
+      for (let i = 0; i < 3; i++) {
+        await runOneFrame(1_000_000 + i * 200);
+      }
+
+      expect(vi.mocked(callbacks.onCrash)).toHaveBeenCalledWith(
+        expect.stringContaining("CPU limit exceeded"),
+      );
+      expect(runner.running).toBe(false);
+    });
+
+    it("uses ?? 0 fallbacks when runtime becomes null during callUpdate", async () => {
+      runtimeImpl.callUpdate.mockImplementationOnce(async () => {
+        runner.stop(); // nullifies this.runtime mid-loop without throwing
+      });
+      await runner.start(makeCartridge(), makeCanvas());
+      // Should complete the frame without crashing, using 0 for all counters
+      await runOneFrame();
+      expect(vi.mocked(callbacks.onCrash)).not.toHaveBeenCalled();
+    });
+
+    it("resets cpuOverCount when frame drops back under budget", async () => {
+      runtimeImpl.getFrameInstructions
+        .mockReturnValueOnce(1_000_000) // frame 1: over budget
+        .mockReturnValue(0);            // subsequent frames: under budget
+
+      await runner.start(makeCartridge({ maxIps: 2_000_000, maxFps: 30 }), makeCanvas());
+      await runOneFrame(1_000_000);       // over  → cpuOverCount = 1
+      await runOneFrame(1_000_200);       // under → cpuOverCount resets to 0
+
+      // No crash should have occurred
+      expect(vi.mocked(callbacks.onCrash)).not.toHaveBeenCalled();
+    });
+
+    it("does not emit onError on the 2nd over-budget frame (only on 1st)", async () => {
+      runtimeImpl.getFrameInstructions.mockReturnValue(1_000_000);
+      await runner.start(makeCartridge({ maxIps: 2_000_000, maxFps: 30 }), makeCanvas());
+
+      await runOneFrame(1_000_000); // cpuOverCount = 1 → onError called once
+      vi.mocked(callbacks.onError).mockClear();
+      await runOneFrame(1_000_200); // cpuOverCount = 2 → onError NOT called again
+
+      expect(vi.mocked(callbacks.onError)).not.toHaveBeenCalled();
     });
   });
 });

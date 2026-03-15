@@ -495,5 +495,40 @@ describe("CanvasRenderer", () => {
       }
       expect(anySet).toBe(false);
     });
+
+    it("renders the '?' glyph as fallback for characters absent from the font", () => {
+      const { renderer } = makeRenderer();
+      renderer.cls(0);
+      // '@' (code 64) is not in FONT_DATA → getCharBitmap falls back to code 63 ('?')
+      renderer.print("@", 0, 0, 7);
+      let anySet = false;
+      for (let y = 0; y < 7; y++) {
+        for (let x = 0; x < 5; x++) {
+          if (renderer.pget(x, y) === 7) anySet = true;
+        }
+      }
+      // '?' has pixels, so the fallback glyph must have been drawn
+      expect(anySet).toBe(true);
+    });
+
+    it("wraps to the next line on \\n and resets x to the original px", () => {
+      const { renderer } = makeRenderer();
+      renderer.cls(0);
+      // Print "A\nA" — the second 'A' should appear 8 rows below the first
+      const CHAR_H = 7;
+      renderer.print("A\nA", 0, 0, 7);
+      // Row 0: first 'A' drawn starting at y=0
+      let firstRowSet = false;
+      for (let x = 0; x < 5; x++) {
+        if (renderer.pget(x, 0) === 7) firstRowSet = true;
+      }
+      // Row CHAR_H+1 = 8: second 'A' drawn after newline
+      let secondRowSet = false;
+      for (let x = 0; x < 5; x++) {
+        if (renderer.pget(x, CHAR_H + 1) === 7) secondRowSet = true;
+      }
+      expect(firstRowSet).toBe(true);
+      expect(secondRowSet).toBe(true);
+    });
   });
 });

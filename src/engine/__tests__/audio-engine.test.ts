@@ -189,4 +189,33 @@ describe("AudioEngine", () => {
       expect(() => engine.sfx(0)).not.toThrow();
     });
   });
+
+  describe("getCtx() suspended state", () => {
+    it("calls resume() when AudioContext state is suspended", () => {
+      mockAudioCtx.state = "suspended";
+      engine.sfx(0);
+      expect(mockAudioCtx.resume).toHaveBeenCalled();
+      mockAudioCtx.state = "running";
+    });
+  });
+
+  describe("sfx() default value branches", () => {
+    it("uses duration default of 1 when noteData.duration is undefined", () => {
+      const sound = makeSound({
+        notes: [{ note: 60, volume: 1 }], // duration omitted (optional)
+      });
+      const e = new AudioEngine([sound]);
+      expect(() => e.sfx(0)).not.toThrow();
+      e.dispose();
+    });
+
+    it("uses volume default of 1 when noteData.volume is null/undefined", () => {
+      const sound = makeSound({
+        notes: [{ note: 60, volume: null as unknown as number, duration: 1 }],
+      });
+      const e = new AudioEngine([sound]);
+      expect(() => e.sfx(0)).not.toThrow();
+      e.dispose();
+    });
+  });
 });

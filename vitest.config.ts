@@ -7,7 +7,6 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: "v8",
-      reporter: ["text", "html"],
       include: ["src/engine/**", "src/lib/**"],
       exclude: ["src/engine/index.ts", "src/lib/utils.ts"],
     },
