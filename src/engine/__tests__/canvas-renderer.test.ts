@@ -17,7 +17,8 @@ const HW: HardwareConfig = {
   inputs: [],
   maxSprites: 256,
   maxSounds: 64,
-  maxCpuHz: 8_000_000,
+  maxFps: 60,
+  maxIps: 8_000_000,
   maxMemBytes: 2 * 1024 * 1024,
   maxStorageBytes: 512 * 1024,
 };
@@ -344,6 +345,125 @@ describe("CanvasRenderer", () => {
       renderer.cls(1);
       renderer.flush();
       expect(ctx.putImageData).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe("rect()", () => {
+    it("draws all four edges of the rectangle", () => {
+      const { renderer } = makeRenderer();
+      renderer.cls(0);
+      renderer.rect(2, 2, 4, 4, 3); // top-left (2,2), 4×4 → corners at (2,2) and (5,5)
+      // Top edge
+      expect(renderer.pget(2, 2)).toBe(3);
+      expect(renderer.pget(5, 2)).toBe(3);
+      // Bottom edge
+      expect(renderer.pget(2, 5)).toBe(3);
+      expect(renderer.pget(5, 5)).toBe(3);
+      // Left edge mid-point
+      expect(renderer.pget(2, 3)).toBe(3);
+      // Right edge mid-point
+      expect(renderer.pget(5, 3)).toBe(3);
+    });
+
+    it("does not fill the interior", () => {
+      const { renderer } = makeRenderer();
+      renderer.cls(0);
+      renderer.rect(2, 2, 6, 6, 3);
+      expect(renderer.pget(4, 4)).toBe(0); // center should remain background
+    });
+
+    it("draws a 1×1 rect as a single point", () => {
+      const { renderer } = makeRenderer();
+      renderer.cls(0);
+      renderer.rect(5, 5, 1, 1, 7);
+      expect(renderer.pget(5, 5)).toBe(7);
+    });
+  });
+
+  describe("map()", () => {
+    it("renders a tile from the map at the correct screen position", () => {
+      const sprite: SpriteData = { id: 0, width: 4, height: 4, pixels: new Array(16).fill(3) };
+      const mapData: MapData = { id: 0, name: "test", tiles: { "0,0": 0 } };
+      const { renderer } = makeRenderer([sprite], [mapData]);
+      renderer.cls(0);
+      renderer.map(0, 0, 0, 0, 1, 1, 0);
+      expect(renderer.pget(0, 0)).toBe(3);
+      expect(renderer.pget(3, 3)).toBe(3);
+    });
+
+    it("does nothing when the map id does not exist", () => {
+      const { renderer } = makeRenderer();
+      renderer.cls(5);
+      expect(() => renderer.map(0, 0, 0, 0, 4, 4, 99)).not.toThrow();
+      expect(renderer.pget(0, 0)).toBe(5);
+    });
+
+    it("skips tile entries whose sprite index is missing", () => {
+      const mapData: MapData = { id: 0, name: "test", tiles: { "0,0": 99 } };
+      const { renderer } = makeRenderer([], [mapData]);
+      renderer.cls(7);
+      renderer.map(0, 0, 0, 0, 1, 1, 0);
+      expect(renderer.pget(0, 0)).toBe(7);
+    });
+
+    it("renders adjacent tiles at correct screen offsets", () => {
+      const sprite: SpriteData = { id: 0, width: 4, height: 4, pixels: new Array(16).fill(2) };
+      const mapData: MapData = { id: 0, name: "test", tiles: { "0,0": 0, "1,0": 0 } };
+      const { renderer } = makeRenderer([sprite], [mapData]);
+      renderer.cls(0);
+      renderer.map(0, 0, 0, 0, 2, 1, 0);
+      // Second tile is 4px to the right
+      expect(renderer.pget(4, 0)).toBe(2);
+      expect(renderer.pget(7, 3)).toBe(2);
+    });
+  });
+
+  describe("updateAssets()", () => {
+    it("replaces sprites for subsequent spr() calls", () => {
+      const old: SpriteData = { id: 0, width: 2, height: 2, pixels: [1, 1, 1, 1] };
+      const next: SpriteData = { id: 0, width: 2, height: 2, pixels: [5, 5, 5, 5] };
+      const { renderer } = makeRenderer([old]);
+      renderer.cls(0);
+      renderer.spr(0, 0, 0);
+      expect(renderer.pget(0, 0)).toBe(1);
+
+      renderer.updateAssets([next], []);
+      renderer.cls(0);
+      renderer.spr(0, 0, 0);
+      expect(renderer.pget(0, 0)).toBe(5);
+    });
+
+    it("replaces maps for subsequent map() calls", () => {
+      const sprite: SpriteData = { id: 0, width: 2, height: 2, pixels: new Array(4).fill(3) };
+      const mapV1: MapData = { id: 0, name: "old", tiles: { "0,0": 0 } };
+      const mapV2: MapData = { id: 0, name: "new", tiles: {} };
+      const { renderer } = makeRenderer([sprite], [mapV1]);
+      renderer.cls(0);
+      renderer.map(0, 0, 0, 0, 1, 1, 0);
+      expect(renderer.pget(0, 0)).toBe(3);
+
+      renderer.updateAssets([sprite], [mapV2]);
+      renderer.cls(0);
+      renderer.map(0, 0, 0, 0, 1, 1, 0);
+      expect(renderer.pget(0, 0)).toBe(0); // empty map → nothing drawn
+    });
+  });
+
+  describe("updateHardware()", () => {
+    it("clears the pixel buffer (all zeros) after the update", () => {
+      const { renderer } = makeRenderer();
+      renderer.cls(7);
+      renderer.updateHardware({ ...HW, width: 16, height: 16 });
+      for (let y = 0; y < 16; y++)
+        for (let x = 0; x < 16; x++)
+          expect(renderer.pget(x, y)).toBe(0);
+    });
+
+    it("uses the new dimensions for bounds checking", () => {
+      const { renderer } = makeRenderer();
+      renderer.updateHardware({ ...HW, width: 8, height: 8 });
+      expect(() => renderer.pset(100, 100, 1)).not.toThrow();
+      expect(renderer.pget(100, 100)).toBe(0); // out-of-bounds → 0
     });
   });
 

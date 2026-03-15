@@ -3,6 +3,7 @@ import {
   createBlankCartridge,
   createDefaultCartridge,
   createPlatformerTemplate,
+  DEFAULT_HW,
 } from "../cartridge-template";
 
 describe("createBlankCartridge", () => {
@@ -171,5 +172,49 @@ describe("createPlatformerTemplate", () => {
     expect(c.meta.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
     );
+  });
+});
+
+describe("DEFAULT_HW", () => {
+  it("has 128×128 resolution", () => {
+    expect(DEFAULT_HW.width).toBe(128);
+    expect(DEFAULT_HW.height).toBe(128);
+  });
+
+  it("has 64 max sprites", () => {
+    expect(DEFAULT_HW.maxSprites).toBe(64);
+  });
+
+  it("has 32 max sounds", () => {
+    expect(DEFAULT_HW.maxSounds).toBe(32);
+  });
+
+  it("targets 30 FPS", () => {
+    expect(DEFAULT_HW.maxFps).toBe(30);
+  });
+
+  it("has 2 MIPS CPU limit", () => {
+    expect(DEFAULT_HW.maxIps).toBe(2_000_000);
+  });
+
+  it("has 256 KB RAM limit", () => {
+    expect(DEFAULT_HW.maxMemBytes).toBe(256 * 1024);
+  });
+
+  it("has 128 KB storage limit", () => {
+    expect(DEFAULT_HW.maxStorageBytes).toBe(128 * 1024);
+  });
+
+  it("has a 16-color palette", () => {
+    expect(DEFAULT_HW.palette).toHaveLength(16);
+  });
+
+  it("RAM limit exceeds the framebuffer size (width × height × 4 bytes)", () => {
+    const framebuffer = DEFAULT_HW.width * DEFAULT_HW.height * 4; // 64 KB
+    expect(DEFAULT_HW.maxMemBytes).toBeGreaterThan(framebuffer);
+  });
+
+  it("has 6 default input bindings", () => {
+    expect(DEFAULT_HW.inputs).toHaveLength(6);
   });
 });
