@@ -31,9 +31,10 @@ function timeAgo(ts: number): string {
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
   if (days < 30) return `${days}d ago`;
-  return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(
-    new Date(ts),
-  );
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(ts));
 }
 
 export function ProjectCard({ cartridge, onDelete }: Props) {
@@ -74,14 +75,20 @@ export function ProjectCard({ cartridge, onDelete }: Props) {
         </span>
 
         {/* Dropdown */}
-        <div className="absolute right-1.5 top-1.5" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="absolute right-1.5 top-1.5"
+          onClick={(e) => e.stopPropagation()}
+        >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex h-6 w-6 items-center justify-center bg-black/50 text-zinc-400 opacity-0 backdrop-blur-sm transition group-hover:opacity-100 hover:text-white">
+              <button className="flex h-6 w-6 items-center justify-center bg-black/50 text-zinc-400 backdrop-blur-sm transition hover:text-white">
                 <DotsThreeIcon size={14} weight="bold" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="border-white/10 bg-[#1a1a2e]">
+            <DropdownMenuContent
+              align="end"
+              className="border-white/10 bg-[#1a1a2e]"
+            >
               <DropdownMenuItem
                 onClick={() => navigate(`/editor/${cartridge.meta.id}`)}
                 className="cursor-pointer gap-2 text-xs focus:bg-white/8 focus:text-white"
@@ -132,7 +139,10 @@ export function ProjectCard({ cartridge, onDelete }: Props) {
             <StackIcon size={10} /> {cartridge.sprites.length}
           </span>
           <span className="flex items-center gap-1 font-mono text-[10px]">
-            <FileCodeIcon size={10} /> {totalChars > 999 ? `${(totalChars / 1000).toFixed(1)}k` : totalChars}
+            <FileCodeIcon size={10} />{" "}
+            {totalChars > 999
+              ? `${(totalChars / 1000).toFixed(1)}k`
+              : totalChars}
           </span>
           <span className="ml-auto font-mono text-[10px]">
             {timeAgo(cartridge.meta.updated)}
