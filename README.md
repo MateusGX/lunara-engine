@@ -1,8 +1,10 @@
 # Lunara Engine
 
-A fantasy console for making retro-style games with Lua — built entirely in the browser.
+Lunara is a fantasy console for making retro-style games with Lua — running entirely in the browser, with no installation required.
 
-Inspired by PICO-8, Lunara gives you a constrained creative environment: a 128×128 pixel canvas, 16-color palette, sprite editor, tilemap builder, step sequencer, and a Lua scripting environment all in one place.
+Inspired by PICO-8, it embraces creative constraints as a design philosophy: a simulated hardware layer with configurable limits for resolution, palette, sprites, sounds, CPU, and memory — with sensible defaults (128×128, 16 colors) that you can tune to fit your project. Everything you need to make a complete game lives in one place — a pixel-art sprite editor, a tilemap builder for constructing levels, a step sequencer for composing chiptune music, and a Lua scripting environment with a lifecycle-based API (`_init`, `_update`, `_draw`).
+
+Games are saved locally in IndexedDB (no account needed) and can be exported as `.lun` cartridges for editing or `.lunx` for sharing. The engine runs Lua 5.4 via WebAssembly, renders through the Canvas 2D API, and synthesizes audio with the Web Audio API — making it a fully self-contained creative tool that runs anywhere a modern browser does.
 
 ---
 
