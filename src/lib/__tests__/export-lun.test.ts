@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { importLun, exportLun, exportFlat, calcStorageBytes } from "../export-lun";
+import {
+  importLun,
+  exportLun,
+  exportFlat,
+  calcStorageBytes,
+} from "../export-lun";
 import type { Cartridge } from "@/types/cartridge";
 
 // Minimal valid cartridge for testing
@@ -105,13 +110,15 @@ describe("exportLun", () => {
   });
 
   it("uses the cartridge name (spaces replaced) as filename", () => {
-    const cartridge = makeCartridge({ meta: { ...makeCartridge().meta, name: "My Cool Game" } });
+    const cartridge = makeCartridge({
+      meta: { ...makeCartridge().meta, name: "My Cool Game" },
+    });
     const mockAnchor = { href: "", download: "", click: vi.fn() };
     vi.spyOn(document, "createElement").mockReturnValue(
       mockAnchor as unknown as HTMLElement,
     );
     exportLun(cartridge);
-    expect(mockAnchor.download).toBe("My_Cool_Game.lun");
+    expect(mockAnchor.download).toBe("My_Cool_Game_v1.0.0.lun");
   });
 });
 
@@ -124,7 +131,9 @@ describe("calcStorageBytes", () => {
   it("counts sprite pixels at 1 byte each", () => {
     const c = makeCartridge({
       sprites: [{ id: 0, width: 8, height: 8, pixels: new Array(64).fill(1) }],
-      maps: [], scripts: [], sounds: [],
+      maps: [],
+      scripts: [],
+      sounds: [],
     });
     expect(calcStorageBytes(c)).toBe(64);
   });
@@ -133,14 +142,16 @@ describe("calcStorageBytes", () => {
     const c = makeCartridge({
       sprites: [],
       maps: [{ id: 0, name: "M", tiles: { "0,0": 0, "1,0": 0, "2,0": 0 } }],
-      scripts: [], sounds: [],
+      scripts: [],
+      sounds: [],
     });
     expect(calcStorageBytes(c)).toBe(27); // 3 × 9
   });
 
   it("counts script source at 1 byte per character", () => {
     const c = makeCartridge({
-      sprites: [], maps: [],
+      sprites: [],
+      maps: [],
       scripts: [{ id: 0, name: "main", code: "hello" }],
       sounds: [],
     });
@@ -149,8 +160,19 @@ describe("calcStorageBytes", () => {
 
   it("counts sound notes at 4 bytes each", () => {
     const c = makeCartridge({
-      sprites: [], maps: [], scripts: [],
-      sounds: [{ id: 0, name: "s", notes: new Array(8).fill({ note: null, volume: 1 }), steps: 8, tempo: 120, waveform: "square" }],
+      sprites: [],
+      maps: [],
+      scripts: [],
+      sounds: [
+        {
+          id: 0,
+          name: "s",
+          notes: new Array(8).fill({ note: null, volume: 1 }),
+          steps: 8,
+          tempo: 120,
+          waveform: "square",
+        },
+      ],
     });
     expect(calcStorageBytes(c)).toBe(32); // 8 × 4
   });
@@ -158,9 +180,18 @@ describe("calcStorageBytes", () => {
   it("sums all asset types together", () => {
     const c = makeCartridge({
       sprites: [{ id: 0, width: 4, height: 4, pixels: new Array(16).fill(0) }], // 16
-      maps: [{ id: 0, name: "M", tiles: { "0,0": 0 } }],                        //  9
-      scripts: [{ id: 0, name: "main", code: "abc" }],                           //  3
-      sounds: [{ id: 0, name: "s", notes: new Array(4).fill({ note: null, volume: 1 }), steps: 4, tempo: 120, waveform: "square" }], // 16
+      maps: [{ id: 0, name: "M", tiles: { "0,0": 0 } }], //  9
+      scripts: [{ id: 0, name: "main", code: "abc" }], //  3
+      sounds: [
+        {
+          id: 0,
+          name: "s",
+          notes: new Array(4).fill({ note: null, volume: 1 }),
+          steps: 4,
+          tempo: 120,
+          waveform: "square",
+        },
+      ], // 16
     });
     expect(calcStorageBytes(c)).toBe(16 + 9 + 3 + 16);
   });
@@ -171,14 +202,18 @@ describe("calcStorageBytes", () => {
         { id: 0, width: 4, height: 4, pixels: new Array(16).fill(0) },
         { id: 1, width: 8, height: 8, pixels: new Array(64).fill(0) },
       ],
-      maps: [], scripts: [], sounds: [],
+      maps: [],
+      scripts: [],
+      sounds: [],
     });
     expect(calcStorageBytes(c)).toBe(80);
   });
 
   it("counts tiles across multiple maps", () => {
     const c = makeCartridge({
-      sprites: [], scripts: [], sounds: [],
+      sprites: [],
+      scripts: [],
+      sounds: [],
       maps: [
         { id: 0, name: "A", tiles: { "0,0": 0, "1,0": 0 } },
         { id: 1, name: "B", tiles: { "0,0": 0 } },

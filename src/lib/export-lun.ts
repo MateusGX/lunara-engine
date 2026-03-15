@@ -42,7 +42,9 @@ function triggerDownload(blob: Blob, filename: string) {
 /** Editor format — pretty-printed JSON, preserves all metadata. */
 export function exportLun(cartridge: Cartridge): void {
   const blob = new Blob([JSON.stringify(cartridge, null, 2)], { type: "application/json" });
-  triggerDownload(blob, `${cartridge.meta.name.replace(/\s+/g, "_")}.lun`);
+  const name = cartridge.meta.name.replace(/\s+/g, "_");
+  const version = cartridge.meta.version ? `_v${cartridge.meta.version}` : "";
+  triggerDownload(blob, `${name}${version}.lun`);
 }
 
 /**
@@ -69,7 +71,9 @@ export function exportFlat(cartridge: Cartridge): void {
   };
   const encoded = btoa(encodeURIComponent(JSON.stringify(flat)));
   const blob = new Blob([encoded], { type: "application/octet-stream" });
-  triggerDownload(blob, `${cartridge.meta.name.replace(/\s+/g, "_")}.lunx`);
+  const name = cartridge.meta.name.replace(/\s+/g, "_");
+  const version = cartridge.meta.version ? `_v${cartridge.meta.version}` : "";
+  triggerDownload(blob, `${name}${version}.lunx`);
 }
 
 export function importLun(file: File): Promise<Cartridge> {

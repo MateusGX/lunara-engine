@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeftIcon,
@@ -11,6 +11,7 @@ import {
   MusicNoteIcon,
   WarningCircleIcon,
   FileIcon,
+  CircuitryIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +19,9 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LunaraLogo } from "@/components/lunara-logo";
 import { CartridgeScreen } from "@/routes/player/cartridge-screen";
-import type { Cartridge } from "@/types/cartridge";
+import { HARDWARE_PRESETS } from "@/lib/hardware-presets";
+import { useCustomPresets } from "@/hooks/use-custom-presets";
+import type { Cartridge, HardwareConfig } from "@/types/cartridge";
 
 function parseLunx(text: string): Cartridge {
   let json = text.trim();
@@ -67,6 +70,40 @@ export function LaunchPage() {
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<string>("cartridge");
+  const { presets: customPresets } = useCustomPresets();
+  const [customFields, setCustomFields] = useState({
+    width: "128", height: "128", fps: "30",
+    ips: "8", ipsUnit: "MIPS" as "IPS" | "KIPS" | "MIPS",
+    mem: "2", memUnit: "MB" as "KB" | "MB",
+    storage: "512", storageUnit: "KB" as "KB" | "MB",
+    sprites: "64", sounds: "32",
+  });
+
+  const hwOverride = useMemo((): HardwareConfig | null => {
+    if (selectedPreset === "cartridge" || !cartridge) return null;
+    if (selectedPreset === "custom") {
+      const ipsM = customFields.ipsUnit === "MIPS" ? 1_000_000 : customFields.ipsUnit === "KIPS" ? 1_000 : 1;
+      const memM = customFields.memUnit === "MB" ? 1024 * 1024 : 1024;
+      const storageM = customFields.storageUnit === "MB" ? 1024 * 1024 : 1024;
+      return {
+        ...cartridge.hardware,
+        width: Math.max(1, parseInt(customFields.width) || cartridge.hardware.width),
+        height: Math.max(1, parseInt(customFields.height) || cartridge.hardware.height),
+        maxFps: Math.max(1, parseInt(customFields.fps) || cartridge.hardware.maxFps),
+        maxIps: Math.max(1, parseFloat(customFields.ips) || 1) * ipsM,
+        maxMemBytes: Math.max(1024, parseFloat(customFields.mem) || 1) * memM,
+        maxStorageBytes: Math.max(1024, parseFloat(customFields.storage) || 1) * storageM,
+        maxSprites: Math.max(1, parseInt(customFields.sprites) || cartridge.hardware.maxSprites),
+        maxSounds: Math.max(1, parseInt(customFields.sounds) || cartridge.hardware.maxSounds),
+      };
+    }
+    return (
+      HARDWARE_PRESETS.find((p) => p.id === selectedPreset)?.hw ??
+      customPresets.find((p) => p.id === selectedPreset)?.hw ??
+      null
+    );
+  }, [selectedPreset, customFields, cartridge, customPresets]);
 
   async function loadFile(file: File) {
     setError(null);
@@ -74,6 +111,7 @@ export function LaunchPage() {
       const text = await file.text();
       setCartridge(parseLunx(text));
       setPlaying(false);
+      setSelectedPreset("cartridge");
     } catch {
       setError("Could not read cartridge. Make sure it's a valid .lunx or .lun file.");
     }
@@ -109,7 +147,9 @@ export function LaunchPage() {
         </div>
 
         <div className="flex flex-1 items-center justify-center">
-          <CartridgeScreen cartridge={cartridge} />
+          <CartridgeScreen
+            cartridge={hwOverride ? { ...cartridge, hardware: hwOverride } : cartridge}
+          />
         </div>
 
         <div className="flex items-center gap-4 border-t border-white/5 px-5 py-2.5 opacity-0 transition-opacity duration-200 group-hover/player:opacity-100">
@@ -252,7 +292,215 @@ export function LaunchPage() {
                 </div>
               </CardContent>
 
-              <CardFooter className="mt-4 flex-col gap-2 border-t border-white/8 px-5 py-4">
+              <CardFooter className="mt-4 flex-col gap-3 border-t border-white/8 px-5 py-4">
+                {/* Hardware override */}
+                <div className="w-full">
+                  <div className="mb-2 flex items-center gap-1.5">
+                    <CircuitryIcon size={11} className="text-zinc-600" />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+                      Hardware
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={() => setSelectedPreset("cartridge")}
+                      className={`px-2.5 py-1 text-[11px] font-medium transition ${
+                        selectedPreset === "cartridge"
+                          ? "bg-violet-600 text-white"
+                          : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                      }`}
+                    >
+                      Cartridge
+                    </button>
+                    {HARDWARE_PRESETS.map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => setSelectedPreset(preset.id)}
+                        className={`px-2.5 py-1 text-[11px] font-medium transition ${
+                          selectedPreset === preset.id
+                            ? "bg-violet-600 text-white"
+                            : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                        }`}
+                      >
+                        {preset.name}
+                      </button>
+                    ))}
+                    {customPresets.map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => setSelectedPreset(preset.id)}
+                        className={`px-2.5 py-1 text-[11px] font-medium transition ${
+                          selectedPreset === preset.id
+                            ? "bg-violet-600 text-white"
+                            : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                        }`}
+                      >
+                        {preset.name}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const hw = cartridge.hardware;
+                        const ipsUnit = hw.maxIps >= 1_000_000 ? "MIPS" : hw.maxIps >= 1_000 ? "KIPS" : "IPS";
+                        const ipsVal = hw.maxIps >= 1_000_000 ? hw.maxIps / 1_000_000 : hw.maxIps >= 1_000 ? hw.maxIps / 1_000 : hw.maxIps;
+                        const memUnit = hw.maxMemBytes >= 1024 * 1024 ? "MB" : "KB";
+                        const memVal = hw.maxMemBytes >= 1024 * 1024 ? hw.maxMemBytes / (1024 * 1024) : hw.maxMemBytes / 1024;
+                        setCustomFields({
+                          width: String(hw.width), height: String(hw.height),
+                          fps: String(hw.maxFps),
+                          ips: String(ipsVal), ipsUnit,
+                          mem: String(memVal), memUnit,
+                          storage: String(hw.maxStorageBytes >= 1024 * 1024 ? hw.maxStorageBytes / (1024 * 1024) : hw.maxStorageBytes / 1024),
+                          storageUnit: (hw.maxStorageBytes >= 1024 * 1024 ? "MB" : "KB") as "KB" | "MB",
+                          sprites: String(hw.maxSprites),
+                          sounds: String(hw.maxSounds),
+                        });
+                        setSelectedPreset("custom");
+                      }}
+                      className={`px-2.5 py-1 text-[11px] font-medium transition ${
+                        selectedPreset === "custom"
+                          ? "bg-violet-600 text-white"
+                          : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                      }`}
+                    >
+                      Custom
+                    </button>
+                  </div>
+
+                  {/* Preset description */}
+                  {hwOverride && selectedPreset !== "custom" && (
+                    <p className="mt-1.5 text-[10px] text-zinc-600">
+                      {(HARDWARE_PRESETS.find((p) => p.id === selectedPreset) ?? customPresets.find((p) => p.id === selectedPreset))?.desc} — overrides cartridge hardware
+                    </p>
+                  )}
+
+                  {/* Custom form */}
+                  {selectedPreset === "custom" && (
+                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
+                      {/* Resolution */}
+                      <div className="col-span-2">
+                        <label className="mb-1 block text-[10px] text-zinc-600">Resolution</label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="number" min={1} max={1024}
+                            value={customFields.width}
+                            onChange={(e) => setCustomFields((f) => ({ ...f, width: e.target.value }))}
+                            className="w-full bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                          />
+                          <span className="text-xs text-zinc-600">×</span>
+                          <input
+                            type="number" min={1} max={1024}
+                            value={customFields.height}
+                            onChange={(e) => setCustomFields((f) => ({ ...f, height: e.target.value }))}
+                            className="w-full bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                          />
+                        </div>
+                      </div>
+
+                      {/* FPS */}
+                      <div>
+                        <label className="mb-1 block text-[10px] text-zinc-600">Max FPS</label>
+                        <input
+                          type="number" min={1} max={240}
+                          value={customFields.fps}
+                          onChange={(e) => setCustomFields((f) => ({ ...f, fps: e.target.value }))}
+                          className="w-full bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                        />
+                      </div>
+
+                      {/* CPU */}
+                      <div>
+                        <label className="mb-1 block text-[10px] text-zinc-600">CPU Speed</label>
+                        <div className="flex gap-1">
+                          <input
+                            type="number" min={1}
+                            value={customFields.ips}
+                            onChange={(e) => setCustomFields((f) => ({ ...f, ips: e.target.value }))}
+                            className="min-w-0 flex-1 bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                          />
+                          <select
+                            value={customFields.ipsUnit}
+                            onChange={(e) => setCustomFields((f) => ({ ...f, ipsUnit: e.target.value as "IPS" | "KIPS" | "MIPS" }))}
+                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-400 outline-none focus:ring-1 focus:ring-violet-500/50"
+                          >
+                            <option value="IPS">IPS</option>
+                            <option value="KIPS">KIPS</option>
+                            <option value="MIPS">MIPS</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* RAM */}
+                      <div>
+                        <label className="mb-1 block text-[10px] text-zinc-600">RAM</label>
+                        <div className="flex gap-1">
+                          <input
+                            type="number" min={1}
+                            value={customFields.mem}
+                            onChange={(e) => setCustomFields((f) => ({ ...f, mem: e.target.value }))}
+                            className="min-w-0 flex-1 bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                          />
+                          <select
+                            value={customFields.memUnit}
+                            onChange={(e) => setCustomFields((f) => ({ ...f, memUnit: e.target.value as "KB" | "MB" }))}
+                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-400 outline-none focus:ring-1 focus:ring-violet-500/50"
+                          >
+                            <option value="KB">KB</option>
+                            <option value="MB">MB</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Storage */}
+                      <div>
+                        <label className="mb-1 block text-[10px] text-zinc-600">Max Storage</label>
+                        <div className="flex gap-1">
+                          <input
+                            type="number" min={1}
+                            value={customFields.storage}
+                            onChange={(e) => setCustomFields((f) => ({ ...f, storage: e.target.value }))}
+                            className="min-w-0 flex-1 bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                          />
+                          <select
+                            value={customFields.storageUnit}
+                            onChange={(e) => setCustomFields((f) => ({ ...f, storageUnit: e.target.value as "KB" | "MB" }))}
+                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-400 outline-none focus:ring-1 focus:ring-violet-500/50"
+                          >
+                            <option value="KB">KB</option>
+                            <option value="MB">MB</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Sprites */}
+                      <div>
+                        <label className="mb-1 block text-[10px] text-zinc-600">Max Sprites</label>
+                        <input
+                          type="number" min={1}
+                          value={customFields.sprites}
+                          onChange={(e) => setCustomFields((f) => ({ ...f, sprites: e.target.value }))}
+                          className="w-full bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                        />
+                      </div>
+
+                      {/* Sounds */}
+                      <div>
+                        <label className="mb-1 block text-[10px] text-zinc-600">Max Sounds</label>
+                        <input
+                          type="number" min={1}
+                          value={customFields.sounds}
+                          onChange={(e) => setCustomFields((f) => ({ ...f, sounds: e.target.value }))}
+                          className="w-full bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                        />
+                      </div>
+
+                      <p className="col-span-2 text-[10px] text-zinc-700">
+                        Palette and inputs are inherited from the cartridge.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 <Button
                   size="lg"
                   onClick={() => setPlaying(true)}

@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import { useStore } from "@/store";
 import { calcStorageBytes } from "@/lib/export-lun";
-import { DEFAULT_HW } from "@/lib/cartridge-template";
+import { HARDWARE_PRESETS } from "@/lib/hardware-presets";
+import { useCustomPresets } from "@/hooks/use-custom-presets";
 import type { HardwareConfig, InputBinding } from "@/types/cartridge";
 import {
   PlusIcon,
@@ -17,6 +18,9 @@ import {
   IdentificationCardIcon,
   KeyboardIcon,
   CircuitryIcon,
+  CheckIcon,
+  PencilSimpleIcon,
+  FloppyDiskIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,98 +123,7 @@ const RESOLUTION_PRESETS = [
   { label: "320×240", w: 320, h: 240 },
 ];
 
-const DEFAULT_INPUTS = [
-  { button: 0, key: "ArrowLeft",  label: "LEFT"   },
-  { button: 1, key: "ArrowRight", label: "RIGHT"  },
-  { button: 2, key: "ArrowUp",    label: "UP"     },
-  { button: 3, key: "ArrowDown",  label: "DOWN"   },
-  { button: 4, key: "z",          label: "A"      },
-  { button: 5, key: "x",          label: "B"      },
-];
 
-interface HardwarePreset {
-  id: string;
-  name: string;
-  desc: string;
-  hw: HardwareConfig;
-}
-
-const HARDWARE_PRESETS: HardwarePreset[] = [
-  {
-    id: "lunara",
-    name: "Lunara",
-    desc: "128×128 · 30fps · 16 colors",
-    hw: { ...DEFAULT_HW },
-  },
-  {
-    id: "gameboy",
-    name: "Game Boy",
-    desc: "160×144 · 60fps · 4 shades",
-    hw: {
-      // ~4.19 MHz Z80-like CPU, ~1 MIPS effective throughput
-      // Framebuffer: 160×144×4 ≈ 90 KB; using 128 KB (Color GB work RAM)
-      width: 160, height: 144,
-      maxSprites: 40, maxSounds: 4,
-      maxFps: 60, maxIps: 1_000_000, maxMemBytes: 128 * 1024, maxStorageBytes: 32 * 1024,
-      palette: ["#000000","#0f380f","#306230","#8bac0f","#9bbc0f"],
-      inputs: [
-        ...DEFAULT_INPUTS,
-        { button: 6, key: "Enter",     label: "START"  },
-        { button: 7, key: "Backspace", label: "SELECT" },
-      ],
-    },
-  },
-  {
-    id: "nes",
-    name: "NES",
-    desc: "256×240 · 60fps · 16 colors",
-    hw: {
-      // 1.789 MHz 6502 CPU, ~1 MIPS effective throughput
-      // Framebuffer: 256×240×4 ≈ 240 KB; using 256 KB to barely fit
-      width: 256, height: 240,
-      maxSprites: 64, maxSounds: 5,
-      maxFps: 60, maxIps: 1_000_000, maxMemBytes: 256 * 1024, maxStorageBytes: 32 * 1024,
-      palette: ["#000000","#7C7C7C","#0000FC","#0000BC","#4428BC","#940084",
-                "#A80020","#A81000","#881400","#503000","#007800","#006800",
-                "#005800","#004058","#000000","#BCBCBC"],
-      inputs: [
-        ...DEFAULT_INPUTS,
-        { button: 6, key: "Enter",     label: "START"  },
-        { button: 7, key: "Backspace", label: "SELECT" },
-      ],
-    },
-  },
-  {
-    id: "cga",
-    name: "CGA",
-    desc: "320×200 · 60fps · 4 colors",
-    hw: {
-      // 4.77 MHz 8088 — effective throughput ~1 MIPS (8-bit bus bottleneck)
-      // Framebuffer: 320×200×4 = 256 KB; using 512 KB (typical DOS machine)
-      width: 320, height: 200,
-      maxSprites: 8, maxSounds: 1,
-      maxFps: 60, maxIps: 1_000_000, maxMemBytes: 512 * 1024, maxStorageBytes: 64 * 1024,
-      palette: ["#000000","#00AAAA","#AA00AA","#AAAAAA"],
-      inputs: [
-        ...DEFAULT_INPUTS.slice(0, 5),
-        { button: 5, key: "x", label: "FIRE" },
-      ],
-    },
-  },
-  {
-    id: "minimal",
-    name: "Minimal",
-    desc: "128×128 · 15fps · 2 colors",
-    hw: {
-      // Absolute floor: just enough RAM for the framebuffer (64 KB) + a little headroom
-      width: 128, height: 128,
-      maxSprites: 16, maxSounds: 4,
-      maxFps: 15, maxIps: 500_000, maxMemBytes: 128 * 1024, maxStorageBytes: 16 * 1024,
-      palette: ["#000000","#ffffff"],
-      inputs: DEFAULT_INPUTS,
-    },
-  },
-];
 
 export function SettingsTab() {
   const { activeCartridge, updateActiveCartridge } = useStore();
@@ -233,6 +146,10 @@ export function SettingsTab() {
   const [hwImportError, setHwImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hwImportRef = useRef<HTMLInputElement>(null);
+  const [savingName, setSavingName] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const { presets: customPresets, add: addPreset, rename: renamePreset, remove: removePreset } = useCustomPresets();
 
   if (!activeCartridge) return null;
   const hw = activeCartridge.hardware;
@@ -255,12 +172,16 @@ export function SettingsTab() {
   }
 
   function exportHardware() {
-    const json = JSON.stringify(hw, null, 2);
+    const presetName =
+      HARDWARE_PRESETS.find((p) => hwMatches(p.hw, hw))?.name ??
+      customPresets.find((p) => hwMatches(p.hw, hw))?.name ??
+      activeCartridge!.meta.name;
+    const json = JSON.stringify({ name: presetName, ...hw }, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${activeCartridge!.meta.name}-hardware.json`;
+    a.download = `${presetName}-hardware.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -276,7 +197,22 @@ export function SettingsTab() {
           typeof data.height !== "number" ||
           !Array.isArray(data.palette)
         ) throw new Error("Invalid hardware config");
-        updateActiveCartridge({ hardware: { ...hw, ...data } });
+
+        const importedHw: HardwareConfig = { ...hw, ...data };
+        updateActiveCartridge({ hardware: importedHw });
+
+        const baseName = (typeof data.name === "string" && data.name.trim()) ? data.name.trim() : "Imported";
+        const allNames = [
+          ...HARDWARE_PRESETS.map((p) => p.name),
+          ...customPresets.map((p) => p.name),
+        ];
+        let presetName = baseName;
+        if (allNames.includes(presetName)) {
+          let n = 2;
+          while (allNames.includes(`${baseName} ${n}`)) n++;
+          presetName = `${baseName} ${n}`;
+        }
+        addPreset(presetName, importedHw);
       } catch {
         setHwImportError("Invalid hardware config file.");
       }
@@ -284,9 +220,19 @@ export function SettingsTab() {
     reader.readAsText(file);
   }
 
-  const activePresetId = HARDWARE_PRESETS.find(
-    (p) => p.hw.width === hw.width && p.hw.height === hw.height && p.hw.palette.length === hw.palette.length,
-  )?.id ?? null;
+  function hwMatches(a: HardwareConfig, b: HardwareConfig) {
+    return (
+      a.width === b.width &&
+      a.height === b.height &&
+      a.maxFps === b.maxFps &&
+      a.maxIps === b.maxIps &&
+      a.palette.length === b.palette.length
+    );
+  }
+  const activePresetId =
+    HARDWARE_PRESETS.find((p) => hwMatches(p.hw, hw))?.id ??
+    customPresets.find((p) => hwMatches(p.hw, hw))?.id ??
+    null;
 
   function updatePaletteColor(index: number, hex: string) {
     const palette = [...hw.palette];
@@ -512,7 +458,8 @@ export function SettingsTab() {
           />
           <Separator className="bg-white/8" />
 
-          <div className="grid grid-cols-5 gap-2">
+          {/* ── Default presets ── */}
+          <div className="grid grid-cols-3 gap-2">
             {HARDWARE_PRESETS.map((p) => (
               <button
                 key={p.id}
@@ -523,7 +470,6 @@ export function SettingsTab() {
                     : "border-white/8 bg-white/3 text-zinc-400 hover:border-white/20 hover:bg-white/6 hover:text-zinc-200"
                 }`}
               >
-                {/* Palette preview */}
                 <div className="flex h-1.5 w-full overflow-hidden">
                   {p.hw.palette.slice(1, 9).map((c, i) => (
                     <div key={i} className="flex-1" style={{ background: c }} />
@@ -535,14 +481,145 @@ export function SettingsTab() {
                 <span className="text-[10px] leading-tight opacity-60">{p.desc}</span>
               </button>
             ))}
+            {/* Custom indicator — highlighted when no preset matches */}
+            <div
+              className={`flex flex-col items-start gap-1.5 border px-3 py-2.5 text-left ${
+                activePresetId === null && customPresets.length === 0
+                  ? "border-violet-500/60 bg-violet-600/10 text-white"
+                  : "border-white/8 bg-white/3 text-zinc-400"
+              }`}
+            >
+              <div className="flex h-1.5 w-full overflow-hidden">
+                {hw.palette.slice(1, 9).map((c: string, i: number) => (
+                  <div key={i} className="flex-1" style={{ background: c }} />
+                ))}
+              </div>
+              <span className={`text-xs font-semibold ${activePresetId === null && customPresets.length === 0 ? "text-violet-300" : ""}`}>
+                Custom
+              </span>
+              <span className="text-[10px] leading-tight opacity-60">
+                {hw.width}×{hw.height} · {hw.maxFps}fps · {hw.palette.length} colors
+              </span>
+            </div>
           </div>
+
+          {/* ── User presets ── */}
+          {customPresets.length > 0 && (
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+                My Presets
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {customPresets.map((p) => (
+                  <div
+                    key={p.id}
+                    className={`group/preset relative flex flex-col items-start gap-1.5 border px-3 pb-8 pt-2.5 text-left transition ${
+                      activePresetId === p.id
+                        ? "border-violet-500/60 bg-violet-600/10 text-white"
+                        : "border-white/8 bg-white/3 text-zinc-400 hover:border-white/20 hover:bg-white/6"
+                    }`}
+                  >
+                    {/* Apply on click (not on action buttons) */}
+                    <button
+                      className="absolute inset-0"
+                      onClick={() => updateActiveCartridge({ hardware: { ...p.hw } })}
+                    />
+                    <div className="flex h-1.5 w-full overflow-hidden">
+                      {p.hw.palette.slice(1, 9).map((c, i) => (
+                        <div key={i} className="flex-1" style={{ background: c }} />
+                      ))}
+                    </div>
+                    {renamingId === p.id ? (
+                      <form
+                        className="relative z-10 flex w-full gap-1"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          renamePreset(p.id, renameValue);
+                          setRenamingId(null);
+                        }}
+                      >
+                        <input
+                          autoFocus
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onBlur={() => setRenamingId(null)}
+                          className="min-w-0 flex-1 bg-white/10 px-1.5 py-0.5 text-xs text-white outline-none focus:ring-1 focus:ring-violet-500/60"
+                        />
+                        <button type="submit" className="relative z-10 text-violet-400 hover:text-violet-300">
+                          <CheckIcon size={12} />
+                        </button>
+                      </form>
+                    ) : (
+                      <span className={`relative z-10 text-xs font-semibold ${activePresetId === p.id ? "text-violet-300" : ""}`}>
+                        {p.name}
+                      </span>
+                    )}
+                    <span className="text-[10px] leading-tight opacity-60">{p.desc}</span>
+                    {/* Actions */}
+                    <div className="absolute inset-x-0 bottom-0 z-10 hidden items-center justify-end gap-px border-t border-white/8 bg-[#13131f] group-hover/preset:flex">
+                      <button
+                        onClick={() => { setRenamingId(p.id); setRenameValue(p.name); }}
+                        className="flex flex-1 items-center justify-center gap-1 py-1.5 text-[10px] text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
+                      >
+                        <PencilSimpleIcon size={11} /> Rename
+                      </button>
+                      <div className="h-3 w-px bg-white/10" />
+                      <button
+                        onClick={() => removePreset(p.id)}
+                        className="flex flex-1 items-center justify-center gap-1 py-1.5 text-[10px] text-zinc-500 hover:bg-red-500/10 hover:text-red-400"
+                      >
+                        <TrashIcon size={11} /> Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Save current as preset ── */}
+          {savingName !== null ? (
+            <form
+              className="flex items-center gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (savingName.trim()) {
+                  addPreset(savingName.trim(), hw);
+                  setSavingName(null);
+                }
+              }}
+            >
+              <input
+                autoFocus
+                placeholder="Preset name…"
+                value={savingName}
+                onChange={(e) => setSavingName(e.target.value)}
+                className="flex-1 border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white placeholder-zinc-600 outline-none focus:border-violet-500/60"
+              />
+              <Button size="xs" type="submit" disabled={!savingName.trim()} className="gap-1 bg-violet-600 hover:bg-violet-500">
+                <FloppyDiskIcon size={11} /> Save
+              </Button>
+              <Button size="xs" variant="ghost" type="button" onClick={() => setSavingName(null)} className="text-zinc-500">
+                <XIcon size={11} />
+              </Button>
+            </form>
+          ) : (
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => setSavingName("")}
+              className="w-fit gap-1.5 border-white/10 bg-transparent text-zinc-400 hover:border-violet-500/40 hover:bg-violet-500/8 hover:text-violet-300"
+            >
+              <PlusIcon size={11} /> Save current as preset
+            </Button>
+          )}
 
           {hwImportError && (
             <p className="text-[11px] text-red-400">{hwImportError}</p>
           )}
 
           <p className="text-[10px] text-zinc-700">
-            Presets replace all hardware settings. Export saves the current config as JSON.
+            Presets replace all hardware settings. Customize the fields below. Export saves the current config as JSON.
           </p>
         </section>
 

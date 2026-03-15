@@ -16,7 +16,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useStore } from "@/store";
 import { get as getCartridge } from "@/db/cartridge-repository";
 import { EditorTab } from "@/types/editor";
@@ -32,12 +36,16 @@ import { calcStorageBytes } from "@/lib/export-lun";
 import { useRunner } from "@/hooks/use-runner";
 
 const NAV_TABS = [
-  { id: EditorTab.Code,   icon: CodeIcon,       label: "Code"   },
-  { id: EditorTab.Sprite, icon: PaletteIcon,     label: "Sprites" },
-  { id: EditorTab.Map,    icon: GridFourIcon,    label: "Map"    },
-  { id: EditorTab.Sound,  icon: MusicNoteIcon,   label: "Sounds" },
+  { id: EditorTab.Code, icon: CodeIcon, label: "Code" },
+  { id: EditorTab.Sprite, icon: PaletteIcon, label: "Sprites" },
+  { id: EditorTab.Map, icon: GridFourIcon, label: "Map" },
+  { id: EditorTab.Sound, icon: MusicNoteIcon, label: "Sounds" },
 ];
-const SETTINGS_TAB = { id: EditorTab.Settings, icon: SlidersIcon, label: "Settings" };
+const SETTINGS_TAB = {
+  id: EditorTab.Settings,
+  icon: SlidersIcon,
+  label: "Settings",
+};
 
 function TabContent({ tab }: { tab: EditorTab }) {
   switch (tab) {
@@ -58,7 +66,15 @@ function TabContent({ tab }: { tab: EditorTab }) {
 
 const CONSOLE_HEIGHT = 180;
 
-function ResourceBar({ label, pct, fmt }: { label: string; pct: number; fmt: string }) {
+function ResourceBar({
+  label,
+  pct,
+  fmt,
+}: {
+  label: string;
+  pct: number;
+  fmt: string;
+}) {
   const color =
     pct > 80 ? "bg-red-500" : pct > 50 ? "bg-yellow-500" : "bg-green-500";
   return (
@@ -70,7 +86,9 @@ function ResourceBar({ label, pct, fmt }: { label: string; pct: number; fmt: str
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-8 text-right font-mono text-[9px] text-zinc-500">{fmt}</span>
+      <span className="w-8 text-right font-mono text-[9px] text-zinc-500">
+        {fmt}
+      </span>
     </div>
   );
 }
@@ -198,14 +216,18 @@ export function EditorPage() {
                     <button
                       onClick={() => setActiveTab(tabId)}
                       className={`relative flex w-full flex-col items-center gap-0.5 py-2.5 transition ${
-                        active ? "text-violet-300" : "text-zinc-600 hover:text-zinc-300"
+                        active
+                          ? "text-violet-300"
+                          : "text-zinc-600 hover:text-zinc-300"
                       }`}
                     >
                       {active && (
                         <span className="absolute inset-y-0 left-0 w-0.5 bg-violet-500" />
                       )}
                       <Icon size={17} weight={active ? "fill" : "regular"} />
-                      <span className="text-[9px] font-medium tracking-wide">{label}</span>
+                      <span className="text-[9px] font-medium tracking-wide">
+                        {label}
+                      </span>
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="right">{label}</TooltipContent>
@@ -217,7 +239,7 @@ export function EditorPage() {
           <Separator className="bg-white/8" />
 
           {/* Settings pinned to bottom */}
-          <div className="py-1">
+          <div className="pb-1">
             {(() => {
               const { id: tabId, icon: Icon, label } = SETTINGS_TAB;
               const active = activeTab === tabId;
@@ -227,14 +249,18 @@ export function EditorPage() {
                     <button
                       onClick={() => setActiveTab(tabId)}
                       className={`relative flex w-full flex-col items-center gap-0.5 py-2.5 transition ${
-                        active ? "text-violet-300" : "text-zinc-600 hover:text-zinc-300"
+                        active
+                          ? "text-violet-300"
+                          : "text-zinc-600 hover:text-zinc-300"
                       }`}
                     >
                       {active && (
                         <span className="absolute inset-y-0 left-0 w-0.5 bg-violet-500" />
                       )}
                       <Icon size={17} weight={active ? "fill" : "regular"} />
-                      <span className="text-[9px] font-medium tracking-wide">{label}</span>
+                      <span className="text-[9px] font-medium tracking-wide">
+                        {label}
+                      </span>
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="right">{label}</TooltipContent>
@@ -273,8 +299,12 @@ export function EditorPage() {
                   />
                   {crashMessage && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-black/85 backdrop-blur-sm">
-                      <p className="mb-1 font-mono text-xs font-bold text-red-400">CRASH</p>
-                      <p className="px-2 text-center font-mono text-[10px] text-red-300/70 break-all">{crashMessage}</p>
+                      <p className="mb-1 font-mono text-xs font-bold text-red-400">
+                        CRASH
+                      </p>
+                      <p className="px-2 text-center font-mono text-[10px] text-red-300/70 break-all">
+                        {crashMessage}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -302,9 +332,7 @@ export function EditorPage() {
                         : 0
                     }
                     fmt={
-                      mem >= 1024
-                        ? `${(mem / 1024).toFixed(1)}k`
-                        : `${mem}b`
+                      mem >= 1024 ? `${(mem / 1024).toFixed(1)}k` : `${mem}b`
                     }
                   />
 
@@ -312,19 +340,30 @@ export function EditorPage() {
 
                   <ResourceBar
                     label="SPR"
-                    pct={Math.min(100, (activeCartridge.sprites.length / activeCartridge.hardware.maxSprites) * 100)}
+                    pct={Math.min(
+                      100,
+                      (activeCartridge.sprites.length /
+                        activeCartridge.hardware.maxSprites) *
+                        100,
+                    )}
                     fmt={`${activeCartridge.sprites.length}/${activeCartridge.hardware.maxSprites}`}
                   />
                   <ResourceBar
                     label="SND"
-                    pct={Math.min(100, (activeCartridge.sounds.length / activeCartridge.hardware.maxSounds) * 100)}
+                    pct={Math.min(
+                      100,
+                      (activeCartridge.sounds.length /
+                        activeCartridge.hardware.maxSounds) *
+                        100,
+                    )}
                     fmt={`${activeCartridge.sounds.length}/${activeCartridge.hardware.maxSounds}`}
                   />
                   <ResourceBar
                     label="STG"
                     pct={(() => {
                       const used = calcStorageBytes(activeCartridge);
-                      const limit = activeCartridge.hardware.maxStorageBytes ?? 512 * 1024;
+                      const limit =
+                        activeCartridge.hardware.maxStorageBytes ?? 512 * 1024;
                       return Math.min(100, (used / limit) * 100);
                     })()}
                     fmt={(() => {
