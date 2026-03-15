@@ -8,10 +8,10 @@ interface Props {
   cartridge: Cartridge;
 }
 
-function fmtHz(hz: number): string {
-  if (hz >= 1_000_000) return `${(hz / 1_000_000).toFixed(1)} MHz`;
-  if (hz >= 1_000) return `${(hz / 1_000).toFixed(1)} KHz`;
-  return `${hz} Hz`;
+function fmtIps(ips: number): string {
+  if (ips >= 1_000_000) return `${(ips / 1_000_000).toFixed(1)} MIPS`;
+  if (ips >= 1_000) return `${(ips / 1_000).toFixed(1)} KIPS`;
+  return `${ips} IPS`;
 }
 
 function fmtBytes(b: number): string {
@@ -116,7 +116,8 @@ export function CartridgeScreen({ cartridge }: Props) {
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           <HwStat label="RES" value={`${cartridge.hardware.width}×${cartridge.hardware.height}`} />
-          <HwStat label="CPU" value={fmtHz(cartridge.hardware.maxCpuHz)} />
+          <HwStat label="FPS" value={`${cartridge.hardware.maxFps ?? 60} fps`} />
+          <HwStat label="CPU" value={fmtIps(cartridge.hardware.maxIps)} />
           <HwStat label="MEM" value={fmtBytes(cartridge.hardware.maxMemBytes)} />
           <HwStat label="SPR" value={String(cartridge.hardware.maxSprites)} />
           <HwStat label="SND" value={String(cartridge.hardware.maxSounds)} />

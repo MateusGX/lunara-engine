@@ -1,5 +1,33 @@
 import type { Cartridge } from "@/types/cartridge";
 
+/**
+ * Storage = user asset bytes only (sprites + scripts + maps + sounds).
+ * Meta and hardware config are excluded — they are engine data, not cartridge content.
+ */
+export function calcStorageBytes(cartridge: Cartridge): number {
+  // sprites: 1 byte per palette-index pixel
+  const spriteBytes = cartridge.sprites.reduce(
+    (s, sp) => s + sp.pixels.length,
+    0,
+  );
+  // maps: each sparse tile entry = key string (~7 bytes avg) + uint16 sprite id
+  const mapBytes = cartridge.maps.reduce(
+    (s, m) => s + Object.keys(m.tiles).length * 9,
+    0,
+  );
+  // scripts: UTF-8 source bytes
+  const scriptBytes = cartridge.scripts.reduce(
+    (s, sc) => s + sc.code.length,
+    0,
+  );
+  // sounds: 4 bytes per note (note, volume, waveform, duration)
+  const soundBytes = cartridge.sounds.reduce(
+    (s, snd) => s + snd.notes.length * 4,
+    0,
+  );
+  return spriteBytes + mapBytes + scriptBytes + soundBytes;
+}
+
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

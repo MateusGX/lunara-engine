@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useStore } from "@/store";
+import { calcStorageBytes } from "@/lib/export-lun";
+import { DEFAULT_HW } from "@/lib/cartridge-template";
 import type { HardwareConfig, InputBinding } from "@/types/cartridge";
 import {
   PlusIcon,
@@ -29,19 +31,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type CpuUnit = "Hz" | "KHz" | "MHz";
+type CpuUnit = "IPS" | "KIPS" | "MIPS";
 type MemUnit = "B" | "KB" | "MB";
 type StorageUnit = "B" | "KB" | "MB";
 
-function hzToDisplay(hz: number): { value: number; unit: CpuUnit } {
-  if (hz >= 1_000_000) return { value: hz / 1_000_000, unit: "MHz" };
-  if (hz >= 1_000) return { value: hz / 1_000, unit: "KHz" };
-  return { value: hz, unit: "Hz" };
+function ipsToDisplay(ips: number): { value: number; unit: CpuUnit } {
+  if (ips >= 1_000_000) return { value: ips / 1_000_000, unit: "MIPS" };
+  if (ips >= 1_000) return { value: ips / 1_000, unit: "KIPS" };
+  return { value: ips, unit: "IPS" };
 }
 
-function displayToHz(value: number, unit: CpuUnit): number {
-  if (unit === "MHz") return value * 1_000_000;
-  if (unit === "KHz") return value * 1_000;
+function displayToIps(value: number, unit: CpuUnit): number {
+  if (unit === "MIPS") return value * 1_000_000;
+  if (unit === "KIPS") return value * 1_000;
   return value;
 }
 
@@ -137,24 +139,19 @@ const HARDWARE_PRESETS: HardwarePreset[] = [
   {
     id: "lunara",
     name: "Lunara",
-    desc: "128×128 · 16 colors",
-    hw: {
-      width: 128, height: 128,
-      maxSprites: 128, maxSounds: 64,
-      maxCpuHz: 8_000_000, maxMemBytes: 2 * 1024 * 1024, maxStorageBytes: 512 * 1024,
-      palette: ["#000000","#1D2B53","#7E2553","#008751","#AB5236","#5F574F","#C2C3C7","#FFF1E8",
-                "#FF004D","#FFA300","#FFEC27","#00E436","#29ADFF","#83769C","#FF77A8","#FFCCAA"],
-      inputs: DEFAULT_INPUTS,
-    },
+    desc: "128×128 · 30fps · 16 colors",
+    hw: { ...DEFAULT_HW },
   },
   {
     id: "gameboy",
     name: "Game Boy",
-    desc: "160×144 · 4 shades",
+    desc: "160×144 · 60fps · 4 shades",
     hw: {
+      // ~4.19 MHz Z80-like CPU, ~1 MIPS effective throughput
+      // Framebuffer: 160×144×4 ≈ 90 KB; using 128 KB (Color GB work RAM)
       width: 160, height: 144,
       maxSprites: 40, maxSounds: 4,
-      maxCpuHz: 4_194_304, maxMemBytes: 8 * 1024, maxStorageBytes: 32 * 1024,
+      maxFps: 60, maxIps: 1_000_000, maxMemBytes: 128 * 1024, maxStorageBytes: 32 * 1024,
       palette: ["#000000","#0f380f","#306230","#8bac0f","#9bbc0f"],
       inputs: [
         ...DEFAULT_INPUTS,
@@ -166,11 +163,13 @@ const HARDWARE_PRESETS: HardwarePreset[] = [
   {
     id: "nes",
     name: "NES",
-    desc: "256×240 · 16 colors",
+    desc: "256×240 · 60fps · 16 colors",
     hw: {
+      // 1.789 MHz 6502 CPU, ~1 MIPS effective throughput
+      // Framebuffer: 256×240×4 ≈ 240 KB; using 256 KB to barely fit
       width: 256, height: 240,
       maxSprites: 64, maxSounds: 5,
-      maxCpuHz: 1_789_773, maxMemBytes: 2 * 1024, maxStorageBytes: 256 * 1024,
+      maxFps: 60, maxIps: 1_000_000, maxMemBytes: 256 * 1024, maxStorageBytes: 32 * 1024,
       palette: ["#000000","#7C7C7C","#0000FC","#0000BC","#4428BC","#940084",
                 "#A80020","#A81000","#881400","#503000","#007800","#006800",
                 "#005800","#004058","#000000","#BCBCBC"],
@@ -184,11 +183,13 @@ const HARDWARE_PRESETS: HardwarePreset[] = [
   {
     id: "cga",
     name: "CGA",
-    desc: "320×200 · 4 colors",
+    desc: "320×200 · 60fps · 4 colors",
     hw: {
+      // 4.77 MHz 8088 — effective throughput ~1 MIPS (8-bit bus bottleneck)
+      // Framebuffer: 320×200×4 = 256 KB; using 512 KB (typical DOS machine)
       width: 320, height: 200,
       maxSprites: 8, maxSounds: 1,
-      maxCpuHz: 4_772_728, maxMemBytes: 64 * 1024, maxStorageBytes: 128 * 1024,
+      maxFps: 60, maxIps: 1_000_000, maxMemBytes: 512 * 1024, maxStorageBytes: 64 * 1024,
       palette: ["#000000","#00AAAA","#AA00AA","#AAAAAA"],
       inputs: [
         ...DEFAULT_INPUTS.slice(0, 5),
@@ -199,11 +200,12 @@ const HARDWARE_PRESETS: HardwarePreset[] = [
   {
     id: "minimal",
     name: "Minimal",
-    desc: "128×128 · 2 colors",
+    desc: "128×128 · 15fps · 2 colors",
     hw: {
+      // Absolute floor: just enough RAM for the framebuffer (64 KB) + a little headroom
       width: 128, height: 128,
-      maxSprites: 32, maxSounds: 8,
-      maxCpuHz: 1_000_000, maxMemBytes: 512 * 1024, maxStorageBytes: 64 * 1024,
+      maxSprites: 16, maxSounds: 4,
+      maxFps: 15, maxIps: 500_000, maxMemBytes: 128 * 1024, maxStorageBytes: 16 * 1024,
       palette: ["#000000","#ffffff"],
       inputs: DEFAULT_INPUTS,
     },
@@ -214,8 +216,8 @@ export function SettingsTab() {
   const { activeCartridge, updateActiveCartridge } = useStore();
 
   const initCpu = activeCartridge
-    ? hzToDisplay(activeCartridge.hardware.maxCpuHz)
-    : { value: 8, unit: "MHz" as CpuUnit };
+    ? ipsToDisplay(activeCartridge.hardware.maxIps)
+    : { value: 8, unit: "MIPS" as CpuUnit };
   const initMem = activeCartridge
     ? bytesToDisplay(activeCartridge.hardware.maxMemBytes)
     : { value: 2, unit: "MB" as MemUnit };
@@ -336,7 +338,7 @@ export function SettingsTab() {
     [hw.inputs],
   );
 
-  const storageUsed = new TextEncoder().encode(JSON.stringify(activeCartridge)).length;
+  const storageUsed = calcStorageBytes(activeCartridge);
   const storageLimit = hw.maxStorageBytes ?? 512 * 1024;
   const storagePct = Math.min(100, Math.round((storageUsed / storageLimit) * 100));
   const storageOver = storageUsed > storageLimit;
@@ -649,6 +651,26 @@ export function SettingsTab() {
           <Separator className="bg-white/8" />
 
           <div className="grid grid-cols-3 gap-4">
+            {/* FPS */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Target FPS</Label>
+              <div className="flex gap-1">
+                <Input
+                  type="number"
+                  min={1}
+                  max={240}
+                  step={1}
+                  value={hw.maxFps ?? 60}
+                  onChange={(e) =>
+                    updateHw({ maxFps: Math.max(1, Math.min(240, Math.round(+e.target.value))) })
+                  }
+                  className="min-w-0 flex-1 border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+                />
+                <span className="flex items-center px-2 text-xs text-zinc-500">fps</span>
+              </div>
+              <p className="text-[10px] text-zinc-700">{(hw.maxIps / (hw.maxFps ?? 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} instr/frame</p>
+            </div>
+
             {/* CPU */}
             <div className="space-y-1.5">
               <Label className="text-xs text-zinc-400">CPU Speed</Label>
@@ -656,10 +678,10 @@ export function SettingsTab() {
                 <Input
                   type="number"
                   min={1}
-                  step={cpuUnit === "MHz" ? 0.5 : cpuUnit === "KHz" ? 100 : 1000}
-                  value={parseFloat(hzToDisplay(hw.maxCpuHz).value.toFixed(3))}
+                  step={cpuUnit === "MIPS" ? 0.5 : cpuUnit === "KIPS" ? 100 : 1000}
+                  value={parseFloat(ipsToDisplay(hw.maxIps).value.toFixed(3))}
                   onChange={(e) =>
-                    updateHw({ maxCpuHz: Math.max(1, displayToHz(+e.target.value, cpuUnit)) })
+                    updateHw({ maxIps: Math.max(1, displayToIps(+e.target.value, cpuUnit)) })
                   }
                   className="min-w-0 flex-1 border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
                 />
@@ -668,13 +690,13 @@ export function SettingsTab() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="border-white/10 bg-[#1a1a2e]">
-                    {["Hz", "KHz", "MHz"].map((u) => (
+                    {["IPS", "KIPS", "MIPS"].map((u) => (
                       <SelectItem key={u} value={u} className="text-xs text-zinc-300">{u}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-[10px] text-zinc-700">{hw.maxCpuHz.toLocaleString()} Hz</p>
+              <p className="text-[10px] text-zinc-700">{hw.maxIps.toLocaleString()} IPS</p>
             </div>
 
             {/* RAM */}

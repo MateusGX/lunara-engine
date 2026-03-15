@@ -28,16 +28,17 @@ const DEFAULT_INPUTS = [
   { button: 5, key: "x", label: "B" },
 ];
 
-const DEFAULT_HW = {
+export const DEFAULT_HW = {
   width: 128,
   height: 128,
   palette: [...DEFAULT_PALETTE],
   inputs: DEFAULT_INPUTS,
-  maxSprites: 256,
-  maxSounds: 64,
-  maxCpuHz: 8_000_000,
-  maxMemBytes: 2 * 1024 * 1024,
-  maxStorageBytes: 512 * 1024,
+  maxSprites: 64,
+  maxSounds: 32,
+  maxFps: 30,
+  maxIps: 2_000_000,
+  maxMemBytes: 256 * 1024,
+  maxStorageBytes: 128 * 1024,
 };
 
 // ── Sprite pixel data ──────────────────────────────────────────────────────
@@ -351,25 +352,28 @@ function _draw()
   map(0, 0, 0, 0, 16, 16)
 
   if state == "menu" then
-    rectfill(16, 32, 96, 60, 1)
-    rect(16, 32, 96, 60, 5)
-    print("PLATFORMER", 34, 40, 7)
-    print("arrows+up  move/jump", 18, 54, 5)
-    print("Z - START", 40, 68, 11)
+    rectfill(16, 24, 96, 76, 1)
+    rect(16, 24, 96, 76, 5)
+    print("PLATFORMER", 34, 32, 7)
+    print("arrows: move", 28, 46, 5)
+    print("up: jump",     40, 56, 5)
+    print("X: pause",     40, 70, 5)
+    print("Z: start",     40, 84, 11)
     return
   end
 
   spr(1, px, py)
 
   local t = elapsed + (time() - start_time)
+  print("X:pause", 2,  4, 5)
   print(fmt_time(t), 92, 4, 6)
 
   if state == "pause" then
-    rectfill(24, 44, 80, 42, 1)
-    rect(24, 44, 80, 42, 5)
-    print("PAUSED",     46, 52, 7)
-    print("X - RESUME", 34, 66, 11)
-    print("Z - MENU",   38, 76, 6)
+    rectfill(24, 42, 80, 48, 1)
+    rect(24, 42, 80, 48, 5)
+    print("PAUSED",   46, 52, 7)
+    print("X:resume", 37, 64, 11)
+    print("Z:menu",   43, 76, 6)
   end
 end
 `,

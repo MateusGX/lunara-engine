@@ -28,6 +28,7 @@ import { SpriteTab } from "./tabs/sprite-tab";
 import { MapTab } from "./tabs/map-tab";
 import { SoundTab } from "./tabs/sound-tab";
 import { SettingsTab } from "./tabs/settings-tab";
+import { calcStorageBytes } from "@/lib/export-lun";
 import { useRunner } from "@/hooks/use-runner";
 
 const NAV_TABS = [
@@ -322,12 +323,12 @@ export function EditorPage() {
                   <ResourceBar
                     label="STG"
                     pct={(() => {
-                      const used = JSON.stringify(activeCartridge).length;
+                      const used = calcStorageBytes(activeCartridge);
                       const limit = activeCartridge.hardware.maxStorageBytes ?? 512 * 1024;
                       return Math.min(100, (used / limit) * 100);
                     })()}
                     fmt={(() => {
-                      const used = JSON.stringify(activeCartridge).length;
+                      const used = calcStorageBytes(activeCartridge);
                       return used >= 1024 * 1024
                         ? `${(used / (1024 * 1024)).toFixed(1)}M`
                         : used >= 1024

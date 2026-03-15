@@ -1,4 +1,5 @@
 import type { Cartridge } from "@/types/cartridge";
+import { calcStorageBytes } from "@/lib/export-lun";
 import { CanvasRenderer } from "./canvas-renderer";
 import { InputManager } from "./input-manager";
 import { AudioEngine } from "./audio-engine";
@@ -20,13 +21,15 @@ export class CartridgeRunner {
   private startTime = 0;
   private lastTime = 0;
   onStats: (cpu: number, mem: number) => void;
-  private frameCpuMs = 0;
+  private frameInstructions = 0;
   private callbacks: RunnerCallbacks;
   private _running = false;
   private cpuOverCount = 0;
-  private maxCpuHz = 8_000_000;
+  private maxFps = 60;
+  private maxIps = 8_000_000;
   private maxMemBytes = Infinity;
-  private memEst = 0;
+  private staticMemBytes = 0; // asset data computed at load time
+  private memEst = 0; // staticMemBytes + live Lua heap, updated each frame
 
   constructor(callbacks: RunnerCallbacks) {
     this.callbacks = callbacks;
@@ -44,7 +47,7 @@ export class CartridgeRunner {
       canvas,
       cartridge.hardware,
       cartridge.sprites,
-      cartridge.maps
+      cartridge.maps,
     );
     this.input = new InputManager(cartridge.hardware.inputs);
     this.audio = new AudioEngine(cartridge.sounds);
@@ -52,18 +55,30 @@ export class CartridgeRunner {
     this.startTime = performance.now();
     this.lastTime = this.startTime;
 
-    this.maxCpuHz = cartridge.hardware.maxCpuHz ?? 8_000_000;
+    this.maxFps = cartridge.hardware.maxFps ?? 60;
+    this.maxIps = cartridge.hardware.maxIps ?? 8_000_000;
     this.maxMemBytes = cartridge.hardware.maxMemBytes ?? Infinity;
     this.cpuOverCount = 0;
 
-    this.memEst =
-      cartridge.sprites.reduce((s: number, sp) => s + sp.pixels.length, 0) +
-      cartridge.maps.reduce((s: number, m) => s + m.tiles.length * 2, 0) +
-      cartridge.scripts.reduce((s: number, sc) => s + sc.code.length, 0);
+    const hw = cartridge.hardware;
+    // framebuffer: RGBA canvas pixel buffer (RAM-only, not counted as storage)
+    const framebufferBytes = hw.width * hw.height * 4;
+
+    this.staticMemBytes = framebufferBytes + calcStorageBytes(cartridge);
+    this.memEst = this.staticMemBytes;
+
+    const storageUsed = calcStorageBytes(cartridge);
+    const storageLimit = cartridge.hardware.maxStorageBytes ?? Infinity;
+    if (storageUsed > storageLimit) {
+      this.callbacks.onCrash(
+        `[hardware] Storage limit exceeded: ${storageUsed.toLocaleString()} bytes used, limit is ${storageLimit.toLocaleString()} bytes`,
+      );
+      return;
+    }
 
     if (this.memEst > this.maxMemBytes) {
       this.callbacks.onCrash(
-        `[hardware] Memory limit exceeded: ${this.memEst} bytes used, limit is ${this.maxMemBytes} bytes`
+        `[hardware] Memory limit exceeded: ${this.memEst} bytes used, limit is ${this.maxMemBytes} bytes`,
       );
       return;
     }
@@ -74,9 +89,11 @@ export class CartridgeRunner {
       audio: this.audio,
       onPrint: this.callbacks.onPrint,
       onError: this.callbacks.onError,
+      getSprite: (id) => cartridge.sprites.find((s) => s.id === id),
+      screenPixels: cartridge.hardware.width * cartridge.hardware.height,
       getTime: () => (performance.now() - this.startTime) / 1000,
       getStats: () => ({
-        cpu: this.frameCpuMs,
+        cpu: this.frameInstructions,
         mem: this.memEst,
       }),
     });
@@ -102,9 +119,18 @@ export class CartridgeRunner {
   private loop() {
     this.rafHandle = requestAnimationFrame(async (now) => {
       if (!this._running) return;
-      const dt = Math.min((now - this.lastTime) / 1000, 0.1); // cap at 100ms
+
+      // FPS limiter: skip tick if not enough time has elapsed
+      const frameDuration = 1000 / this.maxFps;
+      const elapsed = now - this.lastTime;
+      if (elapsed < frameDuration) {
+        this.loop();
+        return;
+      }
+
+      const dt = Math.min(elapsed / 1000, 0.1); // cap at 100ms
       this.lastTime = now;
-      const frameStart = performance.now();
+      this.runtime?.resetFrame();
       try {
         await this.runtime?.callUpdate(dt);
         await this.runtime?.callDraw();
@@ -115,27 +141,45 @@ export class CartridgeRunner {
         this.stop();
         return;
       }
-      this.frameCpuMs = performance.now() - frameStart;
-      // Budget: 8 MHz reference = full frame time (16.67 ms at 60 fps)
-      const REF_HZ = 8_000_000;
-      const frameBudgetMs = (this.maxCpuHz / REF_HZ) * (1000 / 60);
-      const cpuPercent = Math.min(200, (this.frameCpuMs / frameBudgetMs) * 100);
+      this.frameInstructions = this.runtime?.getFrameInstructions() ?? 0;
+
+      const luaHeapBytes = (await this.runtime?.getLuaMemBytes()) ?? 0;
+      const vramBytes = this.runtime?.getFrameVramBytes() ?? 0;
+      this.memEst = this.staticMemBytes + luaHeapBytes + vramBytes;
+
+      if (this.memEst > this.maxMemBytes) {
+        this.callbacks.onCrash(
+          `[hardware] Memory limit exceeded: ${this.memEst.toLocaleString()} bytes used, limit is ${this.maxMemBytes.toLocaleString()} bytes`,
+        );
+        this.stop();
+        return;
+      }
+
+      // Budget: instructions the virtual CPU can execute per frame
+      const budgetPerFrame = this.maxIps / this.maxFps;
+      const cpuPercent = Math.min(
+        200,
+        (this.frameInstructions / budgetPerFrame) * 100,
+      );
       this.onStats(cpuPercent, this.memEst);
 
-      if (this.frameCpuMs > frameBudgetMs) {
+      if (this.frameInstructions > budgetPerFrame) {
         this.cpuOverCount++;
         if (this.cpuOverCount === 1) {
-          const hzLabel = this.maxCpuHz >= 1_000_000
-            ? `${(this.maxCpuHz / 1_000_000).toFixed(1)} MHz`
-            : this.maxCpuHz >= 1_000
-              ? `${(this.maxCpuHz / 1_000).toFixed(1)} KHz`
-              : `${this.maxCpuHz} Hz`;
+          const ipsLabel =
+            this.maxIps >= 1_000_000
+              ? `${(this.maxIps / 1_000_000).toFixed(1)} MIPS`
+              : this.maxIps >= 1_000
+                ? `${(this.maxIps / 1_000).toFixed(1)} KIPS`
+                : `${this.maxIps} IPS`;
           this.callbacks.onError(
-            `[hardware] CPU limit warning: frame took ${this.frameCpuMs.toFixed(1)} ms, budget for ${hzLabel} is ${frameBudgetMs.toFixed(1)} ms`
+            `[hardware] CPU limit warning: ${this.frameInstructions.toLocaleString()} instructions in frame, budget for ${ipsLabel} is ${Math.floor(budgetPerFrame).toLocaleString()} instr/frame`,
           );
         }
         if (this.cpuOverCount >= 3) {
-          this.callbacks.onCrash(`[hardware] CPU limit exceeded for 3 frames — game stopped`);
+          this.callbacks.onCrash(
+            `[hardware] CPU limit exceeded for 3 frames — game stopped`,
+          );
           this.stop();
           return;
         }
