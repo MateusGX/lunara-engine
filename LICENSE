@@ -1,0 +1,42 @@
+Lunara Engine License
+
+Copyright (c) 2026 Mateus Martins (github.com/MateusGX)
+
+GRANT OF USE
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Engine"), to:
+
+1. Use the Engine to create games, applications, and interactive experiences
+   ("Works").
+2. Distribute, sell, and monetize Works created with the Engine, under any
+   terms you choose. You retain full ownership of your Works.
+3. Modify the Engine for personal use or to improve your Works.
+4. Contribute modifications back to the Engine's public source repository.
+
+RESTRICTIONS
+
+The following are expressly prohibited:
+
+1. Selling, licensing, sublicensing, or otherwise commercializing the Engine
+   itself, in whole or in part, with or without modifications.
+2. Offering the Engine (or a substantially similar derived version of it) as
+   a standalone commercial product, SaaS, or hosted service.
+3. Removing or altering this license notice from any copy or distribution of
+   the Engine.
+
+WORKS EXCEPTION
+
+Games and other creative Works produced using the Engine are NOT subject to
+the restrictions above. This license applies only to the Engine itself, not
+to the content or software you create with it.
+
+DISCLAIMER
+
+THE ENGINE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+FROM, OUT OF, OR IN CONNECTION WITH THE ENGINE OR THE USE OR OTHER DEALINGS
+IN THE ENGINE.

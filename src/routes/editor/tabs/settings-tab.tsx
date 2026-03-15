@@ -1,0 +1,883 @@
+import { useState, useRef, useCallback } from "react";
+import { useStore } from "@/store";
+import type { HardwareConfig, InputBinding } from "@/types/cartridge";
+import {
+  PlusIcon,
+  TrashIcon,
+  UploadSimpleIcon,
+  DownloadSimpleIcon,
+  XIcon,
+  CpuIcon,
+  HardDriveIcon,
+  GameControllerIcon,
+  MonitorIcon,
+  PaletteIcon,
+  IdentificationCardIcon,
+  KeyboardIcon,
+  CircuitryIcon,
+} from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+type CpuUnit = "Hz" | "KHz" | "MHz";
+type MemUnit = "B" | "KB" | "MB";
+type StorageUnit = "B" | "KB" | "MB";
+
+function hzToDisplay(hz: number): { value: number; unit: CpuUnit } {
+  if (hz >= 1_000_000) return { value: hz / 1_000_000, unit: "MHz" };
+  if (hz >= 1_000) return { value: hz / 1_000, unit: "KHz" };
+  return { value: hz, unit: "Hz" };
+}
+
+function displayToHz(value: number, unit: CpuUnit): number {
+  if (unit === "MHz") return value * 1_000_000;
+  if (unit === "KHz") return value * 1_000;
+  return value;
+}
+
+function bytesToDisplay(bytes: number): { value: number; unit: MemUnit } {
+  if (bytes >= 1024 * 1024) return { value: bytes / (1024 * 1024), unit: "MB" };
+  if (bytes >= 1024) return { value: bytes / 1024, unit: "KB" };
+  return { value: bytes, unit: "B" };
+}
+
+function displayToBytes(value: number, unit: MemUnit | StorageUnit): number {
+  if (unit === "MB") return value * 1024 * 1024;
+  if (unit === "KB") return value * 1024;
+  return value;
+}
+
+function storageToDisplay(bytes: number): { value: number; unit: StorageUnit } {
+  if (bytes >= 1024 * 1024) return { value: bytes / (1024 * 1024), unit: "MB" };
+  if (bytes >= 1024) return { value: bytes / 1024, unit: "KB" };
+  return { value: bytes, unit: "B" };
+}
+
+function formatBytes(b: number) {
+  if (b >= 1024 * 1024) return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+  if (b >= 1024) return `${(b / 1024).toFixed(1)} KB`;
+  return `${b} B`;
+}
+
+function UsageBar({ used, total, label }: { used: number; total: number; label: string }) {
+  const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
+  const color = pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-500" : "bg-violet-500";
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-20 shrink-0 text-[10px] text-zinc-500">{label}</span>
+      <div className="relative h-1 flex-1 overflow-hidden bg-white/8">
+        <div
+          className={`absolute inset-y-0 left-0 transition-all ${color}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="w-16 shrink-0 text-right font-mono text-[10px] text-zinc-500">
+        {used} / {total}
+      </span>
+    </div>
+  );
+}
+
+function SectionHeader({
+  icon: Icon,
+  title,
+  action,
+}: {
+  icon: React.ElementType;
+  title: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Icon size={13} className="text-zinc-500" weight="bold" />
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+          {title}
+        </span>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+const RESOLUTION_PRESETS = [
+  { label: "128×128", w: 128, h: 128 },
+  { label: "160×120", w: 160, h: 120 },
+  { label: "256×144", w: 256, h: 144 },
+  { label: "320×240", w: 320, h: 240 },
+];
+
+const DEFAULT_INPUTS = [
+  { button: 0, key: "ArrowLeft",  label: "LEFT"   },
+  { button: 1, key: "ArrowRight", label: "RIGHT"  },
+  { button: 2, key: "ArrowUp",    label: "UP"     },
+  { button: 3, key: "ArrowDown",  label: "DOWN"   },
+  { button: 4, key: "z",          label: "A"      },
+  { button: 5, key: "x",          label: "B"      },
+];
+
+interface HardwarePreset {
+  id: string;
+  name: string;
+  desc: string;
+  hw: HardwareConfig;
+}
+
+const HARDWARE_PRESETS: HardwarePreset[] = [
+  {
+    id: "lunara",
+    name: "Lunara",
+    desc: "128×128 · 16 colors",
+    hw: {
+      width: 128, height: 128,
+      maxSprites: 128, maxSounds: 64,
+      maxCpuHz: 8_000_000, maxMemBytes: 2 * 1024 * 1024, maxStorageBytes: 512 * 1024,
+      palette: ["#000000","#1D2B53","#7E2553","#008751","#AB5236","#5F574F","#C2C3C7","#FFF1E8",
+                "#FF004D","#FFA300","#FFEC27","#00E436","#29ADFF","#83769C","#FF77A8","#FFCCAA"],
+      inputs: DEFAULT_INPUTS,
+    },
+  },
+  {
+    id: "gameboy",
+    name: "Game Boy",
+    desc: "160×144 · 4 shades",
+    hw: {
+      width: 160, height: 144,
+      maxSprites: 40, maxSounds: 4,
+      maxCpuHz: 4_194_304, maxMemBytes: 8 * 1024, maxStorageBytes: 32 * 1024,
+      palette: ["#000000","#0f380f","#306230","#8bac0f","#9bbc0f"],
+      inputs: [
+        ...DEFAULT_INPUTS,
+        { button: 6, key: "Enter",     label: "START"  },
+        { button: 7, key: "Backspace", label: "SELECT" },
+      ],
+    },
+  },
+  {
+    id: "nes",
+    name: "NES",
+    desc: "256×240 · 16 colors",
+    hw: {
+      width: 256, height: 240,
+      maxSprites: 64, maxSounds: 5,
+      maxCpuHz: 1_789_773, maxMemBytes: 2 * 1024, maxStorageBytes: 256 * 1024,
+      palette: ["#000000","#7C7C7C","#0000FC","#0000BC","#4428BC","#940084",
+                "#A80020","#A81000","#881400","#503000","#007800","#006800",
+                "#005800","#004058","#000000","#BCBCBC"],
+      inputs: [
+        ...DEFAULT_INPUTS,
+        { button: 6, key: "Enter",     label: "START"  },
+        { button: 7, key: "Backspace", label: "SELECT" },
+      ],
+    },
+  },
+  {
+    id: "cga",
+    name: "CGA",
+    desc: "320×200 · 4 colors",
+    hw: {
+      width: 320, height: 200,
+      maxSprites: 8, maxSounds: 1,
+      maxCpuHz: 4_772_728, maxMemBytes: 64 * 1024, maxStorageBytes: 128 * 1024,
+      palette: ["#000000","#00AAAA","#AA00AA","#AAAAAA"],
+      inputs: [
+        ...DEFAULT_INPUTS.slice(0, 5),
+        { button: 5, key: "x", label: "FIRE" },
+      ],
+    },
+  },
+  {
+    id: "minimal",
+    name: "Minimal",
+    desc: "128×128 · 2 colors",
+    hw: {
+      width: 128, height: 128,
+      maxSprites: 32, maxSounds: 8,
+      maxCpuHz: 1_000_000, maxMemBytes: 512 * 1024, maxStorageBytes: 64 * 1024,
+      palette: ["#000000","#ffffff"],
+      inputs: DEFAULT_INPUTS,
+    },
+  },
+];
+
+export function SettingsTab() {
+  const { activeCartridge, updateActiveCartridge } = useStore();
+
+  const initCpu = activeCartridge
+    ? hzToDisplay(activeCartridge.hardware.maxCpuHz)
+    : { value: 8, unit: "MHz" as CpuUnit };
+  const initMem = activeCartridge
+    ? bytesToDisplay(activeCartridge.hardware.maxMemBytes)
+    : { value: 2, unit: "MB" as MemUnit };
+  const initStorage = activeCartridge
+    ? storageToDisplay(activeCartridge.hardware.maxStorageBytes ?? 512 * 1024)
+    : { value: 512, unit: "KB" as StorageUnit };
+
+  const [cpuUnit, setCpuUnit] = useState<CpuUnit>(initCpu.unit);
+  const [memUnit, setMemUnit] = useState<MemUnit>(initMem.unit);
+  const [storageUnit, setStorageUnit] = useState<StorageUnit>(initStorage.unit);
+  const [dragging, setDragging] = useState(false);
+  const [capturingKey, setCapturingKey] = useState<number | null>(null);
+  const [hwImportError, setHwImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const hwImportRef = useRef<HTMLInputElement>(null);
+
+  if (!activeCartridge) return null;
+  const hw = activeCartridge.hardware;
+
+  function updateMeta(patch: Partial<import("@/types/cartridge").CartridgeMeta>) {
+    updateActiveCartridge({ meta: { ...activeCartridge!.meta, ...patch } });
+  }
+
+  function handleCoverFile(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      updateMeta({ coverArt: e.target?.result as string });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateHw(partial: Partial<HardwareConfig>) {
+    updateActiveCartridge({ hardware: { ...hw, ...partial } });
+  }
+
+  function exportHardware() {
+    const json = JSON.stringify(hw, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${activeCartridge!.meta.name}-hardware.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleHwImport(file: File) {
+    setHwImportError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        if (
+          typeof data.width !== "number" ||
+          typeof data.height !== "number" ||
+          !Array.isArray(data.palette)
+        ) throw new Error("Invalid hardware config");
+        updateActiveCartridge({ hardware: { ...hw, ...data } });
+      } catch {
+        setHwImportError("Invalid hardware config file.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  const activePresetId = HARDWARE_PRESETS.find(
+    (p) => p.hw.width === hw.width && p.hw.height === hw.height && p.hw.palette.length === hw.palette.length,
+  )?.id ?? null;
+
+  function updatePaletteColor(index: number, hex: string) {
+    const palette = [...hw.palette];
+    palette[index] = hex;
+    updateHw({ palette });
+  }
+
+  function addPaletteColor() {
+    updateHw({ palette: [...hw.palette, "#888888"] });
+  }
+
+  function removePaletteColor(index: number) {
+    if (hw.palette.length <= 2) return;
+    updateHw({ palette: hw.palette.filter((_: string, i: number) => i !== index) });
+  }
+
+  function updateInput(index: number, patch: Partial<InputBinding>) {
+    const inputs = hw.inputs.map((inp: InputBinding, i: number) =>
+      i === index ? { ...inp, ...patch } : inp,
+    );
+    updateHw({ inputs });
+  }
+
+  function addInput() {
+    updateHw({
+      inputs: [
+        ...hw.inputs,
+        { button: hw.inputs.length, key: "", label: `BTN${hw.inputs.length}` },
+      ],
+    });
+  }
+
+  function removeInput(index: number) {
+    updateHw({ inputs: hw.inputs.filter((_: InputBinding, i: number) => i !== index) });
+  }
+
+  const startKeyCapture = useCallback(
+    (index: number) => {
+      setCapturingKey(index);
+      const handler = (e: KeyboardEvent) => {
+        e.preventDefault();
+        updateInput(index, { key: e.key });
+        setCapturingKey(null);
+        window.removeEventListener("keydown", handler);
+      };
+      window.addEventListener("keydown", handler);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hw.inputs],
+  );
+
+  const storageUsed = new TextEncoder().encode(JSON.stringify(activeCartridge)).length;
+  const storageLimit = hw.maxStorageBytes ?? 512 * 1024;
+  const storagePct = Math.min(100, Math.round((storageUsed / storageLimit) * 100));
+  const storageOver = storageUsed > storageLimit;
+
+  return (
+    <ScrollArea className="h-full">
+      <div className="mx-auto max-w-2xl space-y-8 p-6">
+
+        {/* ── Project Info ── */}
+        <section className="space-y-4">
+          <SectionHeader icon={IdentificationCardIcon} title="Project Info" />
+          <Separator className="bg-white/8" />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Name</Label>
+              <Input
+                value={activeCartridge.meta.name}
+                onChange={(e) => updateMeta({ name: e.target.value })}
+                placeholder="My Game"
+                className="border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Author</Label>
+              <Input
+                value={activeCartridge.meta.author}
+                onChange={(e) => updateMeta({ author: e.target.value })}
+                placeholder="your name"
+                className="border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+              />
+            </div>
+            <div className="col-span-2 space-y-1.5">
+              <Label className="text-xs text-zinc-400">Description</Label>
+              <textarea
+                value={activeCartridge.meta.description}
+                onChange={(e) => updateMeta({ description: e.target.value })}
+                placeholder="A short description of your game…"
+                rows={2}
+                className="w-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-zinc-600 focus:border-violet-500 focus:outline-none"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Version</Label>
+              <Input
+                value={activeCartridge.meta.version}
+                onChange={(e) => updateMeta({ version: e.target.value })}
+                placeholder="1.0.0"
+                className="border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">ID</Label>
+              <Input
+                value={activeCartridge.meta.id}
+                readOnly
+                className="border-white/5 bg-white/3 font-mono text-xs text-zinc-600 focus-visible:ring-0"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Cover Art ── */}
+        <section className="space-y-4">
+          <SectionHeader icon={UploadSimpleIcon} title="Cover Art" />
+          <Separator className="bg-white/8" />
+
+          <div className="flex gap-4">
+            <div
+              className={`relative flex h-28 w-28 shrink-0 cursor-pointer items-center justify-center overflow-hidden border-2 transition ${
+                dragging
+                  ? "border-violet-500 bg-violet-500/10"
+                  : "border-dashed border-white/15 bg-white/3 hover:border-white/30"
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                const file = e.dataTransfer.files[0];
+                if (file) handleCoverFile(file);
+              }}
+            >
+              {activeCartridge.meta.coverArt ? (
+                <img
+                  src={activeCartridge.meta.coverArt}
+                  alt="Cover art"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-1.5 text-zinc-600">
+                  <UploadSimpleIcon size={20} />
+                  <span className="text-center text-[10px] leading-tight">
+                    Drop or click
+                  </span>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleCoverFile(file);
+                  e.target.value = "";
+                }}
+              />
+            </div>
+
+            <div className="flex flex-col justify-between py-1">
+              <div className="space-y-1">
+                <p className="text-xs text-zinc-300">
+                  {activeCartridge.meta.coverArt ? "Cover art set" : "No cover art"}
+                </p>
+                <p className="text-[10px] text-zinc-600">
+                  PNG, JPG or GIF · shown on the project card
+                </p>
+              </div>
+              {activeCartridge.meta.coverArt && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateMeta({ coverArt: undefined })}
+                  className="w-fit gap-1.5 text-xs text-red-500/60 hover:bg-red-500/10 hover:text-red-400"
+                >
+                  <XIcon size={12} /> Remove
+                </Button>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Hardware Profile ── */}
+        <section className="space-y-4">
+          <SectionHeader
+            icon={CircuitryIcon}
+            title="Hardware Profile"
+            action={
+              <div className="flex items-center gap-1.5">
+                <input
+                  ref={hwImportRef}
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleHwImport(f);
+                    e.target.value = "";
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={() => hwImportRef.current?.click()}
+                  className="gap-1 border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+                >
+                  <UploadSimpleIcon size={11} /> Import
+                </Button>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  onClick={exportHardware}
+                  className="gap-1 border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+                >
+                  <DownloadSimpleIcon size={11} /> Export
+                </Button>
+              </div>
+            }
+          />
+          <Separator className="bg-white/8" />
+
+          <div className="grid grid-cols-5 gap-2">
+            {HARDWARE_PRESETS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => updateActiveCartridge({ hardware: { ...p.hw } })}
+                className={`flex flex-col items-start gap-1.5 border px-3 py-2.5 text-left transition ${
+                  activePresetId === p.id
+                    ? "border-violet-500/60 bg-violet-600/10 text-white"
+                    : "border-white/8 bg-white/3 text-zinc-400 hover:border-white/20 hover:bg-white/6 hover:text-zinc-200"
+                }`}
+              >
+                {/* Palette preview */}
+                <div className="flex h-1.5 w-full overflow-hidden">
+                  {p.hw.palette.slice(1, 9).map((c, i) => (
+                    <div key={i} className="flex-1" style={{ background: c }} />
+                  ))}
+                </div>
+                <span className={`text-xs font-semibold ${activePresetId === p.id ? "text-violet-300" : ""}`}>
+                  {p.name}
+                </span>
+                <span className="text-[10px] leading-tight opacity-60">{p.desc}</span>
+              </button>
+            ))}
+          </div>
+
+          {hwImportError && (
+            <p className="text-[11px] text-red-400">{hwImportError}</p>
+          )}
+
+          <p className="text-[10px] text-zinc-700">
+            Presets replace all hardware settings. Export saves the current config as JSON.
+          </p>
+        </section>
+
+        {/* ── Screen ── */}
+        <section className="space-y-4">
+          <SectionHeader icon={MonitorIcon} title="Screen Resolution" />
+          <Separator className="bg-white/8" />
+
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Width (px)</Label>
+              <Input
+                type="number"
+                min={32}
+                max={512}
+                value={hw.width}
+                onChange={(e) => updateHw({ width: +e.target.value })}
+                className="w-24 border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Height (px)</Label>
+              <Input
+                type="number"
+                min={32}
+                max={512}
+                value={hw.height}
+                onChange={(e) => updateHw({ height: +e.target.value })}
+                className="w-24 border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Presets</Label>
+              <div className="flex gap-1">
+                {RESOLUTION_PRESETS.map((p) => (
+                  <Button
+                    key={p.label}
+                    variant={hw.width === p.w && hw.height === p.h ? "default" : "outline"}
+                    size="xs"
+                    onClick={() => updateHw({ width: p.w, height: p.h })}
+                    className={`font-mono text-[10px] ${
+                      hw.width === p.w && hw.height === p.h
+                        ? "bg-violet-600 hover:bg-violet-500"
+                        : "border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+                    }`}
+                  >
+                    {p.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Counts ── */}
+        <section className="space-y-4">
+          <SectionHeader icon={HardDriveIcon} title="Asset Limits" />
+          <Separator className="bg-white/8" />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Max Sprites</Label>
+              <Input
+                type="number"
+                min={1}
+                max={1024}
+                value={hw.maxSprites}
+                onChange={(e) => updateHw({ maxSprites: +e.target.value })}
+                className="border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Max Sounds</Label>
+              <Input
+                type="number"
+                min={1}
+                max={256}
+                value={hw.maxSounds}
+                onChange={(e) => updateHw({ maxSounds: +e.target.value })}
+                className="border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+              />
+            </div>
+          </div>
+
+          {/* Live usage */}
+          <div className="space-y-2 border border-white/8 bg-white/3 p-3">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+              Current Usage
+            </span>
+            <UsageBar
+              used={activeCartridge.sprites.length}
+              total={hw.maxSprites}
+              label="Sprites"
+            />
+            <UsageBar
+              used={activeCartridge.sounds.length}
+              total={hw.maxSounds}
+              label="Sounds"
+            />
+          </div>
+        </section>
+
+        {/* ── Resource Limits ── */}
+        <section className="space-y-4">
+          <SectionHeader icon={CpuIcon} title="Hardware Limits" />
+          <Separator className="bg-white/8" />
+
+          <div className="grid grid-cols-3 gap-4">
+            {/* CPU */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">CPU Speed</Label>
+              <div className="flex gap-1">
+                <Input
+                  type="number"
+                  min={1}
+                  step={cpuUnit === "MHz" ? 0.5 : cpuUnit === "KHz" ? 100 : 1000}
+                  value={parseFloat(hzToDisplay(hw.maxCpuHz).value.toFixed(3))}
+                  onChange={(e) =>
+                    updateHw({ maxCpuHz: Math.max(1, displayToHz(+e.target.value, cpuUnit)) })
+                  }
+                  className="min-w-0 flex-1 border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+                />
+                <Select value={cpuUnit} onValueChange={(u) => setCpuUnit(u as CpuUnit)}>
+                  <SelectTrigger className="w-16 shrink-0 border-white/10 bg-white/5 text-xs text-zinc-300 focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-[#1a1a2e]">
+                    {["Hz", "KHz", "MHz"].map((u) => (
+                      <SelectItem key={u} value={u} className="text-xs text-zinc-300">{u}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-[10px] text-zinc-700">{hw.maxCpuHz.toLocaleString()} Hz</p>
+            </div>
+
+            {/* RAM */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Max RAM</Label>
+              <div className="flex gap-1">
+                <Input
+                  type="number"
+                  min={1}
+                  value={parseFloat(bytesToDisplay(hw.maxMemBytes).value.toFixed(2))}
+                  onChange={(e) =>
+                    updateHw({ maxMemBytes: Math.max(1, displayToBytes(+e.target.value, memUnit)) })
+                  }
+                  className="min-w-0 flex-1 border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+                />
+                <Select value={memUnit} onValueChange={(u) => setMemUnit(u as MemUnit)}>
+                  <SelectTrigger className="w-16 shrink-0 border-white/10 bg-white/5 text-xs text-zinc-300 focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-[#1a1a2e]">
+                    {["B", "KB", "MB"].map((u) => (
+                      <SelectItem key={u} value={u} className="text-xs text-zinc-300">{u}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-[10px] text-zinc-700">{formatBytes(hw.maxMemBytes)}</p>
+            </div>
+
+            {/* Storage */}
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Max Storage</Label>
+              <div className="flex gap-1">
+                <Input
+                  type="number"
+                  min={1}
+                  value={parseFloat(storageToDisplay(storageLimit).value.toFixed(2))}
+                  onChange={(e) =>
+                    updateHw({
+                      maxStorageBytes: Math.max(1, displayToBytes(+e.target.value, storageUnit)),
+                    })
+                  }
+                  className="min-w-0 flex-1 border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
+                />
+                <Select value={storageUnit} onValueChange={(u) => setStorageUnit(u as StorageUnit)}>
+                  <SelectTrigger className="w-16 shrink-0 border-white/10 bg-white/5 text-xs text-zinc-300 focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-white/10 bg-[#1a1a2e]">
+                    {["B", "KB", "MB"].map((u) => (
+                      <SelectItem key={u} value={u} className="text-xs text-zinc-300">{u}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className={`text-[10px] ${storageOver ? "text-red-400" : "text-zinc-700"}`}>
+                {formatBytes(storageUsed)} used ({storagePct}%){storageOver ? " — over limit!" : ""}
+              </p>
+            </div>
+          </div>
+
+          <p className="text-[10px] text-zinc-700">
+            CPU: simulation stops after 3 consecutive frames over budget.
+            RAM: stops at startup if exceeded.
+            Storage: max serialized cartridge size.
+          </p>
+        </section>
+
+        {/* ── Palette ── */}
+        <section className="space-y-4">
+          <SectionHeader
+            icon={PaletteIcon}
+            title={`Color Palette (${hw.palette.length} colors)`}
+            action={
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={addPaletteColor}
+                className="border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+              >
+                <PlusIcon size={11} className="mr-1" /> Add
+              </Button>
+            }
+          />
+          <Separator className="bg-white/8" />
+
+          <div className="grid grid-cols-8 gap-2">
+            {hw.palette.map((hex: string, i: number) => (
+              <div key={i} className="group flex flex-col items-center gap-1">
+                <div className="relative">
+                  {i === 0 ? (
+                    <div
+                      className="relative h-10 w-10 border-2 border-white/10"
+                      title="Index 0 — transparent (cannot be changed)"
+                    >
+                      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 40 40">
+                        <line x1="0" y1="40" x2="40" y2="0" stroke="rgba(255,80,80,0.6)" strokeWidth="2" />
+                      </svg>
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="color"
+                        value={hex}
+                        onChange={(e) => updatePaletteColor(i, e.target.value)}
+                        className="h-10 w-10 cursor-pointer border-2 border-white/10 bg-transparent p-0.5"
+                        title={`Color ${i}: ${hex}`}
+                      />
+                      <button
+                        onClick={() => removePaletteColor(i)}
+                        className="absolute -right-1.5 -top-1.5 hidden h-4 w-4 items-center justify-center bg-red-600 text-white group-hover:flex"
+                      >
+                        <XIcon size={8} weight="bold" />
+                      </button>
+                    </>
+                  )}
+                </div>
+                <span className="font-mono text-[9px] text-zinc-600">
+                  {i === 0 ? "transp." : hex.slice(1).toUpperCase()}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-zinc-700">
+            Index 0 is always transparent — used as the clear color in sprites and maps.
+          </p>
+        </section>
+
+        {/* ── Controls ── */}
+        <section className="space-y-4">
+          <SectionHeader
+            icon={GameControllerIcon}
+            title="Controls / Inputs"
+            action={
+              <Button
+                variant="outline"
+                size="xs"
+                onClick={addInput}
+                className="border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+              >
+                <PlusIcon size={11} className="mr-1" /> Add
+              </Button>
+            }
+          />
+          <Separator className="bg-white/8" />
+
+          {hw.inputs.length === 0 ? (
+            <p className="text-[11px] text-zinc-600">No inputs defined. Add a button to map keyboard keys.</p>
+          ) : (
+            <div className="space-y-1.5">
+              {/* Header */}
+              <div className="grid grid-cols-[3rem_1fr_1.5fr_2rem] gap-2 px-2">
+                <span className="text-[10px] uppercase tracking-wider text-zinc-700">Btn</span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-700">Label</span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-700">Key</span>
+                <span />
+              </div>
+
+              {hw.inputs.map((inp: InputBinding, i: number) => (
+                <div
+                  key={i}
+                  className="grid grid-cols-[3rem_1fr_1.5fr_2rem] items-center gap-2 border border-white/8 bg-white/3 px-2 py-2"
+                >
+                  <span className="font-mono text-xs text-zinc-600">{inp.button}</span>
+
+                  <Input
+                    value={inp.label}
+                    onChange={(e) => updateInput(i, { label: e.target.value })}
+                    placeholder="Label"
+                    className="h-7 border-white/8 bg-transparent px-2 text-xs text-white focus-visible:border-violet-500 focus-visible:ring-0"
+                  />
+
+                  <button
+                    onClick={() => startKeyCapture(i)}
+                    className={`flex h-7 w-full items-center gap-1.5 border px-2 text-left font-mono text-xs transition ${
+                      capturingKey === i
+                        ? "border-violet-500 bg-violet-500/10 text-violet-300"
+                        : "border-white/8 bg-transparent text-zinc-300 hover:border-white/20"
+                    }`}
+                    title="Click and press a key to bind"
+                  >
+                    <KeyboardIcon size={11} className="shrink-0 text-zinc-600" />
+                    {capturingKey === i ? (
+                      <span className="text-violet-400">press a key…</span>
+                    ) : (
+                      <span className={inp.key ? "text-zinc-300" : "text-zinc-600"}>
+                        {inp.key || "click to bind"}
+                      </span>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => removeInput(i)}
+                    className="flex h-7 w-8 items-center justify-center text-zinc-700 transition hover:text-red-400"
+                  >
+                    <TrashIcon size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </ScrollArea>
+  );
+}
