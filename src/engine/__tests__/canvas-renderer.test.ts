@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { CanvasRenderer } from "../canvas-renderer";
 import type { HardwareConfig, SpriteData, MapData } from "@/types/cartridge";
 
@@ -229,7 +229,6 @@ describe("CanvasRenderer", () => {
 
   describe("palt()", () => {
     it("makes a color non-transparent (false) after setting transparent", () => {
-      const { renderer } = makeRenderer();
       // Default: color 0 is transparent
       // Make a sprite with color 0 pixels
       const sprite: SpriteData = {
