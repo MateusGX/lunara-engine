@@ -115,6 +115,11 @@ export function EditorPage() {
   const [cpu, setCpu] = useState(0);
   const [mem, setMem] = useState(0);
 
+  // Clear console on mount so messages from launcher/player don't bleed in
+  useEffect(() => {
+    clearMessages();
+  }, [clearMessages]);
+
   // Load cartridge from idb
   useEffect(() => {
     if (!id) return;
