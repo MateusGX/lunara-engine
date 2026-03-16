@@ -124,6 +124,15 @@ canvas {
   color: #c678dd !important;
   font-weight: 700 !important;
 }
+.cm-engine-fn,
+.cm-engine-fn span {
+  color: #61afef !important;
+}
+.cm-lifecycle-fn,
+.cm-lifecycle-fn span {
+  color: #e5c07b !important;
+  font-weight: 700 !important;
+}
 .cm-scroller {
   overflow: auto;
 }

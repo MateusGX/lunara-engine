@@ -38,8 +38,13 @@ interface Props {
 
 export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
   const navigate = useNavigate();
-  const { activeCartridge, isRunning, previewVisible, setPreviewVisible } =
-    useStore();
+  const {
+    hasLintErrors,
+    activeCartridge,
+    isRunning,
+    previewVisible,
+    setPreviewVisible,
+  } = useStore();
 
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b border-white/8 px-3">
@@ -127,7 +132,8 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => exportFlat(activeCartridge)}
+                disabled={hasLintErrors}
+                onClick={() => !hasLintErrors && exportFlat(activeCartridge)}
                 className="cursor-pointer gap-2.5 focus:bg-white/8 focus:text-white"
               >
                 <FileLockIcon size={14} className="text-violet-400" />
@@ -136,6 +142,11 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
                   <p className="text-[10px] text-zinc-600">
                     Play-only <span className="font-mono">.lunx</span> — encoded
                   </p>
+                  {hasLintErrors && (
+                    <p className="text-[10px] text-red-400/70">
+                      Fix errors before exporting
+                    </p>
+                  )}
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -151,13 +162,27 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
             <StopIcon size={13} weight="fill" className="mr-1" /> Stop
           </Button>
         ) : (
-          <Button
-            size="sm"
-            onClick={onRun}
-            className="bg-green-700 hover:bg-green-600"
-          >
-            <PlayIcon size={13} weight="fill" className="mr-1" /> Run
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                disabled={hasLintErrors}
+                onClick={() => !hasLintErrors && onRun()}
+                className={
+                  hasLintErrors
+                    ? "cursor-not-allowed border border-red-500/30 bg-transparent text-red-400/60 hover:bg-red-500/5 hover:text-red-400"
+                    : "bg-green-700 hover:bg-green-600"
+                }
+              >
+                <PlayIcon size={13} weight="fill" className="mr-1" /> Run
+              </Button>
+            </TooltipTrigger>
+            {hasLintErrors && (
+              <TooltipContent side="bottom" className=" text-red-400">
+                Fix errors before running
+              </TooltipContent>
+            )}
+          </Tooltip>
         )}
       </div>
     </header>

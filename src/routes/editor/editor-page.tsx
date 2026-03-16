@@ -34,6 +34,7 @@ import { SoundTab } from "./tabs/sound-tab";
 import { SettingsTab } from "./tabs/settings-tab";
 import { calcStorageBytes } from "@/lib/export-lun";
 import { useRunner } from "@/hooks/use-runner";
+import type { Diagnostic } from "@codemirror/lint";
 
 const NAV_TABS = [
   { id: EditorTab.Code, icon: CodeIcon, label: "Code" },

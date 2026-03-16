@@ -17,6 +17,9 @@ export interface EditorSlice {
   previewVisible: boolean;
   consoleOpen: boolean;
 
+  hasLintErrors: boolean;
+  setHasLintErrors: (value: boolean) => void;
+
   setActiveTab: (tab: EditorTab) => void;
   setSelectedSpriteId: (id: number) => void;
   setSelectedMapId: (id: number) => void;
@@ -48,6 +51,7 @@ export const createEditorSlice: StateCreator<EditorSlice> = (set) => ({
   isRunning: false,
   previewVisible: false,
   consoleOpen: false,
+  hasLintErrors: false,
 
   setActiveTab: (tab) => set({ activeTab: tab }),
   setSelectedSpriteId: (id) => set({ selectedSpriteId: id }),
@@ -63,4 +67,5 @@ export const createEditorSlice: StateCreator<EditorSlice> = (set) => ({
   setIsRunning: (running) => set({ isRunning: running }),
   setPreviewVisible: (visible) => set({ previewVisible: visible }),
   setConsoleOpen: (open) => set({ consoleOpen: open }),
+  setHasLintErrors: (val) => set({ hasLintErrors: val }),
 });
