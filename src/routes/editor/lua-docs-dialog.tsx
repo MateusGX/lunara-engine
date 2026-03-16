@@ -36,17 +36,9 @@ const DOCS: Category[] = [
         name: "local",
         signature: "local name = value",
         description:
-          "Declares a local variable scoped to the current block or function. Always prefer local — globals are shared across all scripts and can cause hard-to-find bugs.",
+          "Declares a local variable scoped to the current block or function.",
         example:
           'local x = 64\nlocal y = 64\nlocal speed = 80\nlocal alive = true\nlocal name  = "hero"\n\n-- local inside a block:\nif alive then\n  local msg = "still here"\n  print(msg, 2, 2, 7)\nend\n-- msg doesn\'t exist here anymore',
-      },
-      {
-        name: "global",
-        signature: "name = value",
-        description:
-          "Assigns a global variable visible from every script. Useful for state that must survive across require'd modules, but overuse leads to conflicts. Prefer local whenever possible.",
-        example:
-          "-- globals are shared between scripts:\nscore  = 0\nhi_score = 0\n\nfunction add_score(n)\n  score = score + n\n  if score > hi_score then\n    hi_score = score\n  end\nend",
       },
       {
         name: "multiple assignment",
@@ -288,7 +280,7 @@ const DOCS: Category[] = [
         description:
           "+ add, - subtract, * multiply, / divide (always float), % modulo (remainder), ^ power, unary - negate. Integer division: use flr(a/b).",
         example:
-          "-- physics step:\nvx = vx + ax * dt\npx = px + vx * dt\n\n-- wrap position around screen:\npx = (px + 128) % 128\n\n-- oscillate using power of time:\nlocal scale = 1 + 0.2 * sin(time() ^ 1.5)\n\n-- integer division:\nlocal tile_col = flr(px / 8)\nlocal tile_row = flr(py / 8)",
+          "-- physics step:\nlocal vx = vx + ax * dt\nlocal px = px + vx * dt\n\n-- wrap position around screen:\npx = (px + 128) % 128\n\n-- oscillate using power of time:\nlocal scale = 1 + 0.2 * sin(time() ^ 1.5)\n\n-- integer division:\nlocal tile_col = flr(px / 8)\nlocal tile_row = flr(py / 8)",
       },
       {
         name: "comparison",
@@ -494,7 +486,7 @@ const DOCS: Category[] = [
         description:
           "abs: absolute value. min/max: smaller/larger of two values. mid: middle of three — equivalent to clamp(val, lo, hi) when called as mid(lo, val, hi).",
         example:
-          "-- clamp player inside screen:\npx = mid(0, px, 120)\npy = mid(0, py, 112)\n\n-- approach a target speed smoothly:\nvx = vx + (target_vx - vx) * min(1, 8 * dt)\n\n-- distance check without sqrt:\nlocal dx = abs(ax - bx)\nlocal dy = abs(ay - by)\nif dx < 8 and dy < 8 then\n  on_hit()\nend",
+          "-- clamp player inside screen:\nlocal px = mid(0, px, 120)\nlocal py = mid(0, py, 112)\n\n-- approach a target speed smoothly:\nlocal vx = vx + (target_vx - vx) * min(1, 8 * dt)\n\n-- distance check without sqrt:\nlocal dx = abs(ax - bx)\nlocal dy = abs(ay - by)\nif dx < 8 and dy < 8 then\n  on_hit()\nend",
       },
       {
         name: "sin / cos",

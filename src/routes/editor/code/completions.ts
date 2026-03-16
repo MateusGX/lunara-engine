@@ -1,11 +1,7 @@
 import { extractExports } from "@/lib/preprocess-lua";
 import { LUA_KEYWORDS } from "@/lib/token-counter";
 import type { ScriptData } from "@/types/cartridge";
-import type {
-  Completion,
-  CompletionContext,
-  CompletionInfo,
-} from "@codemirror/autocomplete";
+import type { Completion, CompletionContext } from "@codemirror/autocomplete";
 import {
   LUA_KEYWORD_COMPLETIONS,
   LUA_STD_COMPLETIONS,
