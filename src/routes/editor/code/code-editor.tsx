@@ -1,6 +1,5 @@
 import { StreamLanguage } from "@codemirror/language";
 import CodeMirror, {
-  EditorView,
   oneDark,
   ViewUpdate,
   type BasicSetupOptions,
