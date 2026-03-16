@@ -1,10 +1,29 @@
 // Estimates token count for Lua source code
 // Counts identifiers, keywords, operators, string literals, and numbers
 
-const LUA_KEYWORDS = new Set([
-  "and", "break", "do", "else", "elseif", "end", "false", "for",
-  "function", "goto", "if", "in", "local", "nil", "not", "or",
-  "repeat", "return", "then", "true", "until", "while",
+export const LUA_KEYWORDS = new Set([
+  "and",
+  "break",
+  "do",
+  "else",
+  "elseif",
+  "end",
+  "false",
+  "for",
+  "function",
+  "goto",
+  "if",
+  "in",
+  "local",
+  "nil",
+  "not",
+  "or",
+  "repeat",
+  "return",
+  "then",
+  "true",
+  "until",
+  "while",
 ]);
 
 export function countTokens(code: string): number {
