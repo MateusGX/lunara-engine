@@ -103,6 +103,17 @@ describe("LuaRuntime", () => {
       expect(typeof mocks.store.get("pal")).toBe("function");
       expect(typeof mocks.store.get("palt")).toBe("function");
     });
+
+    it("registers __lunara_count_instr for the debug hook", () => {
+      expect(typeof mocks.store.get("__lunara_count_instr")).toBe("function");
+    });
+
+    it("__lunara_count_instr increments frameInstructions", () => {
+      runtime.resetFrame();
+      (mocks.store.get("__lunara_count_instr") as (n: number) => void)(100);
+      (mocks.store.get("__lunara_count_instr") as (n: number) => void)(100);
+      expect(runtime.getFrameInstructions()).toBe(200);
+    });
   });
 
   describe("VRAM counter", () => {

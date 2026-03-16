@@ -133,6 +133,13 @@ export class LuaRuntime {
     L.set("pal",    (c0: number, c1: number)  => { c(4); r.pal(c0, c1); });
     L.set("palt",   (ct: number, t: boolean)  => { c(4); r.palt(ct, t); });
 
+    // Debug hook — counts raw Lua VM instructions (captures loops, arithmetic, etc.)
+    // Fires every 100 bytecode instructions; each invocation adds 100 to the frame budget.
+    L.set("__lunara_count_instr", (n: number) => { this.frameInstructions += n; });
+    await this.engine.doString(`
+      debug.sethook(function() __lunara_count_instr(100) end, "", 100)
+    `);
+
     // Memory probe — measured each frame via pre-defined global (avoids doString in loop).
     await this.engine.doString(`
       function __lunara_mem_bytes() return math.ceil(collectgarbage("count") * 1024) end

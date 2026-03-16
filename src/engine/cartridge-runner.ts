@@ -26,7 +26,7 @@ export class CartridgeRunner {
   private _running = false;
   private cpuOverCount = 0;
   private maxFps = 60;
-  private maxIps = 8_000_000;
+  private maxIps = 2_000_000;
   private maxMemBytes = Infinity;
   private staticMemBytes = 0; // asset data computed at load time
   private memEst = 0; // staticMemBytes + live Lua heap, updated each frame
@@ -56,7 +56,7 @@ export class CartridgeRunner {
     this.lastTime = this.startTime;
 
     this.maxFps = cartridge.hardware.maxFps ?? 60;
-    this.maxIps = cartridge.hardware.maxIps ?? 8_000_000;
+    this.maxIps = cartridge.hardware.maxIps ?? 2_000_000;
     this.maxMemBytes = cartridge.hardware.maxMemBytes ?? Infinity;
     this.cpuOverCount = 0;
 
