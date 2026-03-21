@@ -18,18 +18,22 @@ export function MapList() {
     if (!activeCartridge) return;
     const newId = activeCartridge.maps.length;
     updateActiveCartridge({
-      maps: [...activeCartridge.maps, { id: newId, name: `Map ${newId + 1}`, tiles: {} }],
+      maps: [
+        ...activeCartridge.maps,
+        { id: newId, name: `Map ${newId + 1}`, tiles: {} },
+      ],
     });
     setSelectedMapId(newId);
   }
 
   function deleteMap(id: number) {
-    if (!activeCartridge || activeCartridge.maps.length <= 1) return;
+    if (!activeCartridge) return;
     const newMaps = activeCartridge.maps
       .filter((m) => m.id !== id)
       .map((m, i) => ({ ...m, id: i }));
     updateActiveCartridge({ maps: newMaps });
-    if (selectedMapId >= newMaps.length) setSelectedMapId(newMaps.length - 1);
+    if (newMaps.length === 0) setSelectedMapId(0);
+    else if (selectedMapId >= newMaps.length) setSelectedMapId(newMaps.length - 1);
     else if (selectedMapId === id) setSelectedMapId(Math.max(0, id - 1));
   }
 
@@ -96,8 +100,11 @@ export function MapList() {
 
             {/* Delete */}
             <button
-              onClick={(e) => { e.stopPropagation(); deleteMap(m.id); }}
-              disabled={maps.length <= 1}
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteMap(m.id);
+              }}
+              disabled={false}
               className="flex h-5 w-5 shrink-0 items-center justify-center text-zinc-600 opacity-0 transition hover:text-red-400 group-hover:opacity-100 disabled:opacity-20"
             >
               <TrashIcon size={10} />

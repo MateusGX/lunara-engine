@@ -11,6 +11,10 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("wasmoon", () => ({
+  LuaLibraries: {
+    Package: "package",
+    Debug: "debug",
+  },
   LuaFactory: class {
     async createEngine() {
       mocks.store.clear();
@@ -21,6 +25,7 @@ vi.mock("wasmoon", () => ({
           set(k: string, v: unknown) { mocks.store.set(k, v); },
           get(k: string) { return mocks.store.get(k); },
           close: mocks.closeFn,
+          loadLibrary: vi.fn(),
         },
         async doString(code: string) {
           mocks.doStringCalls.push(code);
@@ -104,15 +109,46 @@ describe("LuaRuntime", () => {
       expect(typeof mocks.store.get("palt")).toBe("function");
     });
 
-    it("registers __lunara_count_instr for the debug hook", () => {
-      expect(typeof mocks.store.get("__lunara_count_instr")).toBe("function");
+    it("registers __lunara_hook for the debug hook", () => {
+      expect(typeof mocks.store.get("__lunara_hook")).toBe("function");
     });
 
-    it("__lunara_count_instr increments frameInstructions", () => {
+    it("__lunara_hook increments frameInstructions by HOOK_INTERVAL each call", () => {
       runtime.resetFrame();
-      (mocks.store.get("__lunara_count_instr") as (n: number) => void)(100);
-      (mocks.store.get("__lunara_count_instr") as (n: number) => void)(100);
+      (mocks.store.get("__lunara_hook") as () => void)();
+      (mocks.store.get("__lunara_hook") as () => void)();
       expect(runtime.getFrameInstructions()).toBe(200);
+    });
+
+    it("installs debug hook via doString", () => {
+      // doStringCalls is reset after init in beforeEach — re-init to capture
+      const rt2 = new LuaRuntime();
+      return rt2.init(makeOpts()).then(() => {
+        const hook = mocks.doStringCalls.find((c) => c.includes("debug.sethook"));
+        expect(hook).toBeDefined();
+        expect(hook).toMatch(/__lunara_hook/);
+      });
+    });
+
+    it("registers pi as Math.PI", () => {
+      expect(mocks.store.get("pi")).toBeCloseTo(Math.PI);
+    });
+
+    it("registers std globals: tostring, tonumber, type, pairs, ipairs, select, unpack, pcall, error, assert, rawget, rawset, setmetatable, getmetatable, collectgarbage", () => {
+      for (const name of ["tostring", "tonumber", "type", "pairs", "ipairs",
+                          "select", "unpack", "pcall", "error", "assert",
+                          "rawget", "rawset", "setmetatable", "getmetatable",
+                          "collectgarbage"]) {
+        expect(typeof mocks.store.get(name), `${name} should be a function`).toBe("function");
+      }
+    });
+
+    it("registers table namespace with insert, remove, sort, concat", () => {
+      const t = mocks.store.get("table") as Record<string, unknown>;
+      expect(t).toBeDefined();
+      for (const name of ["insert", "remove", "sort", "concat"]) {
+        expect(typeof t[name], `table.${name} should be a function`).toBe("function");
+      }
     });
   });
 
@@ -362,10 +398,12 @@ describe("LuaRuntime", () => {
       expect(result).toBe(0);
     });
 
-    it("spr() does not increment VRAM when sprite is undefined", () => {
+    it("spr() throws when sprite is undefined", () => {
       vi.mocked(opts.getSprite).mockReturnValueOnce(undefined);
       runtime.resetFrame();
-      (mocks.store.get("spr") as (n: number, x: number, y: number) => void)(99, 0, 0);
+      expect(() =>
+        (mocks.store.get("spr") as (n: number, x: number, y: number) => void)(99, 0, 0)
+      ).toThrow("spr(): sprite 99 not found");
       expect(runtime.getFrameVramBytes()).toBe(0);
     });
   });

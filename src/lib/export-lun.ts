@@ -88,6 +88,11 @@ export function importLun(file: File): Promise<Cartridge> {
           data.scripts = [{ id: 0, name: "main", code: data.code }];
           delete data.code;
         }
+        // Backward compat: fill in hardware fields added after initial release
+        if (data.hardware) {
+          data.hardware.spriteSize ??= 8;
+          data.hardware.sfxSteps  ??= 16;
+        }
         resolve(data as Cartridge);
       } catch {
         reject(new Error("Invalid .lun file"));

@@ -543,7 +543,7 @@ export function StepSequencer() {
         {/* Grid */}
         <div className="flex-1 overflow-auto p-4">
           <div className="grid grid-cols-2 gap-3">
-            {[0, 1, 2, 3].map((beat) => (
+            {Array.from({ length: Math.ceil(sound.notes.length / 4) }, (_, beat) => (
               <div key={beat} className="flex flex-col gap-3">
                 <span className="font-mono text-[9px] text-zinc-700">
                   Beat {beat + 1}

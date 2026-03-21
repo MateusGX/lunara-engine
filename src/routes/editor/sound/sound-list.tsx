@@ -25,19 +25,20 @@ export function SoundList() {
     if (!activeCartridge) return;
     const newId = sounds.length;
     if (newId >= hardware.maxSounds) return;
+    const steps = hardware.sfxSteps ?? 16;
     updateActiveCartridge({
       sounds: [
         ...sounds,
         {
           id: newId,
           name: `SFX ${newId}`,
-          notes: Array.from({ length: 16 }, () => ({
+          notes: Array.from({ length: steps }, () => ({
             note: null as null,
             volume: 1,
             waveform: null,
             duration: 1,
           })),
-          steps: 16,
+          steps,
           tempo: 120,
           waveform: "square" as const,
         },
@@ -47,7 +48,7 @@ export function SoundList() {
   }
 
   function deleteSound(id: number) {
-    if (!activeCartridge || sounds.length <= 1) return;
+    if (!activeCartridge) return;
     const newSounds = sounds
       .filter((s) => s.id !== id)
       .map((s, i) => ({ ...s, id: i }));
@@ -121,7 +122,7 @@ export function SoundList() {
 
             <button
               onClick={(e) => { e.stopPropagation(); deleteSound(s.id); }}
-              disabled={sounds.length <= 1}
+              disabled={false}
               className="flex h-5 w-5 shrink-0 items-center justify-center text-zinc-600 opacity-0 transition hover:text-red-400 group-hover:opacity-100 disabled:opacity-20"
             >
               <TrashIcon size={10} />

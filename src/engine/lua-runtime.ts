@@ -1,9 +1,19 @@
-import { LuaFactory } from "wasmoon";
+import { LuaFactory, LuaLibraries } from "wasmoon";
 import type { CanvasRenderer } from "./canvas-renderer";
 import type { InputManager } from "./input-manager";
 import type { AudioEngine } from "./audio-engine";
 import type { ScriptData } from "@/types/cartridge";
 import { preprocessLua } from "@/lib/preprocess-lua";
+import { type Cost } from "./engine-lua-api";
+import {
+  type ApiRegistrationContext,
+  registerDrawingApi,
+  registerInputApi,
+  registerSoundApi,
+  registerMathApi,
+  registerStateApi,
+  registerStdlibApi,
+} from "./lua-api";
 
 export interface LuaRuntimeOptions {
   renderer: CanvasRenderer;
@@ -15,6 +25,7 @@ export interface LuaRuntimeOptions {
   getStats: () => { cpu: number; mem: number };
   getSprite: (id: number) => { width: number; height: number } | undefined;
   screenPixels: number; // width * height — needed for cls() cost
+  spriteSize: number;   // sprite width/height in pixels — needed for map() cost
 }
 
 export class LuaRuntime {
@@ -26,126 +37,58 @@ export class LuaRuntime {
 
   async init(opts: LuaRuntimeOptions): Promise<void> {
     this.factory = new LuaFactory();
-    this.engine = await this.factory.createEngine({ openStandardLibs: true });
+    // enableProxy: true lets JS functions receive Lua tables as mutable proxy
+    // objects, which is required for table.insert / table.remove / table.sort.
+    this.engine = await this.factory.createEngine({
+      openStandardLibs: false,
+      enableProxy: true,
+    });
     const L = this.engine.global;
 
-    const r = opts.renderer;
-    const i = opts.input;
-    const a = opts.audio;
+    const process = (c: Cost) => {
+      this.frameInstructions += c.instructions;
+      if (c.vram) this.frameVramBytes += c.vram;
+    };
 
-    const CHAR_W = 5, CHAR_H = 7;
-    const v = (px: number) => { this.frameVramBytes     += px; };
-    const c = (n:  number) => { this.frameInstructions  += n;  };
+    const ctx: ApiRegistrationContext = {
+      L,
+      process,
+      renderer: opts.renderer,
+      input: opts.input,
+      audio: opts.audio,
+      opts,
+    };
 
-    // Drawing API
-    // vram  (v) = pixels written to the framebuffer
-    // instr (c) = per-call overhead + pixel work (setup + fill loop)
-    L.set("cls", (col = 0) => {
-      v(opts.screenPixels); c(opts.screenPixels + 10);
-      r.cls(col);
-    });
-    L.set("pset", (x: number, y: number, col: number) => {
-      v(1); c(4);
-      r.pset(x, y, col);
-    });
-    L.set("pget", (x: number, y: number) => {
-      c(2);
-      return r.pget(x, y);
-    });
-    L.set("line", (x0: number, y0: number, x1: number, y1: number, col: number) => {
-      const px = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) + 1;
-      v(px); c(px + 8);
-      r.line(x0, y0, x1, y1, col);
-    });
-    L.set("rect", (x: number, y: number, w: number, h: number, col: number) => {
-      const px = 2 * (w + h);
-      v(px); c(px + 8);
-      r.rect(x, y, w, h, col);
-    });
-    L.set("rectfill", (x: number, y: number, w: number, h: number, col: number) => {
-      const px = w * h;
-      v(px); c(px + 8);
-      r.rectfill(x, y, w, h, col);
-    });
-    L.set("circ", (x: number, y: number, rad: number, col: number) => {
-      const px = Math.ceil(2 * Math.PI * rad);
-      v(px); c(px + 10);
-      r.circ(x, y, rad, col);
-    });
-    L.set("circfill", (x: number, y: number, rad: number, col: number) => {
-      const px = Math.ceil(Math.PI * rad * rad);
-      v(px); c(px + 10);
-      r.circfill(x, y, rad, col);
-    });
-    L.set("spr", (n: number, x: number, y: number, sw = 1, sh = 1) => {
-      const s = opts.getSprite(n);
-      if (s) { const px = s.width * s.height * sw * sh; v(px); c(px + 20); }
-      r.spr(n, x, y, sw, sh);
-    });
-    L.set("map", (tx: number, ty: number, sx: number, sy: number, tw: number, th: number, mapId = 0) => {
-      const px = tw * th * 64;
-      v(px); c(px + 30);
-      r.map(tx, ty, sx, sy, tw, th, mapId);
-    });
+    registerDrawingApi(ctx);
+    registerInputApi(ctx);
+    registerSoundApi(ctx);
+    registerMathApi(ctx);
+    registerStateApi(ctx);
+    registerStdlibApi(ctx);
 
-    // Text API
-    L.set("print", (str: unknown, x: number, y: number, col: number) => {
-      const s = String(str);
-      const px = s.length * CHAR_W * CHAR_H;
-      v(px); c(px + s.length * 3 + 8);
-      r.print(s, x, y, col);
+    // ── Package / Debug ───────────────────────────────────────────────────────
+    L.loadLibrary(LuaLibraries.Package);
+    L.loadLibrary(LuaLibraries.Debug);
+
+    // ── Opcode counter ────────────────────────────────────────────────────────
+    // Fires every HOOK_INTERVAL Lua opcodes, accumulating into frameInstructions
+    // so that loops and pure-Lua logic are measured alongside API call costs.
+    const HOOK_INTERVAL = 100;
+    L.set("__lunara_hook", () => {
+      this.frameInstructions += HOOK_INTERVAL;
     });
-    L.set("cursor", (x: number, y: number) => { c(2); r.cursor(x, y); });
+    await this.engine.doString(
+      `debug.sethook(__lunara_hook, "", ${HOOK_INTERVAL})`,
+    );
 
-    // Input API
-    L.set("btn",  (idx: number) => { c(2);  return i.btn(idx); });
-    L.set("btnp", (idx: number) => { c(2);  return i.btnp(idx); });
-
-    // Sound API
-    L.set("sfx",   (n: number) => { c(50); a.sfx(n); });
-    L.set("music", (n: number) => { c(50); a.music(n); });
-
-    // Math API — cheap (2-4), transcendental more expensive (15)
-    L.set("rnd",   (n = 1)                => { c(4);  return Math.random() * n; });
-    L.set("flr",   (n: number)            => { c(2);  return Math.floor(n); });
-    L.set("ceil",  (n: number)            => { c(2);  return Math.ceil(n); });
-    L.set("abs",   (n: number)            => { c(2);  return Math.abs(n); });
-    L.set("min",   (a: number, b: number) => { c(2);  return Math.min(a, b); });
-    L.set("max",   (a: number, b: number) => { c(2);  return Math.max(a, b); });
-    L.set("mid",   (a: number, b: number, cc: number) => {
-      c(4); return [a, b, cc].sort((x, y) => x - y)[1];
-    });
-    L.set("sin",   (a: number)            => { c(15); return Math.sin(a); });
-    L.set("cos",   (a: number)            => { c(15); return Math.cos(a); });
-    L.set("atan2", (y: number, x: number) => { c(15); return Math.atan2(y, x); });
-    L.set("sqrt",  (n: number)            => { c(10); return Math.sqrt(n); });
-
-    // State API
-    L.set("time", () => { c(2); return opts.getTime(); });
-    L.set("stat", (idx: number) => {
-      c(2);
-      const s = opts.getStats();
-      if (idx === 0) return s.cpu;
-      if (idx === 1) return s.mem;
-      return 0;
-    });
-    L.set("camera", (x: number, y: number)   => { c(4); r.camera(x, y); });
-    L.set("pal",    (c0: number, c1: number)  => { c(4); r.pal(c0, c1); });
-    L.set("palt",   (ct: number, t: boolean)  => { c(4); r.palt(ct, t); });
-
-    // Debug hook — counts raw Lua VM instructions (captures loops, arithmetic, etc.)
-    // Fires every 100 bytecode instructions; each invocation adds 100 to the frame budget.
-    L.set("__lunara_count_instr", (n: number) => { this.frameInstructions += n; });
+    // ── Memory probe ──────────────────────────────────────────────────────────
+    // collectgarbage is a stub returning 0, so mem tracking reads 0 bytes.
     await this.engine.doString(`
-      debug.sethook(function() __lunara_count_instr(100) end, "", 100)
+      function __lunara_mem_bytes() return collectgarbage("count") * 1024 end
     `);
 
-    // Memory probe — measured each frame via pre-defined global (avoids doString in loop).
-    await this.engine.doString(`
-      function __lunara_mem_bytes() return math.ceil(collectgarbage("count") * 1024) end
-    `);
-
-    // Override print: draw to canvas when x/y/c args given; log to console otherwise
+    // ── Print override ────────────────────────────────────────────────────────
+    // print(str, x, y, c) → canvas draw; print(str) → console log via onPrint.
     await this.engine.doString(`
       local _canvas_print = print
       print = function(str, x, y, c)
@@ -198,9 +141,16 @@ export class LuaRuntime {
     if (typeof fn === "function") await fn();
   }
 
-  resetFrame() { this.frameVramBytes = 0; this.frameInstructions = 0; }
-  getFrameVramBytes() { return this.frameVramBytes; }
-  getFrameInstructions() { return this.frameInstructions; }
+  resetFrame() {
+    this.frameVramBytes = 0;
+    this.frameInstructions = 0;
+  }
+  getFrameVramBytes() {
+    return this.frameVramBytes;
+  }
+  getFrameInstructions() {
+    return this.frameInstructions;
+  }
 
   /**
    * Returns bytes allocated by user scripts (current Lua heap minus the engine baseline).

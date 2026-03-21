@@ -11,6 +11,8 @@ export interface HardwareConfig {
   inputs: InputBinding[];
   maxSprites: number;
   maxSounds: number;
+  spriteSize: number;  // default sprite width & height in pixels (e.g. 8)
+  sfxSteps: number;    // default step count for new SFX sequences (e.g. 16)
   maxFps: number;        // target frames per second (e.g. 60, 30, 15)
   maxIps: number;        // virtual CPU speed in IPS (e.g. 2_000_000 = 2 MIPS reference)
   maxMemBytes: number;   // bytes — warns/stops if estimated memory exceeds this

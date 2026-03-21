@@ -61,6 +61,7 @@ function Button({
         buttonVariants({ variant, size, className }),
         !disabled ? "cursor-pointer" : "cursor-not-allowed",
       )}
+      disabled={disabled}
       {...props}
     />
   );

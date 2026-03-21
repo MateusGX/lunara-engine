@@ -57,14 +57,15 @@ export function SpriteList() {
     if (!activeCartridge) return;
     const newId = activeCartridge.sprites.length;
     if (newId >= hardware.maxSprites) return;
+    const sz = hardware.spriteSize ?? 8;
     updateActiveCartridge({
-      sprites: [...activeCartridge.sprites, { id: newId, width: 8, height: 8, pixels: new Array(64).fill(0) }],
+      sprites: [...activeCartridge.sprites, { id: newId, width: sz, height: sz, pixels: new Array(sz * sz).fill(0) }],
     });
     setSelectedSpriteId(newId);
   }
 
   function deleteSprite(id: number) {
-    if (!activeCartridge || sprites.length <= 1) return;
+    if (!activeCartridge) return;
     const newSprites = sprites.filter((s) => s.id !== id).map((s, i) => ({ ...s, id: i }));
     updateActiveCartridge({ sprites: newSprites });
     if (selectedSpriteId >= newSprites.length) setSelectedSpriteId(newSprites.length - 1);
@@ -142,7 +143,7 @@ export function SpriteList() {
             {/* Delete */}
             <button
               onClick={(e) => { e.stopPropagation(); deleteSprite(s.id); }}
-              disabled={sprites.length <= 1}
+              disabled={false}
               className="flex h-5 w-5 shrink-0 items-center justify-center text-zinc-600 opacity-0 transition hover:text-red-400 group-hover:opacity-100 disabled:opacity-20"
             >
               <TrashIcon size={10} />

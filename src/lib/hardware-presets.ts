@@ -31,6 +31,7 @@ export const HARDWARE_PRESETS: HardwarePreset[] = [
     hw: {
       width: 160, height: 144,
       maxSprites: 40, maxSounds: 4,
+      spriteSize: 8, sfxSteps: 32,
       maxFps: 60, maxIps: 1_000_000, maxMemBytes: 128 * 1024, maxStorageBytes: 32 * 1024,
       palette: ["#000000","#0f380f","#306230","#8bac0f","#9bbc0f"],
       inputs: [
@@ -47,6 +48,7 @@ export const HARDWARE_PRESETS: HardwarePreset[] = [
     hw: {
       width: 256, height: 240,
       maxSprites: 64, maxSounds: 5,
+      spriteSize: 8, sfxSteps: 32,
       maxFps: 60, maxIps: 1_000_000, maxMemBytes: 256 * 1024, maxStorageBytes: 32 * 1024,
       palette: ["#000000","#7C7C7C","#0000FC","#0000BC","#4428BC","#940084",
                 "#A80020","#A81000","#881400","#503000","#007800","#006800",
@@ -65,6 +67,7 @@ export const HARDWARE_PRESETS: HardwarePreset[] = [
     hw: {
       width: 320, height: 200,
       maxSprites: 8, maxSounds: 1,
+      spriteSize: 8, sfxSteps: 16,
       maxFps: 60, maxIps: 1_000_000, maxMemBytes: 512 * 1024, maxStorageBytes: 64 * 1024,
       palette: ["#000000","#00AAAA","#AA00AA","#AAAAAA"],
       inputs: [
@@ -80,6 +83,7 @@ export const HARDWARE_PRESETS: HardwarePreset[] = [
     hw: {
       width: 128, height: 128,
       maxSprites: 16, maxSounds: 4,
+      spriteSize: 8, sfxSteps: 8,
       maxFps: 15, maxIps: 500_000, maxMemBytes: 128 * 1024, maxStorageBytes: 16 * 1024,
       palette: ["#000000","#ffffff"],
       inputs: DEFAULT_INPUTS,

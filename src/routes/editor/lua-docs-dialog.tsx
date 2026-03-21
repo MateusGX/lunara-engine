@@ -15,6 +15,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CodeEditor } from "./code/code-editor";
+import { useStore } from "@/store";
+import { api } from "@/engine/engine-lua-api";
 
 interface ApiEntry {
   name: string;
@@ -28,7 +30,7 @@ interface Category {
   entries: ApiEntry[];
 }
 
-const DOCS: Category[] = [
+const DOCS: Array<Category> = [
   {
     label: "Variables",
     entries: [
@@ -81,47 +83,31 @@ const DOCS: Category[] = [
         name: "concatenation  ..",
         signature: "a .. b",
         description:
-          "Joins two strings with ... Numbers are automatically coerced to strings. For many joins, prefer string.format which is cleaner and avoids repeated allocation.",
+          "Joins two strings with .. Numbers are automatically coerced to strings. Use tostring() to be explicit about the conversion.",
         example:
           'local score = 42\nlocal lives = 3\n\n-- simple join:\nlocal line1 = "score: " .. score\n\n-- chain:\nlocal line2 = "(" .. lives .. " lives)"\n\n-- display:\nprint(line1 .. "  " .. line2, 2, 2, 7)',
       },
       {
-        name: "string.format",
-        signature: "string.format(fmt, ...)",
+        name: "# length",
+        signature: "#s  -->  number",
         description:
-          "Printf-style formatting. %d = integer, %f = float, %s = string, %02d = zero-padded. Much cleaner than chaining .. for complex messages.",
-        example:
-          '-- pad a timer to always show two digits:\nlocal mins = flr(t / 60)\nlocal secs = flr(t % 60)\nlocal timer = string.format("%02d:%02d", mins, secs)\nprint(timer, 50, 4, 7)\n\n-- float with 1 decimal:\nlocal fps_str = string.format("%.1f fps", 1 / dt)\nprint(fps_str, 2, 120, 5)',
-      },
-      {
-        name: "string.sub",
-        signature: "string.sub(s, i [, j])",
-        description:
-          "Extracts a substring. Indices are 1-based. Negative indices count from the end (-1 = last char). If j is omitted, goes to the end of the string.",
-        example:
-          'local s = "hello world"\n\nstring.sub(s, 1, 5)   -- "hello"\nstring.sub(s, 7)      -- "world"\nstring.sub(s, -5)     -- "world"\nstring.sub(s, 2, -2)  -- "ello worl"\n\n-- truncate a name to 8 chars for a leaderboard:\nlocal display = string.sub(player_name, 1, 8)',
-      },
-      {
-        name: "string.len / #",
-        signature: "#s  or  string.len(s)",
-        description:
-          "Returns the byte-length of a string. The # operator is shorthand and preferred. Useful to centre text or cap user input.",
+          "Returns the byte-length of a string. Built into the Lua VM — no function call needed. Also works on tables to get the array length.",
         example:
           'local name = "Arthur"\nlocal len  = #name          -- 6\n\n-- centre text on a 128px screen (each char ~4px wide):\nlocal function print_centred(s, y, c)\n  local x = (128 - #s * 4) / 2\n  print(s, x, y, c)\nend\n\nprint_centred("GAME OVER", 60, 8)',
-      },
-      {
-        name: "string.rep",
-        signature: "string.rep(s, n [, sep])",
-        description:
-          "Repeats string s exactly n times, with optional separator between repetitions.",
-        example:
-          'string.rep("ab", 3)        -- "ababab"\nstring.rep("*", 5)         -- "*****"\nstring.rep("na", 4, "-")   -- "na-na-na-na"\n\n-- draw a simple HP bar with characters:\nlocal function hp_bar(hp, max)\n  return string.rep("|", hp)\n       .. string.rep(".", max - hp)\nend\nprint(hp_bar(3, 6), 2, 4, 8)  -- "|||..."',
       },
     ],
   },
   {
     label: "Tables",
     entries: [
+      {
+        name: "# length",
+        signature: "#t  -->  number",
+        description:
+          "Returns the length of the array part of a table — the highest integer index n such that t[n] is not nil. Built into the Lua VM, no function call needed. Does not count string keys. Unreliable if the array has gaps (nil holes).",
+        example:
+          "local items = { \"sword\", \"bow\", \"potion\" }\nprint(#items)  -- 3\n\n-- safe loop using length:\nfor i = 1, #items do\n  print(items[i], 2, 2 + (i-1)*8, 7)\nend\n\n-- CAUTION: gaps make # unpredictable\nlocal t = { 1, 2, nil, 4 }\nprint(#t)  -- could be 2 or 4, undefined behaviour",
+      },
       {
         name: "array",
         signature: "local t = { v1, v2, v3 }",
@@ -161,6 +147,91 @@ const DOCS: Category[] = [
           "Using values as keys gives O(1) membership testing — much faster than scanning an array. Setting the key to nil removes it from the set.",
         example:
           '-- track which collectibles have been picked up:\nlocal collected = {}\n\nfunction collect(id)\n  collected[id] = true\nend\n\nfunction is_collected(id)\n  return collected[id] == true\nend\n\n-- usage:\ncollect("coin_3")\nif is_collected("coin_3") then\n  print("already got it", 2, 2, 5)\nend',
+      },
+      {
+        name: "table.sort",
+        signature: "table.sort(t [, comp])",
+        description:
+          "Sorts t in-place. Without comp, uses the default < operator (ascending). comp(a, b) must return true if a should come before b. Unstable sort — equal elements may change order.",
+        example:
+          "-- sort scores descending:\nlocal scores = {42, 7, 99, 18}\ntable.sort(scores, function(a, b) return a > b end)\n-- {99, 42, 18, 7}\n\n-- sort entities by distance to player:\ntable.sort(enemies, function(a, b)\n  local da = abs(a.x-px) + abs(a.y-py)\n  local db = abs(b.x-px) + abs(b.y-py)\n  return da < db\nend)",
+      },
+      {
+        name: "table.concat",
+        signature: "table.concat(t [, sep [, i [, j]]])",
+        description:
+          "Joins the string/number elements of t into one string. sep is inserted between elements (default: \"\"). i and j restrict the range (default: 1 to #t).",
+        example:
+          'local parts = {"score", "level", "time"}\ntable.concat(parts, " | ")\n-- "score | level | time"\n\n-- build a CSV line:\nlocal row = {name, score, flr(time())}\nlocal line = table.concat(row, ",")\nprint(line, 2, 2, 7)',
+      },
+    ],
+  },
+  {
+    label: "Utility",
+    entries: [
+      {
+        name: "tostring",
+        signature: "tostring(v)  -->  string",
+        description:
+          "Converts any value to its string representation. Numbers become decimal strings, booleans become \"true\"/\"false\", nil becomes \"nil\". Used internally by print() when no x,y are given.",
+        example:
+          'tostring(42)    -- "42"\ntostring(true)  -- "true"\ntostring(nil)   -- "nil"\n\n-- build a HUD line:\nlocal hud = "hp:" .. tostring(hp) .. " mp:" .. tostring(mp)\nprint(hud, 2, 2, 7)',
+      },
+      {
+        name: "tonumber",
+        signature: "tonumber(v [, base])  -->  number | nil",
+        description:
+          "Converts a string (or number) to a number. Returns nil if conversion fails. base sets the numeric base (2–36) for parsing integer strings.",
+        example:
+          'tonumber("42")      -- 42\ntonumber("3.14")    -- 3.14\ntonumber("ff", 16)  -- 255\ntonumber("hi")      -- nil\n\n-- safe parse from user input:\nlocal v = tonumber(input)\nif v then use(v) else print("bad number", 2, 2, 8) end',
+      },
+      {
+        name: "type",
+        signature: "type(v)  -->  string",
+        description:
+          'Returns the type name of v as a string. Possible values: "nil", "boolean", "number", "string", "table", "function".',
+        example:
+          'type(42)      -- "number"\ntype("hi")    -- "string"\ntype({})      -- "table"\ntype(nil)     -- "nil"\n\n-- defensive check before operating on a value:\nlocal function safe_add(a, b)\n  assert(type(a) == "number" and type(b) == "number")\n  return a + b\nend',
+      },
+      {
+        name: "pcall",
+        signature: "pcall(f, ...)  -->  ok, result",
+        description:
+          "Calls f in protected mode. Returns true plus any return values on success, or false plus an error message on failure. Use to catch runtime errors without crashing the game.",
+        example:
+          'local ok, err = pcall(function()\n  error("oops")\nend)\nif not ok then\n  print(err, 2, 2, 8)\nend\n\n-- safe module load:\nlocal ok, mod = pcall(require, "optional_lib")\nif ok then mod.setup() end',
+      },
+      {
+        name: "error",
+        signature: "error(msg [, level])",
+        description:
+          "Raises a runtime error with msg. level=1 (default) adds the call-site location to the message; level=0 adds no location. Caught by pcall.",
+        example:
+          'local function div(a, b)\n  if b == 0 then\n    error("division by zero")\n  end\n  return a / b\nend\n\nlocal ok, result = pcall(div, 10, 0)\nif not ok then print(result, 2, 2, 8) end',
+      },
+      {
+        name: "assert",
+        signature: "assert(v [, msg])",
+        description:
+          "If v is falsy (false or nil), raises an error with msg (default: \"assertion failed!\"). Otherwise returns all its arguments unchanged. Good for validating preconditions.",
+        example:
+          'local function load_sprite(id)\n  local s = sprites[id]\n  assert(s, "sprite " .. id .. " not found")\n  return s\nend\n\n-- assert also returns its first arg, so you can chain:\nlocal x = assert(tonumber(cfg.x), "cfg.x must be a number")',
+      },
+      {
+        name: "setmetatable",
+        signature: "setmetatable(t, mt)  -->  t",
+        description:
+          "Sets the metatable of table t to mt and returns t. Used to implement OOP, operator overloading, and default values via __index.",
+        example:
+          "local Vec = {}\nVec.__index = Vec\n\nfunction Vec.new(x, y)\n  return setmetatable({ x=x, y=y }, Vec)\nend\n\nfunction Vec:length()\n  return sqrt(self.x^2 + self.y^2)\nend\n\nlocal v = Vec.new(3, 4)\nprint(v:length(), 2, 2, 7)  -- 5",
+      },
+      {
+        name: "unpack",
+        signature: "unpack(t [, i [, j]])  -->  ...",
+        description:
+          "Returns t[i], t[i+1], …, t[j] as individual values. Defaults: i=1, j=#t. Useful for passing a table's elements as function arguments.",
+        example:
+          "local args = {64, 64, 10, 7}\ncirc(unpack(args))  -- circ(64, 64, 10, 7)\n\nlocal a, b, c = unpack({10, 20, 30})\nprint(a, 2, 2, 7)   -- 10",
       },
     ],
   },
@@ -259,7 +330,7 @@ const DOCS: Category[] = [
         description:
           "Iterates ALL keys of a table — both integer array slots and string keys. Order is not defined. Use when you need to inspect every field or when keys are not sequential integers.",
         example:
-          'local upgrades = {\n  speed  = 2,\n  damage = 1,\n  shield = 0,\n}\n\n-- show upgrade menu:\nlocal row = 0\nfor name, level in pairs(upgrades) do\n  local label = name .. ": " .. string.rep("*", level)\n  print(label, 10, 20 + row * 10, 7)\n  row = row + 1\nend',
+          'local upgrades = {\n  speed  = 2,\n  damage = 1,\n  shield = 0,\n}\n\n-- show upgrade menu:\nlocal row = 0\nfor name, level in pairs(upgrades) do\n  local label = name .. ": " .. tostring(level)\n  print(label, 10, 20 + row * 10, 7)\n  row = row + 1\nend',
       },
       {
         name: "break",
@@ -497,6 +568,14 @@ const DOCS: Category[] = [
           "-- orbit an object around a point:\nlocal angle = time() * 1.5\nlocal orbit_r = 30\nlocal ox = 64 + cos(angle) * orbit_r\nlocal oy = 64 + sin(angle) * orbit_r\nspr(5, ox, oy)\n\n-- bobbing idle animation:\nlocal bob_y = py + sin(time() * 4) * 2\nspr(0, px, bob_y)\n\n-- shoot in a direction:\nlocal function shoot(angle)\n  table.insert(bullets, {\n    x=px, y=py,\n    vx=cos(angle)*120,\n    vy=sin(angle)*120\n  })\nend",
       },
       {
+        name: "pi",
+        signature: "pi  -->  3.14159…",
+        description:
+          "Global constant equal to π (3.14159265358979…). Use it with sin/cos for angles, circular motion, and full-rotation arithmetic.",
+        example:
+          "-- full circle in radians:\nlocal tau = pi * 2\n\n-- point on a circle of radius r:\nlocal angle = time() * tau / 4  -- one full rotation per 4s\nlocal x = 64 + cos(angle) * 30\nlocal y = 64 + sin(angle) * 30\ncircfill(x, y, 3, 8)",
+      },
+      {
         name: "atan2 / sqrt",
         signature: "atan2(y, x)  sqrt(n)",
         description:
@@ -523,7 +602,7 @@ const DOCS: Category[] = [
         description:
           "Returns a runtime statistic. 0 = CPU usage as a percentage (0–100). 1 = estimated memory usage in bytes. Useful for performance profiling overlays during development.",
         example:
-          'function _draw()\n  cls(0)\n  -- ... game drawing ...\n\n  -- debug overlay (remove before release):\n  local cpu = stat(0)\n  local mem = stat(1)\n  local c   = cpu > 80 and 8 or 7\n  print(string.format("cpu %d%%", cpu), 2, 2, c)\n  print(string.format("mem %db",  mem), 2, 10, 5)\nend',
+          'function _draw()\n  cls(0)\n  -- ... game drawing ...\n\n  -- debug overlay (remove before release):\n  local cpu = stat(0)\n  local mem = stat(1)\n  local c   = cpu > 80 and 8 or 7\n  print("cpu " .. tostring(cpu) .. "%", 2, 2, c)\n  print("mem " .. tostring(mem) .. "b", 2, 10, 5)\nend',
       },
       {
         name: "camera",
@@ -575,6 +654,8 @@ const DOCS: Category[] = [
 ];
 
 function EntryCard({ entry }: { entry: ApiEntry }) {
+  const cost = api[entry.name]?.view;
+
   return (
     <div className="rounded border border-white/6 bg-white/3 overflow-hidden">
       <div className="flex gap-0 min-h-0">
@@ -586,7 +667,24 @@ function EntryCard({ entry }: { entry: ApiEntry }) {
           <p className="text-[11px] leading-relaxed text-zinc-400 whitespace-pre-line">
             {entry.description}
           </p>
+          {cost && (
+            <div className="flex gap-1.5 mt-auto pt-1">
+              {cost.vram != null && (
+                <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-[#11111b] border border-white/6 text-[9px]">
+                  <span className="text-zinc-600">VRAM</span>
+                  <span className="text-cyan-300">{cost.vram}</span>
+                </span>
+              )}
+              {cost.instructions != null && (
+                <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-[#11111b] border border-white/6 text-[9px]">
+                  <span className="text-zinc-600">OPS</span>
+                  <span className="text-green-300">{cost.instructions}</span>
+                </span>
+              )}
+            </div>
+          )}
         </div>
+
         {/* Right: syntax-highlighted code example */}
         <div className="flex-1 overflow-x-auto bg-[#282c34]">
           <CodeEditor value={entry.example} basicSetup={false} readOnly />

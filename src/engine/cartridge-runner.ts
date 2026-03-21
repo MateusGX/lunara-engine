@@ -28,8 +28,8 @@ export class CartridgeRunner {
   private maxFps = 60;
   private maxIps = 2_000_000;
   private maxMemBytes = Infinity;
-  private staticMemBytes = 0; // asset data computed at load time
-  private memEst = 0; // staticMemBytes + live Lua heap, updated each frame
+  private staticMemBytes = 0;
+  private memEst = 0;
 
   constructor(callbacks: RunnerCallbacks) {
     this.callbacks = callbacks;
@@ -42,55 +42,24 @@ export class CartridgeRunner {
 
   async start(cartridge: Cartridge, canvas: HTMLCanvasElement): Promise<void> {
     this.stop();
+    this.createSubsystems(cartridge, canvas);
 
-    this.renderer = new CanvasRenderer(
-      canvas,
-      cartridge.hardware,
-      cartridge.sprites,
-      cartridge.maps,
-    );
-    this.input = new InputManager(cartridge.hardware.inputs);
-    this.audio = new AudioEngine(cartridge.sounds);
-    this.runtime = new LuaRuntime();
-    this.startTime = performance.now();
-    this.lastTime = this.startTime;
-
-    this.maxFps = cartridge.hardware.maxFps ?? 60;
-    this.maxIps = cartridge.hardware.maxIps ?? 2_000_000;
-    this.maxMemBytes = cartridge.hardware.maxMemBytes ?? Infinity;
-    this.cpuOverCount = 0;
-
-    const hw = cartridge.hardware;
     // framebuffer: RGBA canvas pixel buffer (RAM-only, not counted as storage)
-    const framebufferBytes = hw.width * hw.height * 4;
-
+    const framebufferBytes = cartridge.hardware.width * cartridge.hardware.height * 4;
     this.staticMemBytes = framebufferBytes + calcStorageBytes(cartridge);
     this.memEst = this.staticMemBytes;
 
-    const storageUsed = calcStorageBytes(cartridge);
-    const storageLimit = cartridge.hardware.maxStorageBytes ?? Infinity;
-    if (storageUsed > storageLimit) {
-      this.callbacks.onCrash(
-        `[hardware] Storage limit exceeded: ${storageUsed.toLocaleString()} bytes used, limit is ${storageLimit.toLocaleString()} bytes`,
-      );
-      return;
-    }
+    if (!this.validateHardwareLimits(cartridge)) return;
 
-    if (this.memEst > this.maxMemBytes) {
-      this.callbacks.onCrash(
-        `[hardware] Memory limit exceeded: ${this.memEst} bytes used, limit is ${this.maxMemBytes} bytes`,
-      );
-      return;
-    }
-
-    await this.runtime.init({
-      renderer: this.renderer,
-      input: this.input,
-      audio: this.audio,
+    await this.runtime!.init({
+      renderer: this.renderer!,
+      input: this.input!,
+      audio: this.audio!,
       onPrint: this.callbacks.onPrint,
       onError: this.callbacks.onError,
       getSprite: (id) => cartridge.sprites.find((s) => s.id === id),
       screenPixels: cartridge.hardware.width * cartridge.hardware.height,
+      spriteSize: cartridge.hardware.spriteSize ?? 8,
       getTime: () => (performance.now() - this.startTime) / 1000,
       getStats: () => ({
         cpu: this.frameInstructions,
@@ -116,6 +85,95 @@ export class CartridgeRunner {
     this.loop();
   }
 
+  private createSubsystems(cartridge: Cartridge, canvas: HTMLCanvasElement): void {
+    this.renderer = new CanvasRenderer(
+      canvas,
+      cartridge.hardware,
+      cartridge.sprites,
+      cartridge.maps,
+    );
+    this.input = new InputManager(cartridge.hardware.inputs);
+    this.audio = new AudioEngine(cartridge.sounds);
+    this.runtime = new LuaRuntime();
+    this.startTime = performance.now();
+    this.lastTime = this.startTime;
+
+    this.maxFps = cartridge.hardware.maxFps ?? 60;
+    this.maxIps = cartridge.hardware.maxIps ?? 2_000_000;
+    this.maxMemBytes = cartridge.hardware.maxMemBytes ?? Infinity;
+    this.cpuOverCount = 0;
+  }
+
+  private validateHardwareLimits(cartridge: Cartridge): boolean {
+    const storageBytes = calcStorageBytes(cartridge);
+    const storageLimit = cartridge.hardware.maxStorageBytes ?? Infinity;
+    if (storageBytes > storageLimit) {
+      this.callbacks.onCrash(
+        `[hardware] Storage limit exceeded: ${storageBytes.toLocaleString()} bytes used, limit is ${storageLimit.toLocaleString()} bytes`,
+      );
+      return false;
+    }
+
+    if (this.memEst > this.maxMemBytes) {
+      this.callbacks.onCrash(
+        `[hardware] Memory limit exceeded: ${this.memEst} bytes used, limit is ${this.maxMemBytes} bytes`,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  private async executeTick(dt: number): Promise<void> {
+    this.runtime?.resetFrame();
+    await this.runtime?.callUpdate(dt);
+    await this.runtime?.callDraw();
+    this.renderer?.flush();
+    this.input?.tick();
+  }
+
+  private async checkMemoryBudget(): Promise<boolean> {
+    const luaHeapBytes = (await this.runtime?.getLuaMemBytes()) ?? 0;
+    const vramBytes = this.runtime?.getFrameVramBytes() ?? 0;
+    this.memEst = this.staticMemBytes + luaHeapBytes + vramBytes;
+
+    if (this.memEst > this.maxMemBytes) {
+      this.callbacks.onCrash(
+        `[hardware] Memory limit exceeded: ${this.memEst.toLocaleString()} bytes used, limit is ${this.maxMemBytes.toLocaleString()} bytes`,
+      );
+      this.stop();
+      return false;
+    }
+    return true;
+  }
+
+  private formatIpsLabel(): string {
+    if (this.maxIps >= 1_000_000)
+      return `${(this.maxIps / 1_000_000).toFixed(1)} MIPS`;
+    if (this.maxIps >= 1_000)
+      return `${(this.maxIps / 1_000).toFixed(1)} KIPS`;
+    return `${this.maxIps} IPS`;
+  }
+
+  private checkCpuBudget(budgetPerFrame: number): void {
+    if (this.frameInstructions > budgetPerFrame) {
+      this.cpuOverCount++;
+      if (this.cpuOverCount === 1) {
+        this.callbacks.onError(
+          `[hardware] CPU limit warning: ${this.frameInstructions.toLocaleString()} instructions in frame, budget for ${this.formatIpsLabel()} is ${Math.floor(budgetPerFrame).toLocaleString()} instr/frame`,
+        );
+      }
+      if (this.cpuOverCount >= 3) {
+        this.callbacks.onCrash(
+          `[hardware] CPU limit exceeded for 3 frames — game stopped`,
+        );
+        this.stop();
+      }
+    } else {
+      this.cpuOverCount = 0;
+    }
+  }
+
   private loop() {
     this.rafHandle = requestAnimationFrame(async (now) => {
       if (!this._running) return;
@@ -130,64 +188,26 @@ export class CartridgeRunner {
 
       const dt = Math.min(elapsed / 1000, 0.1); // cap at 100ms
       this.lastTime = now;
-      this.runtime?.resetFrame();
+
       try {
-        await this.runtime?.callUpdate(dt);
-        await this.runtime?.callDraw();
-        this.renderer?.flush();
-        this.input?.tick(); // clear justPressed after _update has read it
+        await this.executeTick(dt);
       } catch (err) {
         this.callbacks.onCrash(String(err));
         this.stop();
         return;
       }
+
       this.frameInstructions = this.runtime?.getFrameInstructions() ?? 0;
 
-      const luaHeapBytes = (await this.runtime?.getLuaMemBytes()) ?? 0;
-      const vramBytes = this.runtime?.getFrameVramBytes() ?? 0;
-      this.memEst = this.staticMemBytes + luaHeapBytes + vramBytes;
+      if (!await this.checkMemoryBudget()) return;
 
-      if (this.memEst > this.maxMemBytes) {
-        this.callbacks.onCrash(
-          `[hardware] Memory limit exceeded: ${this.memEst.toLocaleString()} bytes used, limit is ${this.maxMemBytes.toLocaleString()} bytes`,
-        );
-        this.stop();
-        return;
-      }
-
-      // Budget: instructions the virtual CPU can execute per frame
       const budgetPerFrame = this.maxIps / this.maxFps;
-      const cpuPercent = Math.min(
-        200,
-        (this.frameInstructions / budgetPerFrame) * 100,
-      );
+      const cpuPercent = Math.min(200, (this.frameInstructions / budgetPerFrame) * 100);
       this.onStats(cpuPercent, this.memEst);
 
-      if (this.frameInstructions > budgetPerFrame) {
-        this.cpuOverCount++;
-        if (this.cpuOverCount === 1) {
-          const ipsLabel =
-            this.maxIps >= 1_000_000
-              ? `${(this.maxIps / 1_000_000).toFixed(1)} MIPS`
-              : this.maxIps >= 1_000
-                ? `${(this.maxIps / 1_000).toFixed(1)} KIPS`
-                : `${this.maxIps} IPS`;
-          this.callbacks.onError(
-            `[hardware] CPU limit warning: ${this.frameInstructions.toLocaleString()} instructions in frame, budget for ${ipsLabel} is ${Math.floor(budgetPerFrame).toLocaleString()} instr/frame`,
-          );
-        }
-        if (this.cpuOverCount >= 3) {
-          this.callbacks.onCrash(
-            `[hardware] CPU limit exceeded for 3 frames — game stopped`,
-          );
-          this.stop();
-          return;
-        }
-      } else {
-        this.cpuOverCount = 0;
-      }
+      this.checkCpuBudget(budgetPerFrame);
 
-      this.loop();
+      if (this._running) this.loop();
     });
   }
 

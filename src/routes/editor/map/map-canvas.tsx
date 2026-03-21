@@ -1,8 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useStore } from "@/store";
 
-const TILE_SIZE = 8;
-
 export function MapCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -43,7 +41,8 @@ export function MapCanvas() {
     const palette = activeCartridge.hardware.palette;
     const sprites = activeCartridge.sprites;
     const tiles = map?.tiles ?? {};
-    const cellSize = TILE_SIZE * mapZoom;
+    const tileSize = activeCartridge.hardware.spriteSize ?? 8;
+    const cellSize = tileSize * mapZoom;
 
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = "#0d0d14";
@@ -188,7 +187,8 @@ export function MapCanvas() {
     const rect = canvasRef.current!.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
-    const cellSize = TILE_SIZE * mapZoom;
+    const tileSize = activeCartridge?.hardware.spriteSize ?? 8;
+    const cellSize = tileSize * mapZoom;
     return [
       Math.floor((mx - panRef.current.x) / cellSize),
       Math.floor((my - panRef.current.y) / cellSize),

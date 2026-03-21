@@ -1,7 +1,8 @@
+import { api } from "@/engine/engine-lua-api";
 import type { Completion } from "@codemirror/autocomplete";
 
 export function mkInfo(desc: string, example?: string): Completion["info"] {
-  return () => {
+  return (completion) => {
     const wrap = document.createElement("div");
     wrap.style.cssText = `
       padding:10px 12px;
@@ -31,30 +32,65 @@ export function mkInfo(desc: string, example?: string): Completion["info"] {
     wrap.appendChild(descTitle);
     wrap.appendChild(d);
 
+    const cost = api[completion.label]?.view;
+
+    if (cost && (cost.vram != null || cost.instructions != null)) {
+      const row = document.createElement("div");
+      row.style.cssText = `
+        display:flex;
+        gap:8px;
+        margin-bottom:8px;
+      `;
+
+      const badge = (label: string, value: string, color: string) => {
+        const el = document.createElement("div");
+        el.style.cssText = `
+          display:flex;
+          align-items:center;
+          gap:4px;
+          padding:3px 7px;
+          background:#11111b;
+          border:1px solid rgba(255,255,255,0.06);
+          border-radius:5px;
+          font-size:10px;
+          color:${color};
+        `;
+        el.innerHTML = `<span style="color:#7f849c">${label}</span> ${value}`;
+        return el;
+      };
+
+      if (cost.vram != null)
+        row.appendChild(badge("VRAM", cost.vram, "#89dceb"));
+      if (cost.instructions != null)
+        row.appendChild(badge("OPS", cost.instructions, "#a6e3a1"));
+
+      wrap.appendChild(row);
+    }
+
     if (example) {
       const exampleTitle = document.createElement("div");
       exampleTitle.textContent = "Example";
       exampleTitle.style.cssText = `
-      font-size:10px;
-      text-transform:uppercase;
-      letter-spacing:0.05em;
-      color:#7f849c;
-      margin-bottom:3px;
-    `;
+        font-size:10px;
+        text-transform:uppercase;
+        letter-spacing:0.05em;
+        color:#7f849c;
+        margin-bottom:3px;
+      `;
 
       const pre = document.createElement("pre");
       pre.style.cssText = `
-      margin:0;
-      padding:7px 9px;
-      background:#11111b;
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:6px;
-      color:#f9e2af;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size:11px;
-      white-space:pre-wrap;
-      word-break:break-word;
-    `;
+        margin:0;
+        padding:7px 9px;
+        background:#11111b;
+        border:1px solid rgba(255,255,255,0.06);
+        border-radius:6px;
+        color:#f9e2af;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size:11px;
+        white-space:pre-wrap;
+        word-break:break-word;
+      `;
       pre.textContent = example;
 
       wrap.appendChild(exampleTitle);
@@ -397,95 +433,14 @@ const LUA_STD_COMPLETIONS: Completion[] = [
       "local mt = getmetatable(obj)",
     ),
   },
-  // string.*
+  // # operator
   {
-    label: "string.format",
-    detail: "(fmt, ...)",
-    type: "function",
+    label: "#",
+    detail: "t  or  s",
+    type: "keyword",
     info: mkInfo(
-      "Printf-style string formatting. %d integer, %f float, %s string, %q quoted, %02d zero-padded.",
-      'string.format("%d/%d hp", hp, max_hp)\nstring.format("%05.1f", 3.14)',
-    ),
-  },
-  {
-    label: "string.sub",
-    detail: "(s, i [, j])",
-    type: "function",
-    info: mkInfo(
-      "Extract substring from index i to j (1-based; negatives count from end).",
-      'string.sub("hello", 2, 4)  -- "ell"\nstring.sub("hello", -3)    -- "llo"',
-    ),
-  },
-  {
-    label: "string.rep",
-    detail: "(s, n [, sep])",
-    type: "function",
-    info: mkInfo(
-      "Repeat string s exactly n times, with optional separator.",
-      'string.rep("*", 5)        -- "*****"\nstring.rep("ab", 3, "-")  -- "ab-ab-ab"',
-    ),
-  },
-  {
-    label: "string.len",
-    detail: "(s)",
-    type: "function",
-    info: mkInfo(
-      "Return the byte-length of s. Shorthand: #s.",
-      'string.len("hello")  -- 5\n#"hello"             -- 5',
-    ),
-  },
-  {
-    label: "string.upper",
-    detail: "(s)",
-    type: "function",
-    info: mkInfo(
-      "Return s with all lowercase letters converted to uppercase.",
-      'string.upper("hello")  -- "HELLO"',
-    ),
-  },
-  {
-    label: "string.lower",
-    detail: "(s)",
-    type: "function",
-    info: mkInfo(
-      "Return s with all uppercase letters converted to lowercase.",
-      'string.lower("HELLO")  -- "hello"',
-    ),
-  },
-  {
-    label: "string.find",
-    detail: "(s, pattern [, init [, plain]])",
-    type: "function",
-    info: mkInfo(
-      "Search for pattern in s. Returns start, end indices (or nil). plain=true disables pattern matching.",
-      'string.find("hello world", "world")  -- 7, 11\nstring.find("hello", "x")            -- nil',
-    ),
-  },
-  {
-    label: "string.match",
-    detail: "(s, pattern [, init])",
-    type: "function",
-    info: mkInfo(
-      "Return the first match of pattern in s, or nil. Captures are returned as separate values.",
-      'string.match("2024-03", "(%d+)-(%d+)")  -- "2024", "03"',
-    ),
-  },
-  {
-    label: "string.gsub",
-    detail: "(s, pattern, repl [, n])",
-    type: "function",
-    info: mkInfo(
-      "Replace occurrences of pattern in s with repl. repl can be a string, table, or function. Returns new string + count.",
-      'string.gsub("hello world", "(%w+)", string.upper)\n-- "HELLO WORLD", 2',
-    ),
-  },
-  {
-    label: "string.gmatch",
-    detail: "(s, pattern)",
-    type: "function",
-    info: mkInfo(
-      "Returns an iterator over all matches of pattern in s.",
-      'for word in string.gmatch("one two three", "%w+") do\n  print(word)\nend',
+      "Returns the length of a string (bytes) or the array part of a table. Built into the Lua VM — no function call. Unreliable on tables with nil gaps.",
+      'local n = #items       -- table length\nlocal l = #"hello"     -- 5\n\nfor i = 1, #items do\n  print(items[i], 2, 2 + (i-1)*8, 7)\nend',
     ),
   },
   // table.*
@@ -525,102 +480,12 @@ const LUA_STD_COMPLETIONS: Completion[] = [
       'table.concat({"a","b","c"}, ", ")  -- "a, b, c"',
     ),
   },
-  // math.*
+  // pi constant
   {
-    label: "math.floor",
-    detail: "(x)",
-    type: "function",
-    info: mkInfo("Largest integer ≤ x.", "math.floor(3.7)  -- 3"),
-  },
-  {
-    label: "math.ceil",
-    detail: "(x)",
-    type: "function",
-    info: mkInfo("Smallest integer ≥ x.", "math.ceil(3.2)  -- 4"),
-  },
-  {
-    label: "math.abs",
-    detail: "(x)",
-    type: "function",
-    info: mkInfo("Absolute value of x.", "math.abs(-5)  -- 5"),
-  },
-  {
-    label: "math.max",
-    detail: "(x, ...)",
-    type: "function",
-    info: mkInfo(
-      "Return the maximum among its arguments.",
-      "math.max(1, 5, 3)  -- 5",
-    ),
-  },
-  {
-    label: "math.min",
-    detail: "(x, ...)",
-    type: "function",
-    info: mkInfo(
-      "Return the minimum among its arguments.",
-      "math.min(1, 5, 3)  -- 1",
-    ),
-  },
-  {
-    label: "math.sqrt",
-    detail: "(x)",
-    type: "function",
-    info: mkInfo("Square root of x.", "math.sqrt(16)  -- 4"),
-  },
-  {
-    label: "math.sin",
-    detail: "(x)",
-    type: "function",
-    info: mkInfo("Sine of x (radians).", "math.sin(math.pi / 2)  -- 1"),
-  },
-  {
-    label: "math.cos",
-    detail: "(x)",
-    type: "function",
-    info: mkInfo("Cosine of x (radians).", "math.cos(0)  -- 1"),
-  },
-  {
-    label: "math.atan",
-    detail: "(y [, x])",
-    type: "function",
-    info: mkInfo(
-      "Arctangent of y/x (2-argument form = atan2). Returns angle in radians.",
-      "math.atan(1, 0)  -- π/2",
-    ),
-  },
-  {
-    label: "math.random",
-    detail: "([m [, n]])",
-    type: "function",
-    info: mkInfo(
-      "No args: float in [0,1). One arg m: integer in [1,m]. Two args: integer in [m,n].",
-      "math.random()      -- 0.37...\nmath.random(6)     -- 1..6\nmath.random(3, 9)  -- 3..9",
-    ),
-  },
-  {
-    label: "math.randomseed",
-    detail: "(x)",
-    type: "function",
-    info: mkInfo(
-      "Set the seed for math.random. Same seed → same sequence.",
-      "math.randomseed(42)",
-    ),
-  },
-  {
-    label: "math.pi",
+    label: "pi",
     detail: "",
     type: "constant",
-    info: mkInfo("The value of π (3.14159…).", "local tau = math.pi * 2"),
-  },
-  {
-    label: "math.huge",
-    detail: "",
-    type: "constant",
-    info: mkInfo(
-      "Positive infinity.",
-      "local best = math.huge\nfor _, v in ipairs(t) do\n  best = math.min(best, v)\nend",
-    ),
+    info: mkInfo("The value of π (3.14159…).", "local tau = pi * 2\nlocal x = cos(time()) * 30\nlocal y = sin(time()) * 30"),
   },
 ];
 

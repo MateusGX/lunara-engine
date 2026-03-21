@@ -144,6 +144,7 @@ export function SettingsTab() {
   const [dragging, setDragging] = useState(false);
   const [capturingKey, setCapturingKey] = useState<number | null>(null);
   const [hwImportError, setHwImportError] = useState<string | null>(null);
+  const [hwDowngradeError, setHwDowngradeError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hwImportRef = useRef<HTMLInputElement>(null);
   const [savingName, setSavingName] = useState<string | null>(null);
@@ -169,6 +170,29 @@ export function SettingsTab() {
 
   function updateHw(partial: Partial<HardwareConfig>) {
     updateActiveCartridge({ hardware: { ...hw, ...partial } });
+  }
+
+  function applyPreset(newHw: HardwareConfig) {
+    const sz = newHw.spriteSize ?? 8;
+    const spriteConflict = activeCartridge!.sprites.find(
+      (s) => s.width > sz || s.height > sz,
+    );
+    if (spriteConflict) {
+      setHwDowngradeError(
+        `Sprite #${spriteConflict.id} is ${spriteConflict.width}×${spriteConflict.height} — larger than the preset's sprite size (${sz}px).`,
+      );
+      return;
+    }
+    const steps = newHw.sfxSteps ?? 16;
+    const soundConflict = activeCartridge!.sounds.find((s) => s.steps > steps);
+    if (soundConflict) {
+      setHwDowngradeError(
+        `"${soundConflict.name}" has ${soundConflict.steps} steps — more than the preset's SFX steps (${steps}).`,
+      );
+      return;
+    }
+    setHwDowngradeError(null);
+    updateActiveCartridge({ hardware: { ...newHw } });
   }
 
   function exportHardware() {
@@ -463,7 +487,7 @@ export function SettingsTab() {
             {HARDWARE_PRESETS.map((p) => (
               <button
                 key={p.id}
-                onClick={() => updateActiveCartridge({ hardware: { ...p.hw } })}
+                onClick={() => applyPreset(p.hw)}
                 className={`flex flex-col items-start gap-1.5 border px-3 py-2.5 text-left transition ${
                   activePresetId === p.id
                     ? "border-violet-500/60 bg-violet-600/10 text-white"
@@ -522,7 +546,7 @@ export function SettingsTab() {
                     {/* Apply on click (not on action buttons) */}
                     <button
                       className="absolute inset-0"
-                      onClick={() => updateActiveCartridge({ hardware: { ...p.hw } })}
+                      onClick={() => applyPreset(p.hw)}
                     />
                     <div className="flex h-1.5 w-full overflow-hidden">
                       {p.hw.palette.slice(1, 9).map((c, i) => (
@@ -702,7 +726,78 @@ export function SettingsTab() {
                 className="border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
               />
             </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">Sprite Size</Label>
+              <Select
+                value={String(hw.spriteSize ?? 8)}
+                onValueChange={(v) => {
+                  const newSize = +v;
+                  const conflict = activeCartridge.sprites.find(
+                    (s) => s.width > newSize || s.height > newSize,
+                  );
+                  if (conflict) {
+                    setHwDowngradeError(
+                      `Sprite #${conflict.id} is ${conflict.width}×${conflict.height} — resize or delete it first.`,
+                    );
+                    return;
+                  }
+                  setHwDowngradeError(null);
+                  updateHw({ spriteSize: newSize });
+                }}
+              >
+                <SelectTrigger className="border-white/10 bg-white/5 text-white focus:ring-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[8, 16, 32].map((s) => (
+                    <SelectItem key={s} value={String(s)}>{s}×{s} px</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-400">SFX Steps</Label>
+              <Select
+                value={String(hw.sfxSteps ?? 16)}
+                onValueChange={(v) => {
+                  const newSteps = +v;
+                  const conflict = activeCartridge.sounds.find(
+                    (s) => s.steps > newSteps,
+                  );
+                  if (conflict) {
+                    setHwDowngradeError(
+                      `"${conflict.name}" has ${conflict.steps} steps — reduce it first.`,
+                    );
+                    return;
+                  }
+                  setHwDowngradeError(null);
+                  const resizedSounds = activeCartridge.sounds.map((s) => {
+                    if (s.steps === newSteps) return s;
+                    const notes = Array.from({ length: newSteps }, (_, i) =>
+                      i < s.notes.length
+                        ? s.notes[i]
+                        : { note: null as null, volume: 1, waveform: null, duration: 1 },
+                    );
+                    return { ...s, steps: newSteps, notes };
+                  });
+                  updateActiveCartridge({ hardware: { ...hw, sfxSteps: newSteps }, sounds: resizedSounds });
+                }}
+              >
+                <SelectTrigger className="border-white/10 bg-white/5 text-white focus:ring-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[8, 16, 32, 64].map((s) => (
+                    <SelectItem key={s} value={String(s)}>{s} steps</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
+          {hwDowngradeError && (
+            <p className="text-[11px] text-red-400">{hwDowngradeError}</p>
+          )}
 
           {/* Live usage */}
           <div className="space-y-2 border border-white/8 bg-white/3 p-3">
