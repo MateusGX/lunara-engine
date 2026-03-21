@@ -58,6 +58,7 @@ function makeOpts(): LuaRuntimeOptions {
     onError: vi.fn(),
     getSprite: vi.fn(() => ({ width: 8, height: 8 })),
     screenPixels: SCREEN_PIXELS,
+    spriteSize: 8,
     getTime: () => 0,
     getStats: () => ({ cpu: 0, mem: 0 }),
   };

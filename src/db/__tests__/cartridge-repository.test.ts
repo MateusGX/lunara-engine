@@ -26,6 +26,7 @@ function makeCartridge(id = "abc-123"): Cartridge {
       maxSprites: 64, maxSounds: 32,
       maxFps: 30, maxIps: 2_000_000,
       maxMemBytes: 256 * 1024, maxStorageBytes: 128 * 1024,
+      spriteSize: 8, sfxSteps: 32,
     },
     scripts: [], sprites: [], maps: [], sounds: [],
   };

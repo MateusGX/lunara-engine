@@ -74,6 +74,8 @@ function makeCartridge(hwOverrides: Partial<Cartridge["hardware"]> = {}): Cartri
       // 256 KB — well above the 64×64×4 = 16 KB framebuffer
       maxMemBytes: 256 * 1024,
       maxStorageBytes: 128 * 1024,
+      spriteSize: 8,
+      sfxSteps: 32,
       ...hwOverrides,
     },
     scripts: [{ id: 0, name: "main", code: "" }],

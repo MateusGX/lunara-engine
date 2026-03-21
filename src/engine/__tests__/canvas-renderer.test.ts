@@ -21,6 +21,8 @@ const HW: HardwareConfig = {
   maxIps: 8_000_000,
   maxMemBytes: 2 * 1024 * 1024,
   maxStorageBytes: 512 * 1024,
+  spriteSize: 8,
+  sfxSteps: 32,
 };
 
 function createFakeCanvas(width: number, height: number) {
