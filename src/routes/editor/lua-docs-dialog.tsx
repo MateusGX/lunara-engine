@@ -15,7 +15,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CodeEditor } from "./code/code-editor";
-import { useStore } from "@/store";
 import { api } from "@/engine/engine-lua-api";
 
 interface ApiEntry {
@@ -106,7 +105,7 @@ const DOCS: Array<Category> = [
         description:
           "Returns the length of the array part of a table — the highest integer index n such that t[n] is not nil. Built into the Lua VM, no function call needed. Does not count string keys. Unreliable if the array has gaps (nil holes).",
         example:
-          "local items = { \"sword\", \"bow\", \"potion\" }\nprint(#items)  -- 3\n\n-- safe loop using length:\nfor i = 1, #items do\n  print(items[i], 2, 2 + (i-1)*8, 7)\nend\n\n-- CAUTION: gaps make # unpredictable\nlocal t = { 1, 2, nil, 4 }\nprint(#t)  -- could be 2 or 4, undefined behaviour",
+          'local items = { "sword", "bow", "potion" }\nprint(#items)  -- 3\n\n-- safe loop using length:\nfor i = 1, #items do\n  print(items[i], 2, 2 + (i-1)*8, 7)\nend\n\n-- CAUTION: gaps make # unpredictable\nlocal t = { 1, 2, nil, 4 }\nprint(#t)  -- could be 2 or 4, undefined behaviour',
       },
       {
         name: "array",
@@ -160,7 +159,7 @@ const DOCS: Array<Category> = [
         name: "table.concat",
         signature: "table.concat(t [, sep [, i [, j]]])",
         description:
-          "Joins the string/number elements of t into one string. sep is inserted between elements (default: \"\"). i and j restrict the range (default: 1 to #t).",
+          'Joins the string/number elements of t into one string. sep is inserted between elements (default: ""). i and j restrict the range (default: 1 to #t).',
         example:
           'local parts = {"score", "level", "time"}\ntable.concat(parts, " | ")\n-- "score | level | time"\n\n-- build a CSV line:\nlocal row = {name, score, flr(time())}\nlocal line = table.concat(row, ",")\nprint(line, 2, 2, 7)',
       },
@@ -173,7 +172,7 @@ const DOCS: Array<Category> = [
         name: "tostring",
         signature: "tostring(v)  -->  string",
         description:
-          "Converts any value to its string representation. Numbers become decimal strings, booleans become \"true\"/\"false\", nil becomes \"nil\". Used internally by print() when no x,y are given.",
+          'Converts any value to its string representation. Numbers become decimal strings, booleans become "true"/"false", nil becomes "nil". Used internally by print() when no x,y are given.',
         example:
           'tostring(42)    -- "42"\ntostring(true)  -- "true"\ntostring(nil)   -- "nil"\n\n-- build a HUD line:\nlocal hud = "hp:" .. tostring(hp) .. " mp:" .. tostring(mp)\nprint(hud, 2, 2, 7)',
       },
@@ -213,7 +212,7 @@ const DOCS: Array<Category> = [
         name: "assert",
         signature: "assert(v [, msg])",
         description:
-          "If v is falsy (false or nil), raises an error with msg (default: \"assertion failed!\"). Otherwise returns all its arguments unchanged. Good for validating preconditions.",
+          'If v is falsy (false or nil), raises an error with msg (default: "assertion failed!"). Otherwise returns all its arguments unchanged. Good for validating preconditions.',
         example:
           'local function load_sprite(id)\n  local s = sprites[id]\n  assert(s, "sprite " .. id .. " not found")\n  return s\nend\n\n-- assert also returns its first arg, so you can chain:\nlocal x = assert(tonumber(cfg.x), "cfg.x must be a number")',
       },
