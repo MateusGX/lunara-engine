@@ -285,12 +285,13 @@ local function fmt_time(t)
   return (m<10 and "0" or "")..m..":"..(s<10 and "0" or "")..s
 end
 
-local function check_platforms()
+local function check_platforms(prev_py)
   if vy < 0 then return end
-  for i, plat_y in ipairs(platforms) do
+  for i = 1, #platforms do
+    local plat_y = platforms[i]
     local r = platform_ranges[i]
     if px + 6 > r.x1 and px < r.x2 then
-      if py + 8 >= plat_y and py + 8 <= plat_y + vy * 0.05 + 4 then
+      if prev_py + 8 <= plat_y and py + 8 >= plat_y then
         py = plat_y - 8
         vy = 0
         grounded = true
@@ -339,12 +340,13 @@ function _update(dt)
     grounded = false
   end
 
+  local prev_py = py
   vy = vy + GRAVITY * dt
   px = px + vx * dt
   py = py + vy * dt
 
   grounded = false
-  check_platforms()
+  check_platforms(prev_py)
 
   px = mid(0, px, 120)
 end
@@ -366,7 +368,7 @@ function _draw()
 
   spr(1, px, py)
 
-  local t = elapsed + (time() - start_time)
+  local t = state == "pause" and elapsed or elapsed + (time() - start_time)
   print("X:pause", 2,  4, 5)
   print(fmt_time(t), 92, 4, 6)
 

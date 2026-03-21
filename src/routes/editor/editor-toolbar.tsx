@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ResourceMonitor } from "@/components/resource-monitor";
-import { exportLun, exportFlat } from "@/lib/export-lun";
+import { exportLun, exportFlat } from "@/cartridge/export";
 import { useStore } from "@/store";
 
 interface Props {
@@ -140,7 +140,7 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
                 <div>
                   <p className="text-sm">Export Game</p>
                   <p className="text-[10px] text-zinc-600">
-                    Play-only <span className="font-mono">.lunx</span> — encoded
+                    Play-only <span className="font-mono">.png</span> — cartridge image
                   </p>
                   {hasLintErrors && (
                     <p className="text-[10px] text-red-400/70">

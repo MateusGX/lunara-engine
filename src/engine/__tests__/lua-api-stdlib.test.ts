@@ -4,8 +4,8 @@ vi.mock("wasmoon", () => ({
   LuaMultiReturn: class extends Array {},
 }));
 
-import { registerStdlibApi } from "../register-stdlib";
-import type { ApiRegistrationContext } from "../types";
+import { registerStdlibApi } from "../lua-api/register-stdlib";
+import type { ApiRegistrationContext } from "../lua-api/types";
 
 // ── Test harness ──────────────────────────────────────────────────────────────
 
@@ -55,9 +55,9 @@ describe("tonumber()", () => {
   it("parses a decimal string",               () => expect(tn()("3.14")).toBeCloseTo(3.14));
   it("parses an integer string",              () => expect(tn()("10")).toBe(10));
   it("trims whitespace before parsing",       () => expect(tn()("  5  ")).toBe(5));
-  it("returns null for non-numeric string",   () => expect(tn()("abc")).toBeNull());
+  it("returns undefined for non-numeric string",   () => expect(tn()("abc")).toBeUndefined());
   it("parses hex string with base 16",        () => expect(tn()("ff", 16)).toBe(255));
-  it("returns null for null input",           () => expect(tn()(null)).toBeNull());
+  it("returns undefined for null input",           () => expect(tn()(null)).toBeUndefined());
 });
 
 // ── type ─────────────────────────────────────────────────────────────────────
@@ -79,13 +79,13 @@ describe("pairs()", () => {
   let store: Map<string, unknown>;
   beforeEach(() => { store = makeCtx().store; });
 
-  it("returns [iter, table, null]", () => {
+  it("returns [iter, table, undefined]", () => {
     const pairs = get<(t: Record<string, unknown>) => ArrayLike<unknown>>(store, "pairs");
     const obj = { a: 1 };
     const result = pairs(obj) as ArrayLike<unknown>;
     expect(typeof result[0]).toBe("function");
     expect(result[1]).toBe(obj);
-    expect(result[2]).toBeNull();
+    expect(result[2]).toBeUndefined();
   });
 
   it("iter yields all key-value pairs", () => {
@@ -94,7 +94,7 @@ describe("pairs()", () => {
     const [iter] = pairs(obj) as [() => ArrayLike<unknown> | null];
     const results: Array<[unknown, unknown]> = [];
     let entry = iter();
-    while (entry !== null) {
+    while (entry != null) {
       results.push([entry[0], entry[1]]);
       entry = iter();
     }
@@ -111,10 +111,10 @@ describe("pairs()", () => {
     expect(entry[0]).toBe(1);
   });
 
-  it("iter returns null when exhausted", () => {
+  it("iter returns undefined when exhausted", () => {
     const pairs = get<(t: Record<string, unknown>) => ArrayLike<unknown>>(store, "pairs");
     const [iter] = pairs({}) as [() => unknown];
-    expect(iter()).toBeNull();
+    expect(iter()).toBeUndefined();
   });
 
   it("handles null/undefined table gracefully", () => {
@@ -144,19 +144,19 @@ describe("ipairs()", () => {
     expect(iter()![1]).toBe("a");
     expect(iter()![1]).toBe("b");
     expect(iter()![1]).toBe("c");
-    expect(iter()).toBeNull();
+    expect(iter()).toBeUndefined();
   });
 
-  it("iter returns null when value is null", () => {
+  it("iter returns undefined when value is null", () => {
     const ipairs = get<(t: Record<number, unknown>) => ArrayLike<unknown>>(store, "ipairs");
     const [iter] = ipairs({ 1: null } as Record<number, unknown>) as [() => unknown];
-    expect(iter()).toBeNull();
+    expect(iter()).toBeUndefined();
   });
 
-  it("iter returns null when value is undefined", () => {
+  it("iter returns undefined when value is undefined", () => {
     const ipairs = get<(t: Record<number, unknown>) => ArrayLike<unknown>>(store, "ipairs");
     const [iter] = ipairs({} as Record<number, unknown>) as [() => unknown];
-    expect(iter()).toBeNull();
+    expect(iter()).toBeUndefined();
   });
 });
 
@@ -177,8 +177,8 @@ describe("select()", () => {
     expect(result[1]).toBe("c");
   });
 
-  it("n <= 0 returns null", () => {
-    expect(sel()(0, "a", "b")).toBeNull();
+  it("n <= 0 returns undefined", () => {
+    expect(sel()(0, "a", "b")).toBeUndefined();
   });
 });
 
@@ -296,9 +296,9 @@ describe("rawget()", () => {
     expect(rawget({ a: 99 }, "a")).toBe(99);
   });
 
-  it("returns null for missing keys", () => {
+  it("returns undefined for missing keys", () => {
     const rawget = get<(t: Record<string, unknown>, k: string) => unknown>(store, "rawget");
-    expect(rawget({}, "missing")).toBeNull();
+    expect(rawget({}, "missing")).toBeUndefined();
   });
 });
 
@@ -330,18 +330,18 @@ describe("setmetatable() / getmetatable()", () => {
     expect(getmt(t)).toBe(mt);
   });
 
-  it("removing the metatable (null) makes getmetatable return null", () => {
+  it("removing the metatable makes getmetatable return undefined", () => {
     const setmt = get<(t: object, mt: unknown) => object>(store, "setmetatable");
     const getmt = get<(t: object) => unknown>(store, "getmetatable");
     const t = {};
     setmt(t, { __index: {} });
     setmt(t, null);
-    expect(getmt(t)).toBeNull();
+    expect(getmt(t)).toBeUndefined();
   });
 
-  it("getmetatable returns null for a table with no metatable set", () => {
+  it("getmetatable returns undefined for a table with no metatable set", () => {
     const getmt = get<(t: object) => unknown>(store, "getmetatable");
-    expect(getmt({})).toBeNull();
+    expect(getmt({})).toBeUndefined();
   });
 
   it("setmetatable returns the original table", () => {

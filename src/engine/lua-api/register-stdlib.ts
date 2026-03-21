@@ -1,4 +1,4 @@
-import { api } from "../engine-lua-api";
+import { api } from "../lua-api-costs";
 import type { ApiRegistrationContext } from "./types";
 import { mr, luaLen, luaTypeName } from "./helpers";
 
@@ -22,9 +22,9 @@ export function registerStdlibApi(ctx: ApiRegistrationContext): void {
     if (typeof v === "number") return v;
     if (typeof v === "string") {
       const n = base ? parseInt(v.trim(), base) : Number(v.trim());
-      return isNaN(n) ? null : n;
+      return isNaN(n) ? undefined : n;
     }
-    return null;
+    return undefined;
   });
 
   L.set("type", (v: unknown) => {
@@ -39,13 +39,13 @@ export function registerStdlibApi(ctx: ApiRegistrationContext): void {
     const keys = Object.keys(t ?? {});
     let idx = 0;
     const iter = () => {
-      if (idx >= keys.length) return null;
+      if (idx >= keys.length) return undefined;
       const k = keys[idx++];
       const numK = Number(k);
       const key = Number.isInteger(numK) && String(numK) === k ? numK : k;
       return mr(key, t[k]);
     };
-    return mr(iter, t, null);
+    return mr(iter, t, undefined);
   });
 
   // ipairs — iterates the array portion in order (1-based).
@@ -55,7 +55,7 @@ export function registerStdlibApi(ctx: ApiRegistrationContext): void {
     const iter = () => {
       idx++;
       const v = t[idx];
-      if (v === null || v === undefined) return null;
+      if (v === null || v === undefined) return undefined;
       return mr(idx, v);
     };
     return mr(iter, t, 0);
@@ -68,7 +68,7 @@ export function registerStdlibApi(ctx: ApiRegistrationContext): void {
     if (idx === "#") return args.length - 1;
     const n = Number(idx);
     if (n > 0) return mr(...args.slice(n));
-    return null;
+    return undefined;
   });
 
   L.set("unpack", (t: Record<number, unknown>, from = 1, to?: number) => {
@@ -107,7 +107,7 @@ export function registerStdlibApi(ctx: ApiRegistrationContext): void {
 
   L.set("rawget", (t: Record<string | number, unknown>, k: string | number) => {
     process(api.rawget.cost());
-    return t?.[k] ?? null;
+    return t?.[k] ?? undefined;
   });
 
   L.set(
@@ -131,7 +131,7 @@ export function registerStdlibApi(ctx: ApiRegistrationContext): void {
   });
   L.set("getmetatable", (t: object) => {
     process(api.getmetatable.cost());
-    return metatables.get(t) ?? null;
+    return metatables.get(t) ?? undefined;
   });
 
   // collectgarbage — no GC access without standard library; returns 0 as stub.

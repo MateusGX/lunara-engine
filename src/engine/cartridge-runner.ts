@@ -1,5 +1,5 @@
 import type { Cartridge } from "@/types/cartridge";
-import { calcStorageBytes } from "@/lib/export-lun";
+import { calcStorageBytes } from "@/cartridge/export";
 import { CanvasRenderer } from "./canvas-renderer";
 import { InputManager } from "./input-manager";
 import { AudioEngine } from "./audio-engine";
@@ -45,7 +45,8 @@ export class CartridgeRunner {
     this.createSubsystems(cartridge, canvas);
 
     // framebuffer: RGBA canvas pixel buffer (RAM-only, not counted as storage)
-    const framebufferBytes = cartridge.hardware.width * cartridge.hardware.height * 4;
+    const framebufferBytes =
+      cartridge.hardware.width * cartridge.hardware.height * 4;
     this.staticMemBytes = framebufferBytes + calcStorageBytes(cartridge);
     this.memEst = this.staticMemBytes;
 
@@ -85,7 +86,10 @@ export class CartridgeRunner {
     this.loop();
   }
 
-  private createSubsystems(cartridge: Cartridge, canvas: HTMLCanvasElement): void {
+  private createSubsystems(
+    cartridge: Cartridge,
+    canvas: HTMLCanvasElement,
+  ): void {
     this.renderer = new CanvasRenderer(
       canvas,
       cartridge.hardware,
@@ -150,8 +154,7 @@ export class CartridgeRunner {
   private formatIpsLabel(): string {
     if (this.maxIps >= 1_000_000)
       return `${(this.maxIps / 1_000_000).toFixed(1)} MIPS`;
-    if (this.maxIps >= 1_000)
-      return `${(this.maxIps / 1_000).toFixed(1)} KIPS`;
+    if (this.maxIps >= 1_000) return `${(this.maxIps / 1_000).toFixed(1)} KIPS`;
     return `${this.maxIps} IPS`;
   }
 
@@ -192,6 +195,7 @@ export class CartridgeRunner {
       try {
         await this.executeTick(dt);
       } catch (err) {
+        console.log(err);
         this.callbacks.onCrash(String(err));
         this.stop();
         return;
@@ -199,10 +203,13 @@ export class CartridgeRunner {
 
       this.frameInstructions = this.runtime?.getFrameInstructions() ?? 0;
 
-      if (!await this.checkMemoryBudget()) return;
+      if (!(await this.checkMemoryBudget())) return;
 
       const budgetPerFrame = this.maxIps / this.maxFps;
-      const cpuPercent = Math.min(200, (this.frameInstructions / budgetPerFrame) * 100);
+      const cpuPercent = Math.min(
+        200,
+        (this.frameInstructions / budgetPerFrame) * 100,
+      );
       this.onStats(cpuPercent, this.memEst);
 
       this.checkCpuBudget(budgetPerFrame);

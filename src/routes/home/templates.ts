@@ -2,7 +2,7 @@ import {
   createDefaultCartridge,
   createBlankCartridge,
   createPlatformerTemplate,
-} from "@/lib/cartridge-template";
+} from "@/cartridge/template";
 import type { Cartridge } from "@/types/cartridge";
 
 export interface Template {

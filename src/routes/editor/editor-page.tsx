@@ -32,7 +32,7 @@ import { SpriteTab } from "./tabs/sprite-tab";
 import { MapTab } from "./tabs/map-tab";
 import { SoundTab } from "./tabs/sound-tab";
 import { SettingsTab } from "./tabs/settings-tab";
-import { calcStorageBytes } from "@/lib/export-lun";
+import { calcStorageBytes } from "@/cartridge/export";
 import { useRunner } from "@/hooks/use-runner";
 
 const NAV_TABS = [

@@ -19,8 +19,9 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LunaraLogo } from "@/components/lunara-logo";
 import { CartridgeScreen } from "@/routes/player/cartridge-screen";
-import { HARDWARE_PRESETS } from "@/lib/hardware-presets";
+import { HARDWARE_PRESETS } from "@/cartridge/hardware";
 import { useCustomPresets } from "@/hooks/use-custom-presets";
+import { importFlat } from "@/cartridge/export";
 import type { Cartridge, HardwareConfig } from "@/types/cartridge";
 
 function parseLunx(text: string): Cartridge {
@@ -158,13 +159,19 @@ export function LaunchPage() {
   async function loadFile(file: File) {
     setError(null);
     try {
-      const text = await file.text();
-      setCartridge(parseLunx(text));
+      let loaded: Cartridge;
+      if (file.name.endsWith(".png") || file.type === "image/png") {
+        loaded = await importFlat(file);
+      } else {
+        const text = await file.text();
+        loaded = parseLunx(text);
+      }
+      setCartridge(loaded);
       setPlaying(false);
       setSelectedPreset("cartridge");
     } catch {
       setError(
-        "Could not read cartridge. Make sure it's a valid .lunx or .lun file.",
+        "Could not read cartridge. Make sure it's a valid .png or .lun file.",
       );
     }
   }
@@ -811,7 +818,7 @@ export function LaunchPage() {
                 {dragging ? "Release to load" : "Drop a cartridge here"}
               </p>
               <p className="mt-1.5 text-xs text-zinc-600">
-                Accepts <span className="font-mono text-zinc-400">.lunx</span>{" "}
+                Accepts <span className="font-mono text-zinc-400">.png</span>{" "}
                 and <span className="font-mono text-zinc-400">.lun</span> files
               </p>
             </div>
@@ -831,7 +838,7 @@ export function LaunchPage() {
             <input
               ref={inputRef}
               type="file"
-              accept=".lunx,.lun,.json"
+              accept=".png,.lun,.json"
               className="hidden"
               onChange={onFileChange}
             />

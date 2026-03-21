@@ -47,7 +47,7 @@ vi.mock("../lua-runtime", () => ({
   },
 }));
 
-vi.mock("@/lib/export-lun", () => ({
+vi.mock("@/cartridge/export", () => ({
   calcStorageBytes: vi.fn().mockReturnValue(0),
 }));
 
@@ -155,7 +155,7 @@ describe("CartridgeRunner", () => {
 
   describe("storage limit enforcement", () => {
     it("calls onCrash and aborts when storage is over limit", async () => {
-      const { calcStorageBytes } = await import("@/lib/export-lun");
+      const { calcStorageBytes } = await import("@/cartridge/export");
       // First call = staticMemBytes (must be small), second call = storageUsed (large)
       vi.mocked(calcStorageBytes).mockReturnValueOnce(0).mockReturnValueOnce(999_999);
 

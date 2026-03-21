@@ -4,8 +4,8 @@ import {
   createCustomPreset,
   updateCustomPreset,
   deleteCustomPreset,
-} from "@/lib/custom-presets";
-import type { CustomPreset } from "@/lib/custom-presets";
+} from "@/cartridge/custom-presets";
+import type { CustomPreset } from "@/cartridge/custom-presets";
 import type { HardwareConfig } from "@/types/cartridge";
 
 export function useCustomPresets() {

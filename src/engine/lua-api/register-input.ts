@@ -1,4 +1,4 @@
-import { api } from "../engine-lua-api";
+import { api } from "../lua-api-costs";
 import type { ApiRegistrationContext } from "./types";
 
 export function registerInputApi(ctx: ApiRegistrationContext): void {

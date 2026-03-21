@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useStore } from "@/store";
-import { calcStorageBytes } from "@/lib/export-lun";
-import { HARDWARE_PRESETS } from "@/lib/hardware-presets";
+import { calcStorageBytes } from "@/cartridge/export";
+import { HARDWARE_PRESETS } from "@/cartridge/hardware";
 import { useCustomPresets } from "@/hooks/use-custom-presets";
 import type { HardwareConfig, InputBinding } from "@/types/cartridge";
 import {

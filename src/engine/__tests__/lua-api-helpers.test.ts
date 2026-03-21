@@ -5,7 +5,7 @@ vi.mock("wasmoon", () => ({
   LuaMultiReturn: class extends Array {},
 }));
 
-import { mr, luaLen, luaTypeName } from "../helpers";
+import { mr, luaLen, luaTypeName } from "../lua-api/helpers";
 
 // ── mr() ─────────────────────────────────────────────────────────────────────
 

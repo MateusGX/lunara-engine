@@ -1,5 +1,5 @@
-import { extractExports } from "@/lib/preprocess-lua";
-import { LUA_KEYWORDS } from "@/lib/token-counter";
+import { extractExports } from "@/editor/lua-preprocessor";
+import { LUA_KEYWORDS } from "@/editor/token-counter";
 import type { ScriptData } from "@/types/cartridge";
 import type { Completion, CompletionContext } from "@codemirror/autocomplete";
 import {

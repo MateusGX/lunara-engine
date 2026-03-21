@@ -1,4 +1,4 @@
-import { api } from "@/engine/engine-lua-api";
+import { api } from "@/engine/lua-api-costs";
 import type { Completion } from "@codemirror/autocomplete";
 
 export function mkInfo(desc: string, example?: string): Completion["info"] {

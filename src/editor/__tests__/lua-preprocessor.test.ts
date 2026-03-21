@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { preprocessLua, extractExports } from "../preprocess-lua";
+import { preprocessLua, extractExports } from "../lua-preprocessor";
 
 describe("preprocessLua", () => {
   it("returns code unchanged when no export keyword exists", () => {

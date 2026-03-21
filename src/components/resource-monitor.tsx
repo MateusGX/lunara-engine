@@ -1,5 +1,5 @@
 import { useStore } from "@/store";
-import { countTokens } from "@/lib/token-counter";
+import { countTokens } from "@/editor/token-counter";
 import { useMemo } from "react";
 
 interface Props {

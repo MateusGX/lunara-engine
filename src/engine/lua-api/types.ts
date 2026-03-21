@@ -1,4 +1,4 @@
-import type { Cost } from "../engine-lua-api";
+import type { Cost } from "../lua-api-costs";
 import type { CanvasRenderer } from "../canvas-renderer";
 import type { InputManager } from "../input-manager";
 import type { AudioEngine } from "../audio-engine";

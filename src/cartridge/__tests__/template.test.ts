@@ -4,7 +4,7 @@ import {
   createDefaultCartridge,
   createPlatformerTemplate,
   DEFAULT_HW,
-} from "../cartridge-template";
+} from "../template";
 
 describe("createBlankCartridge", () => {
   it("creates a cartridge with the given name", () => {

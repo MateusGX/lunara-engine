@@ -15,7 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CodeEditor } from "./code/code-editor";
-import { api } from "@/engine/engine-lua-api";
+import { api } from "@/engine/lua-api-costs";
 
 interface ApiEntry {
   name: string;

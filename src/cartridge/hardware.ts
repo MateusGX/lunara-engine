@@ -1,4 +1,4 @@
-import { DEFAULT_HW } from "@/lib/cartridge-template";
+import { DEFAULT_HW } from "@/cartridge/template";
 import type { HardwareConfig } from "@/types/cartridge";
 
 export interface HardwarePreset {

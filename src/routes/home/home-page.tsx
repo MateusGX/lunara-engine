@@ -21,7 +21,7 @@ import {
 import { LunaraLogo } from "@/components/lunara-logo";
 import { useStore } from "@/store";
 import { save as saveCartridge } from "@/db/cartridge-repository";
-import { importLun } from "@/lib/export-lun";
+import { importLun } from "@/cartridge/export";
 import { ProjectCard } from "./project-card";
 import { NewProjectDialog } from "./new-project-dialog";
 import type { Template } from "./templates";
@@ -116,7 +116,7 @@ export function HomePage() {
               onClick={() => navigate("/launch")}
               className="h-8 gap-1.5 text-xs text-zinc-400 hover:bg-violet-500/10 hover:text-violet-300"
             >
-              <GameControllerIcon size={13} /> Play .lunx
+              <GameControllerIcon size={13} /> Play .png
             </Button>
 
             <DropdownMenu>

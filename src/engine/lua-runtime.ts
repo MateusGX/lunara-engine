@@ -3,8 +3,8 @@ import type { CanvasRenderer } from "./canvas-renderer";
 import type { InputManager } from "./input-manager";
 import type { AudioEngine } from "./audio-engine";
 import type { ScriptData } from "@/types/cartridge";
-import { preprocessLua } from "@/lib/preprocess-lua";
-import { type Cost } from "./engine-lua-api";
+import { preprocessLua } from "@/editor/lua-preprocessor";
+import { type Cost } from "./lua-api-costs";
 import {
   type ApiRegistrationContext,
   registerDrawingApi,

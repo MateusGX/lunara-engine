@@ -1,5 +1,5 @@
 // lib/lua-lint.ts
-import { LUA_KEYWORDS } from "@/lib/token-counter";
+import { LUA_KEYWORDS } from "@/editor/token-counter";
 import type { Diagnostic } from "@codemirror/lint";
 import type { EditorView } from "@codemirror/view";
 import { linter } from "@codemirror/lint";
