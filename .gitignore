@@ -25,3 +25,8 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+
+#codecove
+codecov
+codecov.SHA256SUM
+codecov.SHA256SUM.sig
