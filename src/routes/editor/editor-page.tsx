@@ -76,17 +76,17 @@ function ResourceBar({
   fmt: string;
 }) {
   const color =
-    pct > 80 ? "bg-red-500" : pct > 50 ? "bg-yellow-500" : "bg-green-500";
+    pct > 80 ? "bg-red-500" : pct > 50 ? "bg-yellow-500" : "bg-emerald-500";
   return (
     <div className="flex items-center gap-2">
-      <span className="w-7 font-mono text-[9px] text-zinc-600">{label}</span>
-      <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/6">
+      <span className="w-8 font-mono text-[10px] font-medium text-zinc-200">{label}</span>
+      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
         <div
           className={`absolute inset-y-0 left-0 rounded-full transition-all duration-300 ${color}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-8 text-right font-mono text-[9px] text-zinc-500">
+      <span className="w-10 text-right font-mono text-[10px] text-zinc-300">
         {fmt}
       </span>
     </div>
@@ -194,7 +194,7 @@ export function EditorPage() {
 
   if (!activeCartridge) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0d0d14] text-zinc-500">
+      <div className="flex h-screen items-center justify-center bg-surface-base text-zinc-300">
         Loading...
       </div>
     );
@@ -210,7 +210,7 @@ export function EditorPage() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="flex w-14 shrink-0 flex-col border-r border-white/8">
+        <aside className="flex w-[60px] shrink-0 flex-col border-r border-white/15 bg-surface-raised">
           {/* Nav tabs */}
           <nav className="flex flex-1 flex-col py-1">
             {NAV_TABS.map(({ id: tabId, icon: Icon, label }) => {
@@ -220,28 +220,27 @@ export function EditorPage() {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => setActiveTab(tabId)}
-                      className={`relative flex w-full flex-col items-center gap-0.5 py-2.5 transition ${
-                        active
-                          ? "text-violet-300"
-                          : "text-zinc-600 hover:text-zinc-300"
-                      }`}
+                      className={`relative flex w-full flex-col items-center gap-1 py-3 transition cursor-pointer ${active
+                        ? "text-violet-300"
+                        : "text-zinc-400 hover:text-zinc-200"
+                        }`}
                     >
                       {active && (
-                        <span className="absolute inset-y-0 left-0 w-0.5 bg-violet-500" />
+                        <span className="absolute inset-y-0 left-0 w-[3px] rounded-r-full bg-violet-500" />
                       )}
-                      <Icon size={17} weight={active ? "fill" : "regular"} />
-                      <span className="text-[9px] font-medium tracking-wide">
+                      <Icon size={20} weight={active ? "fill" : "regular"} />
+                      <span className="text-[10px] font-medium tracking-wide">
                         {label}
                       </span>
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">{label}</TooltipContent>
+                  <TooltipContent side="right" className="text-xs">{label}</TooltipContent>
                 </Tooltip>
               );
             })}
           </nav>
 
-          <Separator className="bg-white/8" />
+          <Separator className="bg-white/12" />
 
           {/* Settings pinned to bottom */}
           <div className="pb-1">
@@ -253,22 +252,21 @@ export function EditorPage() {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => setActiveTab(tabId)}
-                      className={`relative flex w-full flex-col items-center gap-0.5 py-2.5 transition ${
-                        active
-                          ? "text-violet-300"
-                          : "text-zinc-600 hover:text-zinc-300"
-                      }`}
+                      className={`relative flex w-full flex-col items-center gap-1 py-3 transition cursor-pointer ${active
+                        ? "text-violet-300"
+                        : "text-zinc-400 hover:text-zinc-200"
+                        }`}
                     >
                       {active && (
-                        <span className="absolute inset-y-0 left-0 w-0.5 bg-violet-500" />
+                        <span className="absolute inset-y-0 left-0 w-[3px] rounded-r-full bg-violet-500" />
                       )}
-                      <Icon size={17} weight={active ? "fill" : "regular"} />
-                      <span className="text-[9px] font-medium tracking-wide">
+                      <Icon size={20} weight={active ? "fill" : "regular"} />
+                      <span className="text-[10px] font-medium tracking-wide">
                         {label}
                       </span>
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">{label}</TooltipContent>
+                  <TooltipContent side="right" className="text-xs">{label}</TooltipContent>
                 </Tooltip>
               );
             })()}
@@ -285,8 +283,8 @@ export function EditorPage() {
 
             {/* Preview pane */}
             {previewVisible && (
-              <div className="flex w-72 shrink-0 flex-col items-center gap-3 border-l border-white/8 bg-[#0a0a12] p-4">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+              <div className="flex w-72 shrink-0 flex-col items-center gap-3 border-l border-white/15 bg-surface-base p-4">
+                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
                   Preview
                 </span>
                 <div className="relative w-full" style={{ maxWidth: "256px" }}>
@@ -296,7 +294,7 @@ export function EditorPage() {
                       imageRendering: "pixelated",
                       width: "100%",
                       aspectRatio: `${activeCartridge.hardware.width} / ${activeCartridge.hardware.height}`,
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.12)",
                       borderRadius: "8px",
                       background: "#000",
                       display: "block",
@@ -304,16 +302,16 @@ export function EditorPage() {
                   />
                   {crashMessage && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-black/85 backdrop-blur-sm">
-                      <p className="mb-1 font-mono text-xs font-bold text-red-400">
-                        CRASH
+                      <p className="mb-1 font-mono text-sm font-bold text-red-400">
+                        💥 CRASH
                       </p>
-                      <p className="px-2 text-center font-mono text-[10px] text-red-300/70 break-all">
+                      <p className="px-2 text-center font-mono text-xs text-red-300/80 break-all">
                         {crashMessage}
                       </p>
                     </div>
                   )}
                 </div>
-                <p className="text-center font-mono text-[10px] text-zinc-700">
+                <p className="text-center font-mono text-xs text-zinc-300">
                   {activeCartridge.hardware.width}×
                   {activeCartridge.hardware.height} ·{" "}
                   {activeCartridge.hardware.palette.length} colors
@@ -331,9 +329,9 @@ export function EditorPage() {
                     pct={
                       activeCartridge.hardware.maxMemBytes > 0
                         ? Math.min(
-                            100,
-                            (mem / activeCartridge.hardware.maxMemBytes) * 100,
-                          )
+                          100,
+                          (mem / activeCartridge.hardware.maxMemBytes) * 100,
+                        )
                         : 0
                     }
                     fmt={
@@ -349,7 +347,7 @@ export function EditorPage() {
                       100,
                       (activeCartridge.sprites.length /
                         activeCartridge.hardware.maxSprites) *
-                        100,
+                      100,
                     )}
                     fmt={`${activeCartridge.sprites.length}/${activeCartridge.hardware.maxSprites}`}
                   />
@@ -359,7 +357,7 @@ export function EditorPage() {
                       100,
                       (activeCartridge.sounds.length /
                         activeCartridge.hardware.maxSounds) *
-                        100,
+                      100,
                     )}
                     fmt={`${activeCartridge.sounds.length}/${activeCartridge.hardware.maxSounds}`}
                   />
@@ -386,65 +384,63 @@ export function EditorPage() {
           </div>
 
           {/* Bottom Console Panel */}
-          <div className="shrink-0 border-t border-white/8">
+          <div className="shrink-0 border-t border-white/15">
             {/* Toggle header */}
-            <div className="flex justify-between items-center pr-2">
-              <Button
-                variant="ghost"
-                onClick={() => setConsoleOpen(!consoleOpen)}
-              >
-                <TerminalIcon size={13} />
-                <span className="text-xs font-medium">Console</span>
-                {errorCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="flex h-4 min-w-4 items-center justify-center px-1 font-mono text-[9px]"
-                  >
-                    {Math.min(9, errorCount)}
-                  </Badge>
-                )}
-                <div className="ml-auto flex items-center gap-2">
-                  {consoleOpen ? (
-                    <CaretDownIcon size={12} />
-                  ) : (
-                    <CaretUpIcon size={12} />
-                  )}
-                </div>
-              </Button>
-              {consoleOpen && (
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    clearMessages();
-                  }}
-                  className="h-5 gap-1 px-1.5 text-[10px] text-zinc-600 hover:text-zinc-300"
+            <div
+              className="flex cursor-pointer items-center gap-2 px-3 py-2 hover:bg-white/3"
+              onClick={() => setConsoleOpen(!consoleOpen)}
+            >
+              <TerminalIcon size={14} className="text-zinc-300" />
+              <span className="text-xs font-semibold text-zinc-300">Console</span>
+              {errorCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="flex h-4 min-w-[16px] items-center justify-center px-1 font-mono text-[9px]"
                 >
-                  <TrashIcon size={10} /> Clear
-                </Button>
+                  {Math.min(9, errorCount)}
+                </Badge>
               )}
+              <div className="ml-auto flex items-center gap-2">
+                {consoleOpen && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearMessages();
+                    }}
+                    className="h-5 gap-1 px-1.5 text-[10px] text-zinc-300 hover:text-red-400"
+                  >
+                    <TrashIcon size={10} /> Clear
+                  </Button>
+                )}
+                {consoleOpen ? (
+                  <CaretDownIcon size={13} className="text-zinc-400" />
+                ) : (
+                  <CaretUpIcon size={13} className="text-zinc-400" />
+                )}
+              </div>
             </div>
 
             {/* Console body */}
             {consoleOpen && (
               <ScrollArea
                 style={{ height: CONSOLE_HEIGHT }}
-                className="border-t border-white/6 bg-[#09090f]"
+                className="border-t border-white/8 bg-surface-base"
               >
                 <div className="p-3 font-mono text-xs">
                   {messages.length === 0 ? (
-                    <p className="text-zinc-700">
+                    <p className="text-zinc-300 italic">
                       No output. Run your game to see logs here.
                     </p>
                   ) : (
                     messages.map((m: ConsoleMessage) => (
                       <div
                         key={m.id}
-                        className={`leading-5 ${typeColors[m.type] ?? "text-zinc-300"}`}
+                        className={`leading-5.5 ${typeColors[m.type] ?? "text-zinc-200"}`}
                       >
                         {m.type !== "log" && (
-                          <span className="mr-1 uppercase opacity-50">
+                          <span className="mr-1.5 font-bold uppercase opacity-70">
                             [{m.type}]
                           </span>
                         )}

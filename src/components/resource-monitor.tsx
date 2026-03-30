@@ -17,21 +17,23 @@ export function ResourceMonitor({ cpu, mem }: Props) {
   );
 
   const cpuColor =
-    cpu > 80 ? "text-red-400" : cpu > 50 ? "text-yellow-400" : "text-green-400";
+    cpu > 80 ? "text-red-400" : cpu > 50 ? "text-yellow-400" : "text-emerald-400";
 
   return (
-    <div className="flex items-center gap-3 font-mono text-[11px]">
-      <span title="CPU usage">
-        CPU{" "}
-        <span className={cpuColor}>{Math.round(cpu)}%</span>
+    <div className="flex items-center gap-3 font-mono text-xs">
+      <span title="CPU usage" className="flex items-center gap-1.5">
+        <span className="text-zinc-300">CPU</span>{" "}
+        <span className={`font-semibold ${cpuColor}`}>{Math.round(cpu * 100)}%</span>
       </span>
-      <span className="text-zinc-700">|</span>
-      <span className="text-zinc-500" title="Estimated memory">
-        MEM {mem > 1024 ? `${(mem / 1024).toFixed(1)}kb` : `${mem}b`}
+      <span className="text-zinc-400">|</span>
+      <span className="flex items-center gap-1.5" title="Estimated memory">
+        <span className="text-zinc-300">MEM</span>{" "}
+        <span className="text-zinc-100">{mem > 1024 ? `${(mem / 1024).toFixed(1)}kb` : `${mem}b`}</span>
       </span>
-      <span className="text-zinc-700">|</span>
-      <span className="text-zinc-500" title="Token count">
-        TKN {tokens}
+      <span className="text-zinc-400">|</span>
+      <span className="flex items-center gap-1.5" title="Token count">
+        <span className="text-zinc-300">TKN</span>{" "}
+        <span className="text-zinc-100">{tokens}</span>
       </span>
     </div>
   );

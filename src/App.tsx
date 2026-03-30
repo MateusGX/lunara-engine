@@ -16,10 +16,10 @@ const LaunchPage = lazy(() =>
 
 function PageLoader() {
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-[#0d0d14]">
+    <div className="flex h-screen w-screen items-center justify-center bg-surface-base">
       <div className="flex flex-col items-center gap-3">
         <div className="h-8 w-8 animate-spin border-2 border-violet-500" />
-        <span className="font-mono text-sm text-zinc-500">loading...</span>
+        <span className="font-mono text-sm text-zinc-300">loading...</span>
       </div>
     </div>
   );

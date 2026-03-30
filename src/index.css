@@ -5,41 +5,61 @@
 
 :root {
   --radius: 0;
-  --background: oklch(0.141 0.005 285.823);
+
+  /* ── Unified surface palette ──────────────────────────────────────
+     Four levels replace every hardcoded hex in the codebase.
+     surface-base  : deepest – page bg, canvas areas, console
+     surface-raised: slightly up – sidebar, toolbar, panel headers
+     surface-card  : elevated – cards, modal content, editor panes
+     surface-overlay: floating – dropdowns, popovers, select menus
+  ────────────────────────────────────────────────────────────────── */
+  --surface-base:    #1a1b26;
+  --surface-raised:  #1f2335;
+  --surface-card:    #24283b;
+  --surface-overlay: #292e42;
+
+  --background: var(--surface-base);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
+  --card: var(--surface-card);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
+  --popover: var(--surface-overlay);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.432 0.232 292.759);
-  --primary-foreground: oklch(0.969 0.016 293.756);
+  --primary: oklch(0.65 0.25 292);
+  --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
+  --muted-foreground: oklch(0.88 0.012 286.067);
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.552 0.016 285.938);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 26%);
+  --ring: oklch(0.65 0.016 285.938);
   --chart-1: oklch(0.811 0.111 293.571);
   --chart-2: oklch(0.606 0.25 292.717);
   --chart-3: oklch(0.541 0.281 293.009);
   --chart-4: oklch(0.491 0.27 292.581);
   --chart-5: oklch(0.432 0.232 292.759);
-  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar: var(--surface-raised);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.606 0.25 292.717);
-  --sidebar-primary-foreground: oklch(0.969 0.016 293.756);
+  --sidebar-primary: oklch(0.65 0.25 292);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.274 0.006 286.033);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-border: oklch(1 0 0 / 14%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
 @theme inline {
   --font-mono: "JetBrains Mono Variable", monospace;
+
+  /* Surface tokens — use these classes: bg-surface-base / raised / card / overlay */
+  --color-surface-base:    var(--surface-base);
+  --color-surface-raised:  var(--surface-raised);
+  --color-surface-card:    var(--surface-card);
+  --color-surface-overlay: var(--surface-overlay);
+
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -117,7 +137,7 @@ canvas {
 /* CodeMirror overrides */
 .cm-editor {
   height: 100%;
-  background: #0d0d14 !important;
+  background: var(--surface-base) !important;
 }
 .cm-export-kw,
 .cm-export-kw span {
@@ -137,7 +157,7 @@ canvas {
   overflow: auto;
 }
 .cm-gutters {
-  background: #0d0d14 !important;
+  background: var(--surface-base) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
@@ -146,7 +166,7 @@ canvas {
 /* Tooltip container */
 .cm-tooltip {
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: #13131f !important;
+  background: var(--surface-card) !important;
   border-radius: 0 !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
 }
@@ -196,7 +216,7 @@ canvas {
 /* Info popup (the right-side docs panel) */
 .cm-tooltip.cm-completionInfo {
   border-left: 1px solid rgba(255, 255, 255, 0.06) !important;
-  background: #0f0f1c !important;
+  background: var(--surface-raised) !important;
   min-width: 220px !important;
   max-width: 300px !important;
   padding: 0 !important;
@@ -205,7 +225,7 @@ canvas {
 /* ── CodeMirror search panel (Ctrl+F) ───────────────────────────────────── */
 
 .cm-search {
-  background: #13131f !important;
+  background: var(--surface-card) !important;
   border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
   padding: 6px 10px !important;
   gap: 6px !important;

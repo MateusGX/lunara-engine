@@ -76,7 +76,7 @@ export function CodeTab() {
       {/* Script list */}
       <div className="flex w-44 shrink-0 flex-col border-r border-white/8">
         <div className="flex shrink-0 items-center justify-between px-3 py-2">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
             Scripts
           </span>
           <div className="flex items-center gap-0.5">
@@ -85,7 +85,7 @@ export function CodeTab() {
               variant="ghost"
               size="icon-xs"
               onClick={addScript}
-              className="text-zinc-500 hover:text-zinc-300"
+              className="text-zinc-400 hover:text-zinc-300"
               title="Add script"
             >
               <PlusIcon size={10} />
@@ -102,7 +102,7 @@ export function CodeTab() {
               return (
                 <div
                   key={s.id}
-                  className={`group relative flex items-center gap-1.5 border px-1.5 py-1 transition ${
+                  className={`group relative flex items-center gap-1 border px-1.5 py-1 transition ${
                     active
                       ? "border-violet-500/40 bg-violet-600/10"
                       : "border-transparent hover:border-white/8 hover:bg-white/4"
@@ -114,7 +114,7 @@ export function CodeTab() {
 
                   <button
                     className={`shrink-0 font-mono text-[9px] ${
-                      active ? "text-violet-400" : "text-zinc-700"
+                      active ? "text-violet-400" : "text-zinc-400"
                     }`}
                     onClick={() => setSelectedScriptId(s.id)}
                   >
@@ -129,20 +129,13 @@ export function CodeTab() {
                       value={s.name}
                       onCommit={(name) => commitRename(s.id, name)}
                       emptyLabel={`script_${s.id}`}
-                      className={`text-xs ${active ? "text-zinc-200" : "text-zinc-400"}`}
+                      className={`text-xs ${active ? "text-zinc-200" : "text-zinc-300"}`}
+                      onDelete={() => {
+                        deleteScript(s.id);
+                      }}
+                      disableDelete={scripts.length <= 1}
                     />
                   </div>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteScript(s.id);
-                    }}
-                    disabled={scripts.length <= 1}
-                    className="flex h-5 w-5 shrink-0 items-center justify-center text-zinc-600 opacity-0 transition hover:text-red-400 group-hover:opacity-100 disabled:opacity-20"
-                  >
-                    <TrashIcon size={10} />
-                  </button>
                 </div>
               );
             })}
@@ -152,12 +145,12 @@ export function CodeTab() {
         <Separator className="bg-white/8" />
 
         <div className="shrink-0 px-3 py-2">
-          <p className="text-[9px] leading-relaxed text-zinc-700">
-            Script <span className="text-zinc-500">#0</span> runs as entry
+          <p className="text-[9px] leading-relaxed text-zinc-400">
+            Script <span className="text-zinc-400">#0</span> runs as entry
             point.
             <br />
             Others load via{" "}
-            <span className="font-mono text-zinc-500">require("name")</span>.
+            <span className="font-mono text-zinc-400">require("name")</span>.
           </p>
         </div>
       </div>

@@ -47,25 +47,25 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
   } = useStore();
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-white/8 px-3">
+    <header className="flex h-12 shrink-0 items-center justify-between border-b border-white/15 bg-surface-raised px-3">
       {/* Left */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate("/")}
-          className="gap-1.5 text-zinc-500 hover:text-zinc-200"
+          className="h-8 gap-1.5 font-bold text-zinc-300 hover:bg-white/5 hover:text-white pr-0"
         >
-          <ArrowLeftIcon size={13} /> Projects
+          <ArrowLeftIcon size={14} /> Projects
         </Button>
-        <Separator orientation="vertical" />
+        <span className="text-zinc-400">|</span>
         {activeCartridge && (
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-white">
               {activeCartridge.meta.name}
             </span>
             {activeCartridge.meta.author && (
-              <span className="text-xs text-zinc-600">
+              <span className="text-xs text-zinc-300">
                 by {activeCartridge.meta.author}
               </span>
             )}
@@ -84,7 +84,7 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
               variant="ghost"
               size="sm"
               onClick={() => setPreviewVisible(!previewVisible)}
-              className="gap-1.5 text-zinc-500 hover:text-zinc-200"
+              className="gap-1.5 text-zinc-300 hover:text-zinc-100"
             >
               {previewVisible ? (
                 <EyeSlashIcon size={14} />
@@ -105,16 +105,16 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1 border-white/10 bg-transparent text-zinc-400 hover:border-white/20 hover:bg-white/5 hover:text-zinc-200"
+                className="gap-1 border-white/10 bg-transparent text-zinc-300 hover:border-white/20 hover:bg-white/5 hover:text-zinc-100"
               >
                 <ExportIcon size={13} /> Export <CaretDownIcon size={11} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="border-white/10 bg-[#1a1a2e] text-zinc-300 w-60"
+              className="border-white/10 bg-surface-overlay text-zinc-200 w-60"
             >
-              <DropdownMenuLabel className="text-[10px] font-normal text-zinc-600">
+              <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-zinc-300">
                 Choose export format
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-white/8" />
@@ -122,10 +122,10 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
                 onClick={() => exportLun(activeCartridge)}
                 className="cursor-pointer gap-2.5 focus:bg-white/8 focus:text-white"
               >
-                <FileArrowUpIcon size={14} className="text-zinc-400" />
+                <FileArrowUpIcon size={14} className="text-zinc-300" />
                 <div>
                   <p className="text-sm">Export Project</p>
-                  <p className="text-[10px] text-zinc-600">
+                  <p className="text-[10px] text-zinc-300">
                     Editable <span className="font-mono">.lun</span> — full
                     source
                   </p>
@@ -139,7 +139,7 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
                 <FileLockIcon size={14} className="text-violet-400" />
                 <div>
                   <p className="text-sm">Export Game</p>
-                  <p className="text-[10px] text-zinc-600">
+                  <p className="text-[10px] text-zinc-300">
                     Play-only <span className="font-mono">.png</span> — cartridge image
                   </p>
                   {hasLintErrors && (
@@ -171,7 +171,7 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
                 className={
                   hasLintErrors
                     ? "cursor-not-allowed border border-red-500/30 bg-transparent text-red-400/60 hover:bg-red-500/5 hover:text-red-400"
-                    : "bg-green-700 hover:bg-green-600"
+                    : "bg-green-700 hover:bg-green-600 border-green-700"
                 }
               >
                 <PlayIcon size={13} weight="fill" className="mr-1" /> Run

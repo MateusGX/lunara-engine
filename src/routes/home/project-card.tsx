@@ -44,9 +44,9 @@ export function ProjectCard({ cartridge, onDelete }: Props) {
   const totalChars = cartridge.scripts.reduce((s, sc) => s + sc.code.length, 0);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden border border-white/8 bg-[#13131f] transition hover:border-violet-500/30">
+    <div className="group relative flex flex-col overflow-hidden border border-white/12 bg-surface-card transition hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-900/10">
       {/* Cover / preview */}
-      <div className="relative h-28 w-full overflow-hidden bg-[#0d0d14]">
+      <div className="relative h-28 w-full overflow-hidden bg-surface-base">
         {cartridge.meta.coverArt ? (
           <img
             src={cartridge.meta.coverArt}
@@ -63,14 +63,14 @@ export function ProjectCard({ cartridge, onDelete }: Props) {
         )}
 
         {/* Palette strip */}
-        <div className="absolute bottom-0 left-0 right-0 flex h-1">
+        <div className="absolute bottom-0 left-0 right-0 flex h-1.5">
           {palette.slice(0, 8).map((hex, i) => (
             <div key={i} className="flex-1" style={{ background: hex }} />
           ))}
         </div>
 
         {/* Resolution badge */}
-        <span className="absolute left-2 top-2 bg-black/50 px-1.5 py-0.5 font-mono text-[9px] text-white/40 backdrop-blur-sm">
+        <span className="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 font-mono text-[10px] text-zinc-300 backdrop-blur-sm">
           {cartridge.hardware.width}×{cartridge.hardware.height}
         </span>
 
@@ -81,13 +81,13 @@ export function ProjectCard({ cartridge, onDelete }: Props) {
         >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex h-6 w-6 items-center justify-center bg-black/50 text-zinc-400 backdrop-blur-sm transition hover:text-white">
+              <button className="flex h-6 w-6 items-center justify-center rounded bg-black/60 text-zinc-300 backdrop-blur-sm transition hover:text-white">
                 <DotsThreeIcon size={14} weight="bold" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="border-white/10 bg-[#1a1a2e]"
+              className="border-white/12 bg-surface-overlay"
             >
               <DropdownMenuItem
                 onClick={() => navigate(`/editor/${cartridge.meta.id}`)}
@@ -101,7 +101,7 @@ export function ProjectCard({ cartridge, onDelete }: Props) {
               >
                 <PlayIcon size={13} weight="fill" /> Play
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-white/8" />
+              <DropdownMenuSeparator className="bg-white/10" />
               <DropdownMenuItem
                 onClick={() => onDelete(cartridge.meta.id)}
                 className="cursor-pointer gap-2 text-xs text-red-400 focus:bg-red-500/10 focus:text-red-300"
@@ -114,7 +114,7 @@ export function ProjectCard({ cartridge, onDelete }: Props) {
       </div>
 
       {/* Info */}
-      <div className="flex flex-1 flex-col gap-2 p-3">
+      <div className="flex flex-1 flex-col gap-1.5 p-3">
         <div className="flex items-start gap-1.5">
           <p className="min-w-0 flex-1 truncate text-sm font-semibold leading-tight text-white">
             {cartridge.meta.name}
@@ -122,48 +122,51 @@ export function ProjectCard({ cartridge, onDelete }: Props) {
           {cartridge.meta.version && (
             <Badge
               variant="outline"
-              className="shrink-0 border-white/10 bg-transparent px-1 py-0 font-mono text-[9px] text-zinc-600"
+              className="shrink-0 border-white/12 bg-transparent px-1 py-0 font-mono text-[9px] text-zinc-300"
             >
               v{cartridge.meta.version}
             </Badge>
           )}
         </div>
 
-        <p className="truncate text-[11px] text-zinc-600">
+        <p className="truncate text-xs text-zinc-300">
           {cartridge.meta.author || "No author"}
         </p>
 
         {/* Stats */}
-        <div className="mt-auto flex items-center gap-2.5 border-t border-white/5 pt-2 text-zinc-700">
-          <span className="flex items-center gap-1 font-mono text-[10px]">
-            <StackIcon size={10} /> {cartridge.sprites.length}
+        <div className="mt-auto flex items-center gap-3 border-t border-white/8 pt-2">
+          <span className="flex items-center gap-1 font-mono text-[10px] text-zinc-300" title="Sprites">
+            <StackIcon size={10} className="text-zinc-400" />
+            <span>{cartridge.sprites.length} spr</span>
           </span>
-          <span className="flex items-center gap-1 font-mono text-[10px]">
-            <FileCodeIcon size={10} />{" "}
-            {totalChars > 999
-              ? `${(totalChars / 1000).toFixed(1)}k`
-              : totalChars}
+          <span className="flex items-center gap-1 font-mono text-[10px] text-zinc-300" title="Code size">
+            <FileCodeIcon size={10} className="text-zinc-400" />
+            <span>
+              {totalChars > 999
+                ? `${(totalChars / 1000).toFixed(1)}k`
+                : totalChars} chars
+            </span>
           </span>
-          <span className="ml-auto font-mono text-[10px]">
+          <span className="ml-auto font-mono text-[10px] text-zinc-400">
             {timeAgo(cartridge.meta.updated)}
           </span>
         </div>
       </div>
 
       {/* Footer actions */}
-      <div className="flex border-t border-white/5">
+      <div className="flex border-t border-white/8">
         <button
           onClick={() => navigate(`/editor/${cartridge.meta.id}`)}
-          className="flex flex-1 items-center justify-center gap-1.5 py-2 text-[11px] text-zinc-500 transition hover:bg-white/4 hover:text-zinc-300"
+          className="flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-medium text-zinc-300 transition hover:bg-white/5 hover:text-zinc-100"
         >
-          <PencilSimpleIcon size={11} /> Edit
+          <PencilSimpleIcon size={12} /> Edit
         </button>
-        <div className="w-px bg-white/5" />
+        <div className="w-px bg-white/8" />
         <button
           onClick={() => navigate(`/play/${cartridge.meta.id}`)}
-          className="flex flex-1 items-center justify-center gap-1.5 py-2 text-[11px] text-violet-400 transition hover:bg-violet-500/10 hover:text-violet-300"
+          className="flex flex-1 items-center justify-center gap-1.5 py-2 text-xs font-medium text-violet-400 transition hover:bg-violet-500/10 hover:text-violet-300"
         >
-          <PlayIcon size={11} weight="fill" /> Play
+          <PlayIcon size={12} weight="fill" /> Play
         </button>
       </div>
     </div>

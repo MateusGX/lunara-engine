@@ -6,7 +6,7 @@ export function LunaraLogo({ subtitle = "engine" }: Props) {
   return (
     <div className="flex items-center gap-2.5">
       {/* Icon box */}
-      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center border border-violet-900/50 bg-[#0d0a1a]">
+      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center border border-violet-900/50 bg-surface-raised">
         <span className="absolute bottom-0 right-0 h-1.5 w-1.5 bg-violet-600" />
         <svg
           viewBox="0 0 6 8"

@@ -43,7 +43,7 @@ export function SpriteTab() {
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => canvasRef.current?.undo()}
-                    className="text-zinc-500 hover:text-zinc-200"
+                    className="text-zinc-400 hover:text-zinc-200"
                   >
                     <ArrowCounterClockwiseIcon size={14} />
                   </Button>
@@ -61,7 +61,7 @@ export function SpriteTab() {
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => canvasRef.current?.redo()}
-                    className="text-zinc-500 hover:text-zinc-200"
+                    className="text-zinc-400 hover:text-zinc-200"
                   >
                     <ArrowClockwiseIcon size={14} />
                   </Button>
@@ -83,18 +83,18 @@ export function SpriteTab() {
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setSpriteZoom(Math.max(4, spriteZoom - 4))}
-                className="text-zinc-500 hover:text-zinc-200"
+                className="text-zinc-400 hover:text-zinc-200"
               >
                 <MagnifyingGlassMinusIcon size={14} />
               </Button>
-              <span className="min-w-8 text-center font-mono text-xs text-zinc-600">
+              <span className="min-w-8 text-center font-mono text-xs text-zinc-300">
                 {spriteZoom}x
               </span>
               <Button
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setSpriteZoom(Math.min(32, spriteZoom + 4))}
-                className="text-zinc-500 hover:text-zinc-200"
+                className="text-zinc-400 hover:text-zinc-200"
               >
                 <MagnifyingGlassPlusIcon size={14} />
               </Button>
@@ -110,19 +110,19 @@ export function SpriteTab() {
         {/* Status bar */}
         <div className="flex items-center justify-between border-t border-white/8 px-3 py-1">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] text-zinc-600">
+            <span className="font-mono text-[10px] text-zinc-300">
               {sprite ? `#${sprite.id}` : ""}
             </span>
             {sprite?.name && (
-              <span className="text-[10px] text-zinc-500">{sprite.name}</span>
+              <span className="text-[10px] text-zinc-400">{sprite.name}</span>
             )}
             {sprite && (
-              <span className="font-mono text-[10px] text-zinc-700">
+              <span className="font-mono text-[10px] text-zinc-400">
                 {sprite.width}×{sprite.height}
               </span>
             )}
           </div>
-          <span className="font-mono text-[10px] text-zinc-600">
+          <span className="font-mono text-[10px] text-zinc-300">
             {hovered ? `x: ${hovered[0]}  y: ${hovered[1]}` : ""}
           </span>
         </div>

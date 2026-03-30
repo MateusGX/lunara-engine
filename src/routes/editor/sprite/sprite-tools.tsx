@@ -22,7 +22,7 @@ export function SpriteTools() {
   const { spriteTool, setSpriteTool } = useStore();
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
         Tools
       </span>
       <div className="flex gap-1">
@@ -33,7 +33,7 @@ export function SpriteTools() {
                 variant={spriteTool === id ? "default" : "ghost"}
                 size="icon-sm"
                 onClick={() => setSpriteTool(id)}
-                className={spriteTool === id ? "bg-violet-600 hover:bg-violet-500" : "text-zinc-500"}
+                className={spriteTool === id ? "bg-violet-600 hover:bg-violet-500" : "text-zinc-400"}
               >
                 <Icon size={15} weight={spriteTool === id ? "fill" : "regular"} />
               </Button>

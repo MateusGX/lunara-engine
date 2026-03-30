@@ -68,7 +68,7 @@ export function SoundList() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
           Sounds ({sounds.length}/{hardware.maxSounds})
         </span>
         <Button
@@ -76,7 +76,7 @@ export function SoundList() {
           size="icon-xs"
           onClick={addSound}
           disabled={sounds.length >= hardware.maxSounds}
-          className="text-zinc-500 hover:text-zinc-300"
+          className="text-zinc-400 hover:text-zinc-300"
           title="Add sound"
         >
           <PlusIcon size={10} />
@@ -87,19 +87,24 @@ export function SoundList() {
         {sounds.map((s) => (
           <div
             key={s.id}
-            className={`group flex items-center gap-1.5 border px-1.5 py-1 transition ${
+            className={`group flex items-center gap-1 border px-1.5 py-1 transition ${
               s.id === selectedSoundId
                 ? "border-violet-500/40 bg-violet-600/10"
                 : "border-transparent hover:border-white/8 hover:bg-white/4"
             }`}
           >
-            <button className="shrink-0" onClick={() => setSelectedSoundId(s.id)}>
-              <span className={`block h-2 w-2 ${WAVE_COLOR[s.waveform] ?? "bg-zinc-600"}`} />
+            <button
+              className="shrink-0"
+              onClick={() => setSelectedSoundId(s.id)}
+            >
+              <span
+                className={`block h-2 w-2 ${WAVE_COLOR[s.waveform] ?? "bg-zinc-600"}`}
+              />
             </button>
 
             <button
               className={`shrink-0 font-mono text-[9px] ${
-                s.id === selectedSoundId ? "text-violet-400" : "text-zinc-600"
+                s.id === selectedSoundId ? "text-violet-400" : "text-zinc-300"
               }`}
               onClick={() => setSelectedSoundId(s.id)}
             >
@@ -115,18 +120,13 @@ export function SoundList() {
                 onCommit={(name) => commitRename(s.id, name)}
                 emptyLabel={`SFX ${s.id}`}
                 className={`text-xs ${
-                  s.id === selectedSoundId ? "text-zinc-200" : "text-zinc-400"
+                  s.id === selectedSoundId ? "text-zinc-200" : "text-zinc-300"
                 }`}
+                onDelete={() => {
+                  deleteSound(s.id);
+                }}
               />
             </div>
-
-            <button
-              onClick={(e) => { e.stopPropagation(); deleteSound(s.id); }}
-              disabled={false}
-              className="flex h-5 w-5 shrink-0 items-center justify-center text-zinc-600 opacity-0 transition hover:text-red-400 group-hover:opacity-100 disabled:opacity-20"
-            >
-              <TrashIcon size={10} />
-            </button>
           </div>
         ))}
       </div>

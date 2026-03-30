@@ -663,20 +663,20 @@ function EntryCard({ entry }: { entry: ApiEntry }) {
           <code className="font-mono text-[11px] text-violet-300 whitespace-pre-wrap leading-relaxed">
             {entry.signature}
           </code>
-          <p className="text-[11px] leading-relaxed text-zinc-400 whitespace-pre-line">
+          <p className="text-[11px] leading-relaxed text-zinc-300 whitespace-pre-line">
             {entry.description}
           </p>
           {cost && (
             <div className="flex gap-1.5 mt-auto pt-1">
               {cost.vram != null && (
-                <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-[#11111b] border border-white/6 text-[9px]">
-                  <span className="text-zinc-600">VRAM</span>
+                <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-surface-raised border border-white/6 text-[9px]">
+                  <span className="text-zinc-300">VRAM</span>
                   <span className="text-cyan-300">{cost.vram}</span>
                 </span>
               )}
               {cost.instructions != null && (
-                <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-[#11111b] border border-white/6 text-[9px]">
-                  <span className="text-zinc-600">OPS</span>
+                <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-surface-raised border border-white/6 text-[9px]">
+                  <span className="text-zinc-300">OPS</span>
                   <span className="text-green-300">{cost.instructions}</span>
                 </span>
               )}
@@ -685,7 +685,7 @@ function EntryCard({ entry }: { entry: ApiEntry }) {
         </div>
 
         {/* Right: syntax-highlighted code example */}
-        <div className="flex-1 overflow-x-auto bg-[#282c34]">
+        <div className="flex-1 overflow-x-auto bg-surface-overlay">
           <CodeEditor value={entry.example} basicSetup={false} readOnly />
         </div>
       </div>
@@ -705,7 +705,7 @@ export function LuaDocsDialog() {
             <Button
               variant="ghost"
               size="icon-xs"
-              className="text-zinc-500 hover:text-zinc-300"
+              className="text-zinc-400 hover:text-zinc-300"
             >
               <QuestionIcon size={10} />
             </Button>
@@ -714,12 +714,12 @@ export function LuaDocsDialog() {
         <TooltipContent side="right">Lua API reference</TooltipContent>
       </Tooltip>
 
-      <DialogContent className="sm:max-w-4xl w-full p-0 gap-0 bg-[#0f0f1a] border-white/10 overflow-hidden">
+      <DialogContent className="sm:max-w-4xl w-full p-0 gap-0 bg-surface-raised border-white/10 overflow-hidden">
         <DialogHeader className="px-5 pt-4 pb-3 border-b border-white/8">
           <DialogTitle className="text-sm font-semibold text-zinc-200">
             Lua Reference
           </DialogTitle>
-          <p className="text-[11px] text-zinc-600 mt-0.5">
+          <p className="text-[11px] text-zinc-300 mt-0.5">
             Language basics and built-in API for all scripts
           </p>
         </DialogHeader>
@@ -736,14 +736,14 @@ export function LuaDocsDialog() {
                   className={`relative flex items-center rounded px-2.5 py-1.5 text-left text-xs transition ${
                     active
                       ? "bg-violet-600/15 text-violet-300"
-                      : "text-zinc-500 hover:bg-white/4 hover:text-zinc-300"
+                      : "text-zinc-400 hover:bg-white/4 hover:text-zinc-300"
                   }`}
                 >
                   {active && (
                     <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-violet-500" />
                   )}
                   {cat.label}
-                  <span className="ml-auto text-[9px] text-zinc-700">
+                  <span className="ml-auto text-[9px] text-zinc-400">
                     {cat.entries.length}
                   </span>
                 </button>
@@ -754,7 +754,7 @@ export function LuaDocsDialog() {
           {/* Entries */}
           <ScrollArea className="flex-1">
             <div className="space-y-2.5 p-4">
-              <h3 className="text-[10px] font-medium uppercase tracking-wider text-zinc-600 mb-3">
+              <h3 className="text-[10px] font-medium uppercase tracking-wider text-zinc-300 mb-3">
                 {category.label}
               </h3>
               {category.entries.map((entry) => (

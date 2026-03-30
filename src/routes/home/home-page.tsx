@@ -75,7 +75,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0d0d14] text-white">
+    <div className="flex min-h-screen flex-col bg-surface-base text-white">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -86,26 +86,26 @@ export function HomePage() {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-white/8 bg-[#0d0d14]/95 px-6 py-3 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-b border-white/15 bg-surface-base/95 px-6 py-3 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center gap-4">
           {/* Logo */}
           <button onClick={() => navigate("/")}>
             <LunaraLogo />
           </button>
 
-          <Separator orientation="vertical" className="h-5 bg-white/8" />
+          <Separator orientation="vertical" className="h-5 bg-white/15" />
 
           {/* Search */}
           <div className="relative max-w-xs flex-1">
             <MagnifyingGlassIcon
               size={13}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-600"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-300"
             />
             <Input
-              placeholder="Search projects…"
+              placeholder="Search projects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-8 border-white/8 bg-white/4 pl-7 text-xs text-white placeholder:text-zinc-600 focus-visible:border-violet-500/50 focus-visible:ring-0"
+              className="h-9 border-white/10 bg-white/5 pl-9 text-xs text-zinc-100 placeholder:text-zinc-300 focus-visible:ring-violet-500/50"
             />
           </div>
 
@@ -114,9 +114,9 @@ export function HomePage() {
               variant="ghost"
               size="sm"
               onClick={() => navigate("/launch")}
-              className="h-8 gap-1.5 text-xs text-zinc-400 hover:bg-violet-500/10 hover:text-violet-300"
+              className="h-8 gap-1.5 text-xs text-zinc-300 hover:bg-violet-500/10 hover:text-violet-300"
             >
-              <GameControllerIcon size={13} /> Play .png
+              <GameControllerIcon size={14} /> Play .png
             </Button>
 
             <DropdownMenu>
@@ -131,7 +131,7 @@ export function HomePage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="border-white/10 bg-[#1a1a2e]"
+                className="border-white/12 bg-surface-overlay"
               >
                 <DropdownMenuItem
                   onClick={() => setShowDialog(true)}
@@ -139,7 +139,7 @@ export function HomePage() {
                 >
                   <PlusIcon size={13} weight="bold" /> New Project
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/8" />
+                <DropdownMenuSeparator className="bg-white/10" />
                 <DropdownMenuItem
                   onClick={() => fileInputRef.current?.click()}
                   className="cursor-pointer gap-2 text-xs focus:bg-white/8 focus:text-white"
@@ -156,9 +156,9 @@ export function HomePage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
         {/* Title row */}
         <div className="mb-6 flex items-baseline gap-3">
-          <h1 className="text-xl font-semibold text-white">Projects</h1>
+          <h1 className="text-2xl font-bold text-white">Projects</h1>
           {projects.length > 0 && (
-            <span className="font-mono text-sm text-zinc-600">
+            <span className="rounded-full bg-white/8 px-2 py-0.5 font-mono text-xs text-zinc-300">
               {filtered.length}
               {search ? `/${projects.length}` : ""}
             </span>
@@ -167,27 +167,25 @@ export function HomePage() {
 
         {projects.length === 0 ? (
           /* Empty state */
-          <div className="flex flex-col items-center justify-center border border-dashed border-white/8 py-32 text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center border border-white/8 bg-white/3">
+          <div className="flex flex-col items-center justify-center border border-dashed border-white/12 py-32 text-center">
+            <div className="mb-5 flex h-16 w-16 items-center justify-center border border-white/12 bg-violet-500/5 shadow-lg shadow-violet-500/10">
               <FolderOpenIcon
                 size={32}
-                className="text-zinc-700"
+                className="text-violet-400"
                 weight="duotone"
               />
             </div>
-            <p className="text-base font-medium text-zinc-300">
-              No projects yet
-            </p>
-            <p className="mt-1.5 max-w-xs text-sm text-zinc-600">
+            <h2 className="text-xl font-semibold text-zinc-100">No projects yet</h2>
+            <p className="mt-1.5 max-w-[280px] text-sm text-zinc-300">
               Create your first game or import an existing{" "}
-              <span className="font-mono text-zinc-500">.lun</span> file.
+              <span className="font-mono text-zinc-300">.lun</span> file.
             </p>
             <div className="mt-6 flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="gap-1.5 border-white/10 bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white"
+                className="gap-1.5 border-white/12 bg-transparent text-zinc-300 hover:bg-white/5 hover:text-white"
               >
                 <UploadIcon size={13} /> Import .lun
               </Button>
@@ -203,10 +201,10 @@ export function HomePage() {
         ) : filtered.length === 0 ? (
           /* No search results */
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <MagnifyingGlassIcon size={32} className="mb-4 text-zinc-700" />
-            <p className="text-sm text-zinc-400">
+            <MagnifyingGlassIcon size={32} className="mb-4 text-zinc-300" />
+            <p className="text-sm text-zinc-300">
               No projects matching{" "}
-              <span className="font-mono text-zinc-300">"{search}"</span>
+              <span className="font-mono text-zinc-200">"{search}"</span>
             </p>
             <button
               onClick={() => setSearch("")}
@@ -229,15 +227,15 @@ export function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto border-t border-white/8 px-6 py-6">
+      <footer className="mt-auto border-t border-white/12 px-6 py-6">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
           <LunaraLogo />
 
-          <p className="text-center text-xs text-zinc-600 sm:text-left">
+          <p className="text-[10px] uppercase tracking-widest text-zinc-300">
             A fantasy console for making retro-style games with Lua.
           </p>
 
-          <div className="flex items-center gap-4 text-xs text-zinc-600">
+          <div className="flex items-center gap-4 text-[10px] font-medium text-zinc-300">
             <a
               href="https://github.com/MateusGX"
               target="_blank"
@@ -246,7 +244,7 @@ export function HomePage() {
             >
               by Mateus Martins
             </a>
-            <span className="text-white/10">·</span>
+            <span className="text-white/15">·</span>
             <a
               href="https://github.com/MateusGX/lunara-engine/blob/main/LICENSE"
               target="_blank"
@@ -255,7 +253,7 @@ export function HomePage() {
             >
               Lunara License
             </a>
-            <span className="text-white/10">·</span>
+            <span className="text-white/15">·</span>
             <a
               href="https://github.com/MateusGX/lunara-engine"
               target="_blank"
@@ -264,8 +262,8 @@ export function HomePage() {
             >
               GitHub
             </a>
-            <span className="text-white/10">·</span>
-            <span className="font-mono">v1.0.0</span>
+            <span className="text-white/15">·</span>
+            <span className="font-mono text-zinc-400">v1.0.0</span>
           </div>
         </div>
       </footer>

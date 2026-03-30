@@ -35,7 +35,7 @@ export function PlayerPage() {
 
   if (notFound || !cartridge) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-black text-zinc-400">
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-black text-zinc-300">
         <p>Cartridge not found.</p>
         <Button
           variant="ghost"
@@ -56,7 +56,7 @@ export function PlayerPage() {
           variant="ghost"
           size="sm"
           onClick={() => navigate("/")}
-          className="gap-1.5 text-zinc-500 hover:text-zinc-200"
+          className="gap-1.5 text-zinc-400 hover:text-zinc-200"
         >
           <ArrowLeftIcon size={13} /> Projects
         </Button>
@@ -64,7 +64,7 @@ export function PlayerPage() {
           variant="ghost"
           size="sm"
           onClick={() => navigate(`/editor/${cartridge.meta.id}`)}
-          className="gap-1.5 text-zinc-500 hover:text-zinc-200"
+          className="gap-1.5 text-zinc-400 hover:text-zinc-200"
         >
           <PencilSimpleIcon size={13} /> Edit
         </Button>
@@ -82,24 +82,24 @@ export function PlayerPage() {
             {cartridge.meta.name}
           </span>
           {cartridge.meta.version && (
-            <span className="shrink-0 border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[9px] text-zinc-500">
+            <span className="shrink-0 border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[9px] text-zinc-400">
               v{cartridge.meta.version}
             </span>
           )}
           {cartridge.meta.author && (
             <>
-              <span className="shrink-0 text-zinc-700">·</span>
-              <span className="shrink-0 text-xs text-zinc-500">{cartridge.meta.author}</span>
+              <span className="shrink-0 text-zinc-400">·</span>
+              <span className="shrink-0 text-xs text-zinc-400">{cartridge.meta.author}</span>
             </>
           )}
           {cartridge.meta.description && (
             <>
-              <span className="shrink-0 text-zinc-700">·</span>
-              <span className="truncate text-xs text-zinc-600">{cartridge.meta.description}</span>
+              <span className="shrink-0 text-zinc-400">·</span>
+              <span className="truncate text-xs text-zinc-300">{cartridge.meta.description}</span>
             </>
           )}
         </div>
-        <span className="shrink-0 font-mono text-[10px] text-zinc-700">
+        <span className="shrink-0 font-mono text-[10px] text-zinc-400">
           {cartridge.hardware.width}×{cartridge.hardware.height} · {cartridge.hardware.palette.length} colors
         </span>
       </div>

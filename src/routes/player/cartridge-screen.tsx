@@ -109,7 +109,7 @@ export function CartridgeScreen({ cartridge }: Props) {
       {/* Hardware info + live stats */}
       <div className="flex w-full max-w-md flex-col gap-1.5 rounded border border-white/5 bg-white/2 px-4 py-2.5">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-600">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-300">
             Hardware
           </span>
           <ResourceMonitor cpu={stats.cpu} mem={stats.mem} />
@@ -134,7 +134,7 @@ export function CartridgeScreen({ cartridge }: Props) {
               <kbd className="rounded border border-white/15 bg-white/8 px-2 py-0.5 font-mono text-[11px] text-zinc-300">
                 {inp.key}
               </kbd>
-              <span className="font-mono text-[11px] text-zinc-600">
+              <span className="font-mono text-[11px] text-zinc-300">
                 {inp.label}
               </span>
             </div>
@@ -148,7 +148,7 @@ export function CartridgeScreen({ cartridge }: Props) {
 function HwStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="font-mono text-[10px] text-zinc-600">{label}</span>
+      <span className="font-mono text-[10px] text-zinc-300">{label}</span>
       <span className="font-mono text-[11px] text-zinc-300">{value}</span>
     </div>
   );

@@ -80,14 +80,14 @@ function UsageBar({ used, total, label }: { used: number; total: number; label: 
   const color = pct > 90 ? "bg-red-500" : pct > 70 ? "bg-yellow-500" : "bg-violet-500";
   return (
     <div className="flex items-center gap-2">
-      <span className="w-20 shrink-0 text-[10px] text-zinc-500">{label}</span>
+      <span className="w-20 shrink-0 text-[10px] text-zinc-400">{label}</span>
       <div className="relative h-1 flex-1 overflow-hidden bg-white/8">
         <div
           className={`absolute inset-y-0 left-0 transition-all ${color}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-16 shrink-0 text-right font-mono text-[10px] text-zinc-500">
+      <span className="w-16 shrink-0 text-right font-mono text-[10px] text-zinc-400">
         {used} / {total}
       </span>
     </div>
@@ -106,8 +106,8 @@ function SectionHeader({
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <Icon size={13} className="text-zinc-500" weight="bold" />
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+        <Icon size={13} className="text-zinc-400" weight="bold" />
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
           {title}
         </span>
       </div>
@@ -324,7 +324,7 @@ export function SettingsTab() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Name</Label>
+              <Label className="text-xs text-zinc-300">Name</Label>
               <Input
                 value={activeCartridge.meta.name}
                 onChange={(e) => updateMeta({ name: e.target.value })}
@@ -333,7 +333,7 @@ export function SettingsTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Author</Label>
+              <Label className="text-xs text-zinc-300">Author</Label>
               <Input
                 value={activeCartridge.meta.author}
                 onChange={(e) => updateMeta({ author: e.target.value })}
@@ -342,7 +342,7 @@ export function SettingsTab() {
               />
             </div>
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs text-zinc-400">Description</Label>
+              <Label className="text-xs text-zinc-300">Description</Label>
               <textarea
                 value={activeCartridge.meta.description}
                 onChange={(e) => updateMeta({ description: e.target.value })}
@@ -352,7 +352,7 @@ export function SettingsTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Version</Label>
+              <Label className="text-xs text-zinc-300">Version</Label>
               <Input
                 value={activeCartridge.meta.version}
                 onChange={(e) => updateMeta({ version: e.target.value })}
@@ -361,11 +361,11 @@ export function SettingsTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">ID</Label>
+              <Label className="text-xs text-zinc-300">ID</Label>
               <Input
                 value={activeCartridge.meta.id}
                 readOnly
-                className="border-white/5 bg-white/3 font-mono text-xs text-zinc-600 focus-visible:ring-0"
+                className="border-white/5 bg-white/3 font-mono text-xs text-zinc-300 focus-visible:ring-0"
               />
             </div>
           </div>
@@ -400,7 +400,7 @@ export function SettingsTab() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex flex-col items-center gap-1.5 text-zinc-600">
+                <div className="flex flex-col items-center gap-1.5 text-zinc-300">
                   <UploadSimpleIcon size={20} />
                   <span className="text-center text-[10px] leading-tight">
                     Drop or click
@@ -425,7 +425,7 @@ export function SettingsTab() {
                 <p className="text-xs text-zinc-300">
                   {activeCartridge.meta.coverArt ? "Cover art set" : "No cover art"}
                 </p>
-                <p className="text-[10px] text-zinc-600">
+                <p className="text-[10px] text-zinc-300">
                   PNG, JPG or GIF · shown on the project card
                 </p>
               </div>
@@ -465,7 +465,7 @@ export function SettingsTab() {
                   variant="outline"
                   size="xs"
                   onClick={() => hwImportRef.current?.click()}
-                  className="gap-1 border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+                  className="gap-1 border-white/10 bg-transparent text-zinc-300 hover:bg-white/8 hover:text-white"
                 >
                   <UploadSimpleIcon size={11} /> Import
                 </Button>
@@ -473,7 +473,7 @@ export function SettingsTab() {
                   variant="outline"
                   size="xs"
                   onClick={exportHardware}
-                  className="gap-1 border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+                  className="gap-1 border-white/10 bg-transparent text-zinc-300 hover:bg-white/8 hover:text-white"
                 >
                   <DownloadSimpleIcon size={11} /> Export
                 </Button>
@@ -491,7 +491,7 @@ export function SettingsTab() {
                 className={`flex flex-col items-start gap-1.5 border px-3 py-2.5 text-left transition ${
                   activePresetId === p.id
                     ? "border-violet-500/60 bg-violet-600/10 text-white"
-                    : "border-white/8 bg-white/3 text-zinc-400 hover:border-white/20 hover:bg-white/6 hover:text-zinc-200"
+                    : "border-white/8 bg-white/3 text-zinc-300 hover:border-white/20 hover:bg-white/6 hover:text-zinc-200"
                 }`}
               >
                 <div className="flex h-1.5 w-full overflow-hidden">
@@ -510,7 +510,7 @@ export function SettingsTab() {
               className={`flex flex-col items-start gap-1.5 border px-3 py-2.5 text-left ${
                 activePresetId === null && customPresets.length === 0
                   ? "border-violet-500/60 bg-violet-600/10 text-white"
-                  : "border-white/8 bg-white/3 text-zinc-400"
+                  : "border-white/8 bg-white/3 text-zinc-300"
               }`}
             >
               <div className="flex h-1.5 w-full overflow-hidden">
@@ -530,7 +530,7 @@ export function SettingsTab() {
           {/* ── User presets ── */}
           {customPresets.length > 0 && (
             <div className="space-y-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-300">
                 My Presets
               </span>
               <div className="grid grid-cols-3 gap-2">
@@ -540,7 +540,7 @@ export function SettingsTab() {
                     className={`group/preset relative flex flex-col items-start gap-1.5 border px-3 pb-8 pt-2.5 text-left transition ${
                       activePresetId === p.id
                         ? "border-violet-500/60 bg-violet-600/10 text-white"
-                        : "border-white/8 bg-white/3 text-zinc-400 hover:border-white/20 hover:bg-white/6"
+                        : "border-white/8 bg-white/3 text-zinc-300 hover:border-white/20 hover:bg-white/6"
                     }`}
                   >
                     {/* Apply on click (not on action buttons) */}
@@ -580,17 +580,17 @@ export function SettingsTab() {
                     )}
                     <span className="text-[10px] leading-tight opacity-60">{p.desc}</span>
                     {/* Actions */}
-                    <div className="absolute inset-x-0 bottom-0 z-10 hidden items-center justify-end gap-px border-t border-white/8 bg-[#13131f] group-hover/preset:flex">
+                    <div className="absolute inset-x-0 bottom-0 z-10 hidden items-center justify-end gap-px border-t border-white/8 bg-surface-card group-hover/preset:flex">
                       <button
                         onClick={() => { setRenamingId(p.id); setRenameValue(p.name); }}
-                        className="flex flex-1 items-center justify-center gap-1 py-1.5 text-[10px] text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
+                        className="flex flex-1 items-center justify-center gap-1 py-1.5 text-[10px] text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
                       >
                         <PencilSimpleIcon size={11} /> Rename
                       </button>
                       <div className="h-3 w-px bg-white/10" />
                       <button
                         onClick={() => removePreset(p.id)}
-                        className="flex flex-1 items-center justify-center gap-1 py-1.5 text-[10px] text-zinc-500 hover:bg-red-500/10 hover:text-red-400"
+                        className="flex flex-1 items-center justify-center gap-1 py-1.5 text-[10px] text-zinc-400 hover:bg-red-500/10 hover:text-red-400"
                       >
                         <TrashIcon size={11} /> Delete
                       </button>
@@ -623,7 +623,7 @@ export function SettingsTab() {
               <Button size="xs" type="submit" disabled={!savingName.trim()} className="gap-1 bg-violet-600 hover:bg-violet-500">
                 <FloppyDiskIcon size={11} /> Save
               </Button>
-              <Button size="xs" variant="ghost" type="button" onClick={() => setSavingName(null)} className="text-zinc-500">
+              <Button size="xs" variant="ghost" type="button" onClick={() => setSavingName(null)} className="text-zinc-400">
                 <XIcon size={11} />
               </Button>
             </form>
@@ -632,7 +632,7 @@ export function SettingsTab() {
               variant="outline"
               size="xs"
               onClick={() => setSavingName("")}
-              className="w-fit gap-1.5 border-white/10 bg-transparent text-zinc-400 hover:border-violet-500/40 hover:bg-violet-500/8 hover:text-violet-300"
+              className="w-fit gap-1.5 border-white/10 bg-transparent text-zinc-300 hover:border-violet-500/40 hover:bg-violet-500/8 hover:text-violet-300"
             >
               <PlusIcon size={11} /> Save current as preset
             </Button>
@@ -642,7 +642,7 @@ export function SettingsTab() {
             <p className="text-[11px] text-red-400">{hwImportError}</p>
           )}
 
-          <p className="text-[10px] text-zinc-700">
+          <p className="text-[10px] text-zinc-400">
             Presets replace all hardware settings. Customize the fields below. Export saves the current config as JSON.
           </p>
         </section>
@@ -654,7 +654,7 @@ export function SettingsTab() {
 
           <div className="flex flex-wrap items-end gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Width (px)</Label>
+              <Label className="text-xs text-zinc-300">Width (px)</Label>
               <Input
                 type="number"
                 min={32}
@@ -665,7 +665,7 @@ export function SettingsTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Height (px)</Label>
+              <Label className="text-xs text-zinc-300">Height (px)</Label>
               <Input
                 type="number"
                 min={32}
@@ -676,7 +676,7 @@ export function SettingsTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Presets</Label>
+              <Label className="text-xs text-zinc-300">Presets</Label>
               <div className="flex gap-1">
                 {RESOLUTION_PRESETS.map((p) => (
                   <Button
@@ -687,7 +687,7 @@ export function SettingsTab() {
                     className={`font-mono text-[10px] ${
                       hw.width === p.w && hw.height === p.h
                         ? "bg-violet-600 hover:bg-violet-500"
-                        : "border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+                        : "border-white/10 bg-transparent text-zinc-300 hover:bg-white/8 hover:text-white"
                     }`}
                   >
                     {p.label}
@@ -705,7 +705,7 @@ export function SettingsTab() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Max Sprites</Label>
+              <Label className="text-xs text-zinc-300">Max Sprites</Label>
               <Input
                 type="number"
                 min={1}
@@ -716,7 +716,7 @@ export function SettingsTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Max Sounds</Label>
+              <Label className="text-xs text-zinc-300">Max Sounds</Label>
               <Input
                 type="number"
                 min={1}
@@ -727,7 +727,7 @@ export function SettingsTab() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Sprite Size</Label>
+              <Label className="text-xs text-zinc-300">Sprite Size</Label>
               <Select
                 value={String(hw.spriteSize ?? 8)}
                 onValueChange={(v) => {
@@ -756,7 +756,7 @@ export function SettingsTab() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">SFX Steps</Label>
+              <Label className="text-xs text-zinc-300">SFX Steps</Label>
               <Select
                 value={String(hw.sfxSteps ?? 16)}
                 onValueChange={(v) => {
@@ -801,7 +801,7 @@ export function SettingsTab() {
 
           {/* Live usage */}
           <div className="space-y-2 border border-white/8 bg-white/3 p-3">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
               Current Usage
             </span>
             <UsageBar
@@ -825,7 +825,7 @@ export function SettingsTab() {
           <div className="grid grid-cols-3 gap-4">
             {/* FPS */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Target FPS</Label>
+              <Label className="text-xs text-zinc-300">Target FPS</Label>
               <div className="flex gap-1">
                 <Input
                   type="number"
@@ -838,14 +838,14 @@ export function SettingsTab() {
                   }
                   className="min-w-0 flex-1 border-white/10 bg-white/5 text-white focus-visible:border-violet-500 focus-visible:ring-0"
                 />
-                <span className="flex items-center px-2 text-xs text-zinc-500">fps</span>
+                <span className="flex items-center px-2 text-xs text-zinc-400">fps</span>
               </div>
-              <p className="text-[10px] text-zinc-700">{(hw.maxIps / (hw.maxFps ?? 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} instr/frame</p>
+              <p className="text-[10px] text-zinc-400">{(hw.maxIps / (hw.maxFps ?? 60)).toLocaleString(undefined, { maximumFractionDigits: 0 })} instr/frame</p>
             </div>
 
             {/* CPU */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">CPU Speed</Label>
+              <Label className="text-xs text-zinc-300">CPU Speed</Label>
               <div className="flex gap-1">
                 <Input
                   type="number"
@@ -861,19 +861,19 @@ export function SettingsTab() {
                   <SelectTrigger className="w-16 shrink-0 border-white/10 bg-white/5 text-xs text-zinc-300 focus:ring-0">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-white/10 bg-[#1a1a2e]">
+                  <SelectContent className="border-white/10 bg-surface-overlay">
                     {["IPS", "KIPS", "MIPS"].map((u) => (
                       <SelectItem key={u} value={u} className="text-xs text-zinc-300">{u}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-[10px] text-zinc-700">{hw.maxIps.toLocaleString()} IPS</p>
+              <p className="text-[10px] text-zinc-400">{hw.maxIps.toLocaleString()} IPS</p>
             </div>
 
             {/* RAM */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Max RAM</Label>
+              <Label className="text-xs text-zinc-300">Max RAM</Label>
               <div className="flex gap-1">
                 <Input
                   type="number"
@@ -888,19 +888,19 @@ export function SettingsTab() {
                   <SelectTrigger className="w-16 shrink-0 border-white/10 bg-white/5 text-xs text-zinc-300 focus:ring-0">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-white/10 bg-[#1a1a2e]">
+                  <SelectContent className="border-white/10 bg-surface-overlay">
                     {["B", "KB", "MB"].map((u) => (
                       <SelectItem key={u} value={u} className="text-xs text-zinc-300">{u}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-[10px] text-zinc-700">{formatBytes(hw.maxMemBytes)}</p>
+              <p className="text-[10px] text-zinc-400">{formatBytes(hw.maxMemBytes)}</p>
             </div>
 
             {/* Storage */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-400">Max Storage</Label>
+              <Label className="text-xs text-zinc-300">Max Storage</Label>
               <div className="flex gap-1">
                 <Input
                   type="number"
@@ -917,20 +917,20 @@ export function SettingsTab() {
                   <SelectTrigger className="w-16 shrink-0 border-white/10 bg-white/5 text-xs text-zinc-300 focus:ring-0">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-white/10 bg-[#1a1a2e]">
+                  <SelectContent className="border-white/10 bg-surface-overlay">
                     {["B", "KB", "MB"].map((u) => (
                       <SelectItem key={u} value={u} className="text-xs text-zinc-300">{u}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <p className={`text-[10px] ${storageOver ? "text-red-400" : "text-zinc-700"}`}>
+              <p className={`text-[10px] ${storageOver ? "text-red-400" : "text-zinc-400"}`}>
                 {formatBytes(storageUsed)} used ({storagePct}%){storageOver ? " — over limit!" : ""}
               </p>
             </div>
           </div>
 
-          <p className="text-[10px] text-zinc-700">
+          <p className="text-[10px] text-zinc-400">
             CPU: simulation stops after 3 consecutive frames over budget.
             RAM: stops at startup if exceeded.
             Storage: max serialized cartridge size.
@@ -947,7 +947,7 @@ export function SettingsTab() {
                 variant="outline"
                 size="xs"
                 onClick={addPaletteColor}
-                className="border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+                className="border-white/10 bg-transparent text-zinc-300 hover:bg-white/8 hover:text-white"
               >
                 <PlusIcon size={11} className="mr-1" /> Add
               </Button>
@@ -986,13 +986,13 @@ export function SettingsTab() {
                     </>
                   )}
                 </div>
-                <span className="font-mono text-[9px] text-zinc-600">
+                <span className="font-mono text-[9px] text-zinc-300">
                   {i === 0 ? "transp." : hex.slice(1).toUpperCase()}
                 </span>
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-zinc-700">
+          <p className="text-[10px] text-zinc-400">
             Index 0 is always transparent — used as the clear color in sprites and maps.
           </p>
         </section>
@@ -1007,7 +1007,7 @@ export function SettingsTab() {
                 variant="outline"
                 size="xs"
                 onClick={addInput}
-                className="border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-white"
+                className="border-white/10 bg-transparent text-zinc-300 hover:bg-white/8 hover:text-white"
               >
                 <PlusIcon size={11} className="mr-1" /> Add
               </Button>
@@ -1016,14 +1016,14 @@ export function SettingsTab() {
           <Separator className="bg-white/8" />
 
           {hw.inputs.length === 0 ? (
-            <p className="text-[11px] text-zinc-600">No inputs defined. Add a button to map keyboard keys.</p>
+            <p className="text-[11px] text-zinc-300">No inputs defined. Add a button to map keyboard keys.</p>
           ) : (
             <div className="space-y-1.5">
               {/* Header */}
               <div className="grid grid-cols-[3rem_1fr_1.5fr_2rem] gap-2 px-2">
-                <span className="text-[10px] uppercase tracking-wider text-zinc-700">Btn</span>
-                <span className="text-[10px] uppercase tracking-wider text-zinc-700">Label</span>
-                <span className="text-[10px] uppercase tracking-wider text-zinc-700">Key</span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-400">Btn</span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-400">Label</span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-400">Key</span>
                 <span />
               </div>
 
@@ -1032,7 +1032,7 @@ export function SettingsTab() {
                   key={i}
                   className="grid grid-cols-[3rem_1fr_1.5fr_2rem] items-center gap-2 border border-white/8 bg-white/3 px-2 py-2"
                 >
-                  <span className="font-mono text-xs text-zinc-600">{inp.button}</span>
+                  <span className="font-mono text-xs text-zinc-300">{inp.button}</span>
 
                   <Input
                     value={inp.label}
@@ -1050,11 +1050,11 @@ export function SettingsTab() {
                     }`}
                     title="Click and press a key to bind"
                   >
-                    <KeyboardIcon size={11} className="shrink-0 text-zinc-600" />
+                    <KeyboardIcon size={11} className="shrink-0 text-zinc-300" />
                     {capturingKey === i ? (
                       <span className="text-violet-400">press a key…</span>
                     ) : (
-                      <span className={inp.key ? "text-zinc-300" : "text-zinc-600"}>
+                      <span className={inp.key ? "text-zinc-300" : "text-zinc-300"}>
                         {inp.key || "click to bind"}
                       </span>
                     )}
@@ -1062,7 +1062,7 @@ export function SettingsTab() {
 
                   <button
                     onClick={() => removeInput(i)}
-                    className="flex h-7 w-8 items-center justify-center text-zinc-700 transition hover:text-red-400"
+                    className="flex h-7 w-8 items-center justify-center text-zinc-400 transition hover:text-red-400"
                   >
                     <TrashIcon size={13} />
                   </button>

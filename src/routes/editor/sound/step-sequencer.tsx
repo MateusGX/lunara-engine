@@ -259,7 +259,7 @@ function StepCell({
           )}
         </>
       ) : (
-        <span className="font-mono text-[10px] text-zinc-800 group-hover:text-zinc-600">
+        <span className="font-mono text-[10px] text-zinc-800 group-hover:text-zinc-300">
           {index + 1}
         </span>
       )}
@@ -306,7 +306,7 @@ function NoteEditor({
           className={`flex items-center gap-1 text-[10px] transition ${
             active
               ? "text-red-500/70 hover:text-red-400"
-              : "text-zinc-700 hover:text-zinc-500"
+              : "text-zinc-400 hover:text-zinc-400"
           }`}
         >
           <XIcon size={10} /> {active ? "Clear" : "Empty"}
@@ -315,7 +315,7 @@ function NoteEditor({
 
       {/* Piano */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
           Tone
         </span>
         <PianoKeyboard
@@ -332,7 +332,7 @@ function NoteEditor({
 
       {/* Waveform override */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
           Waveform
         </span>
         <div className="flex flex-col gap-1">
@@ -343,7 +343,7 @@ function NoteEditor({
                 className={`flex items-center gap-1.5 border px-2.5 py-1.5 text-xs transition ${
                   !note.waveform
                     ? "border-white/30 bg-white/10 text-white"
-                    : "border-white/8 text-zinc-600 hover:border-white/15 hover:text-zinc-300"
+                    : "border-white/8 text-zinc-300 hover:border-white/15 hover:text-zinc-300"
                 }`}
               >
                 <span className="font-mono">↺</span> Default
@@ -360,7 +360,7 @@ function NoteEditor({
                 className={`flex items-center gap-1.5 border px-2.5 py-1.5 text-xs transition ${
                   note.waveform === w.id
                     ? ws.btn
-                    : "border-white/8 text-zinc-600 hover:border-white/15 hover:text-zinc-300"
+                    : "border-white/8 text-zinc-300 hover:border-white/15 hover:text-zinc-300"
                 }`}
               >
                 <span>{w.symbol}</span> {w.label}
@@ -374,7 +374,7 @@ function NoteEditor({
 
       {/* Duration */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
           Duration
         </span>
         <div className="flex flex-col gap-1">
@@ -387,7 +387,7 @@ function NoteEditor({
                 className={`border px-2.5 py-1.5 text-left font-mono text-xs transition ${
                   sel
                     ? style.btn
-                    : "border-white/8 text-zinc-600 hover:border-white/15 hover:text-zinc-300"
+                    : "border-white/8 text-zinc-300 hover:border-white/15 hover:text-zinc-300"
                 }`}
               >
                 {d.label}
@@ -401,9 +401,9 @@ function NoteEditor({
 
       {/* Volume */}
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
           Volume
-          <span className="ml-1.5 font-mono normal-case text-zinc-500">
+          <span className="ml-1.5 font-mono normal-case text-zinc-400">
             {Math.round((note.volume ?? 1) * 100)}%
           </span>
         </span>
@@ -493,7 +493,7 @@ export function StepSequencer() {
                     className={`border px-2 py-1 text-sm transition ${
                       active
                         ? ws.btn
-                        : "border-white/8 text-zinc-600 hover:border-white/15 hover:text-zinc-300"
+                        : "border-white/8 text-zinc-300 hover:border-white/15 hover:text-zinc-300"
                     }`}
                   >
                     {w.symbol}
@@ -509,7 +509,7 @@ export function StepSequencer() {
 
         {/* BPM */}
         <div className="flex flex-1 items-center gap-2">
-          <span className="shrink-0 font-mono text-[10px] text-zinc-600">
+          <span className="shrink-0 font-mono text-[10px] text-zinc-300">
             BPM
           </span>
           <Slider
@@ -520,7 +520,7 @@ export function StepSequencer() {
             onValueChange={([v]) => patchSound({ tempo: v })}
             className="flex-1"
           />
-          <span className="w-8 shrink-0 text-right font-mono text-xs tabular-nums text-zinc-400">
+          <span className="w-8 shrink-0 text-right font-mono text-xs tabular-nums text-zinc-300">
             {sound.tempo}
           </span>
         </div>
@@ -530,7 +530,7 @@ export function StepSequencer() {
             <Separator orientation="vertical" className="h-5 bg-white/8" />
             <button
               onClick={() => setSelectedStep(null)}
-              className="text-zinc-600 hover:text-zinc-300 transition"
+              className="text-zinc-300 hover:text-zinc-300 transition"
             >
               <XIcon size={13} />
             </button>
@@ -545,7 +545,7 @@ export function StepSequencer() {
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: Math.ceil(sound.notes.length / 4) }, (_, beat) => (
               <div key={beat} className="flex flex-col gap-3">
-                <span className="font-mono text-[9px] text-zinc-700">
+                <span className="font-mono text-[9px] text-zinc-400">
                   Beat {beat + 1}
                 </span>
                 <div className="flex gap-2">

@@ -281,15 +281,15 @@ export function MapCanvas() {
       <canvas ref={canvasRef} className="absolute inset-0" />
 
       {/* Status bar */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-white/6 bg-[#0d0d14]/80 px-3 py-1 backdrop-blur-sm">
-        <span className="font-mono text-[10px] text-zinc-500">
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex items-center justify-between border-t border-white/6 bg-surface-base/80 px-3 py-1 backdrop-blur-sm">
+        <span className="font-mono text-[10px] text-zinc-400">
           {hoverTile ? `col ${hoverTile[0]}, row ${hoverTile[1]}` : ""}
         </span>
         <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] text-zinc-700">
+          <span className="font-mono text-[10px] text-zinc-400">
             {tileCount} tile{tileCount !== 1 ? "s" : ""}
           </span>
-          <span className="font-mono text-[10px] text-zinc-700">
+          <span className="font-mono text-[10px] text-zinc-400">
             {mapZoom}x
           </span>
         </div>

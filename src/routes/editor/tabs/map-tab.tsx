@@ -40,7 +40,7 @@ export function MapTab() {
         <div className="flex shrink-0 items-center justify-between border-b border-white/8 px-3 py-1.5">
           {/* Tools */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
               Tools
             </span>
             <div className="flex gap-1">
@@ -51,7 +51,7 @@ export function MapTab() {
                       variant={mapTool === id ? "default" : "ghost"}
                       size="icon-sm"
                       onClick={() => setMapTool(id)}
-                      className={mapTool === id ? "bg-violet-600 hover:bg-violet-500" : "text-zinc-500"}
+                      className={mapTool === id ? "bg-violet-600 hover:bg-violet-500" : "text-zinc-400"}
                     >
                       <Icon size={15} weight={mapTool === id ? "fill" : "regular"} />
                     </Button>
@@ -71,7 +71,7 @@ export function MapTab() {
             {/* Pan hint */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center gap-1 text-zinc-700">
+                <div className="flex items-center gap-1 text-zinc-400">
                   <ArrowsOutCardinalIcon size={13} />
                   <span className="text-[10px]">Pan</span>
                 </div>
@@ -87,18 +87,18 @@ export function MapTab() {
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setMapZoom(Math.max(1, mapZoom - 1))}
-                className="text-zinc-500 hover:text-zinc-200"
+                className="text-zinc-400 hover:text-zinc-200"
               >
                 <MagnifyingGlassMinusIcon size={14} />
               </Button>
-              <span className="min-w-8 text-center font-mono text-xs text-zinc-600">
+              <span className="min-w-8 text-center font-mono text-xs text-zinc-300">
                 {mapZoom}x
               </span>
               <Button
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setMapZoom(Math.min(8, mapZoom + 1))}
-                className="text-zinc-500 hover:text-zinc-200"
+                className="text-zinc-400 hover:text-zinc-200"
               >
                 <MagnifyingGlassPlusIcon size={14} />
               </Button>
@@ -109,8 +109,8 @@ export function MapTab() {
         {/* Map breadcrumb */}
         {map && (
           <div className="shrink-0 flex items-center gap-2 border-b border-white/6 px-3 py-1">
-            <span className="font-mono text-[10px] text-zinc-600">#{map.id}</span>
-            <span className="text-[11px] text-zinc-500">{map.name}</span>
+            <span className="font-mono text-[10px] text-zinc-300">#{map.id}</span>
+            <span className="text-[11px] text-zinc-400">{map.name}</span>
           </div>
         )}
 

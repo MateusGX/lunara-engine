@@ -23,7 +23,7 @@ export function WaveformPicker() {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
         Waveform
       </span>
       <div className="flex gap-1.5">
@@ -37,7 +37,7 @@ export function WaveformPicker() {
             className={
               sound.waveform === w.id
                 ? "bg-violet-600 hover:bg-violet-500"
-                : "border-white/10 bg-transparent text-zinc-400 hover:bg-white/8 hover:text-zinc-200"
+                : "border-white/10 bg-transparent text-zinc-300 hover:bg-white/8 hover:text-zinc-200"
             }
           >
             <span className="text-base leading-none">{w.shape}</span>

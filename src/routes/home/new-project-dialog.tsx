@@ -52,10 +52,10 @@ export function NewProjectDialog({ open, onClose, onCreate }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent className="max-w-lg border-white/10 bg-[#13131e] text-white">
+      <DialogContent className="max-w-lg border-white/10 bg-surface-card text-white">
         <DialogHeader>
           <DialogTitle className="text-white">New Project</DialogTitle>
-          <DialogDescription className="text-zinc-400">
+          <DialogDescription className="text-zinc-300">
             {step === "template"
               ? "Choose a template to get started"
               : "Give your project a name"}
@@ -81,7 +81,7 @@ export function NewProjectDialog({ open, onClose, onCreate }: Props) {
                       className={`mt-0.5 p-2 ${
                         selected.id === t.id
                           ? "bg-violet-500/20 text-violet-400"
-                          : "bg-white/8 text-zinc-400"
+                          : "bg-white/8 text-zinc-300"
                       }`}
                     >
                       <Icon size={20} weight="duotone" />
@@ -118,7 +118,7 @@ export function NewProjectDialog({ open, onClose, onCreate }: Props) {
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   placeholder="My Awesome Game"
-                  className="border-white/10 bg-white/5 text-white placeholder:text-zinc-600 focus-visible:border-violet-500 focus-visible:ring-0"
+                  className="border-white/10 bg-white/5 text-white placeholder:text-zinc-400 focus-visible:border-violet-500 focus-visible:ring-0"
                 />
               </div>
               <div className="space-y-1.5">
@@ -131,7 +131,7 @@ export function NewProjectDialog({ open, onClose, onCreate }: Props) {
                   onChange={(e) => setAuthor(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                   placeholder="Your name"
-                  className="border-white/10 bg-white/5 text-white placeholder:text-zinc-600 focus-visible:border-violet-500 focus-visible:ring-0"
+                  className="border-white/10 bg-white/5 text-white placeholder:text-zinc-400 focus-visible:border-violet-500 focus-visible:ring-0"
                 />
               </div>
             </div>

@@ -7,7 +7,7 @@ export function PaletteSelector() {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
         Palette
       </span>
 
@@ -39,7 +39,7 @@ export function PaletteSelector() {
             </TooltipTrigger>
             <TooltipContent>
               <span className="font-mono">
-                {i === 0 ? "Transparent" : hex} <span className="text-zinc-400">#{i}</span>
+                {i === 0 ? "Transparent" : hex} <span className="text-zinc-300">#{i}</span>
               </span>
             </TooltipContent>
           </Tooltip>
@@ -60,7 +60,7 @@ export function PaletteSelector() {
             </svg>
           )}
         </div>
-        <span className="font-mono text-[11px] text-zinc-400">
+        <span className="font-mono text-[11px] text-zinc-300">
           #{activePaletteIndex}{" "}
           <span className="text-zinc-300">
             {activePaletteIndex === 0 ? "transparent" : (palette[activePaletteIndex] ?? "—")}

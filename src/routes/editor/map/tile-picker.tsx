@@ -55,7 +55,7 @@ function TilePreview({
         className="border border-white/10"
         style={{ imageRendering: "pixelated" }}
       />
-      <span className="font-mono text-[9px] text-zinc-600">{sprite.id}</span>
+      <span className="font-mono text-[9px] text-zinc-300">{sprite.id}</span>
     </button>
   );
 }
@@ -66,7 +66,7 @@ export function TilePicker() {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-600">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
         Tiles
       </span>
       <div className="flex flex-wrap gap-0.5">

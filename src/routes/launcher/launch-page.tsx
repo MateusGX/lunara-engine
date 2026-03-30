@@ -57,9 +57,9 @@ function StatRow({
 }) {
   return (
     <div className="flex items-center gap-2 py-1.5">
-      <Icon size={12} className="shrink-0 text-zinc-600" />
-      <span className="text-xs text-zinc-500">{label}</span>
-      <span className="ml-auto font-mono text-xs text-zinc-300">{value}</span>
+      <Icon size={12} className="shrink-0 text-zinc-300" />
+      <span className="text-xs text-zinc-300">{label}</span>
+      <span className="ml-auto font-mono text-xs text-zinc-100">{value}</span>
     </div>
   );
 }
@@ -198,7 +198,7 @@ export function LaunchPage() {
             variant="ghost"
             size="sm"
             onClick={() => setPlaying(false)}
-            className="gap-1.5 text-zinc-500 hover:text-zinc-200"
+            className="gap-1.5 text-zinc-400 hover:text-zinc-200"
           >
             <ArrowLeftIcon size={13} /> Back
           </Button>
@@ -221,21 +221,21 @@ export function LaunchPage() {
             {cartridge.meta.version && (
               <Badge
                 variant="outline"
-                className="shrink-0 border-white/10 bg-transparent px-1 py-0 font-mono text-[9px] text-zinc-500"
+                className="shrink-0 border-white/10 bg-transparent px-1 py-0 font-mono text-[9px] text-zinc-400"
               >
                 v{cartridge.meta.version}
               </Badge>
             )}
             {cartridge.meta.author && (
               <>
-                <span className="shrink-0 text-zinc-700">·</span>
-                <span className="shrink-0 text-xs text-zinc-500">
+                <span className="shrink-0 text-zinc-400">·</span>
+                <span className="shrink-0 text-xs text-zinc-400">
                   {cartridge.meta.author}
                 </span>
               </>
             )}
           </div>
-          <span className="shrink-0 font-mono text-[10px] text-zinc-700">
+          <span className="shrink-0 font-mono text-[10px] text-zinc-400">
             {cartridge.hardware.width}×{cartridge.hardware.height}
           </span>
         </div>
@@ -252,7 +252,7 @@ export function LaunchPage() {
     );
 
     return (
-      <div className="flex min-h-screen flex-col bg-[#0d0d14] text-white">
+      <div className="flex min-h-screen flex-col bg-surface-base text-white">
         <header className="border-b border-white/8 px-6 py-3">
           <div className="mx-auto flex max-w-lg items-center justify-between">
             <LunaraLogo subtitle="launcher" />
@@ -260,7 +260,7 @@ export function LaunchPage() {
               variant="ghost"
               size="sm"
               onClick={() => setCartridge(null)}
-              className="h-8 gap-1.5 text-xs text-zinc-500 hover:text-zinc-200"
+              className="h-8 gap-1.5 text-xs text-zinc-400 hover:text-zinc-200"
             >
               <ArrowLeftIcon size={13} /> Load another
             </Button>
@@ -269,9 +269,9 @@ export function LaunchPage() {
 
         <main className="flex flex-1 items-center justify-center px-6 py-10">
           <div className="w-full max-w-lg">
-            <Card className="overflow-hidden border-white/10 bg-[#13131f] p-0">
+            <Card className="overflow-hidden border-white/10 bg-surface-card p-0">
               {/* Cover */}
-              <div className="relative h-40 w-full overflow-hidden bg-[#0d0d14]">
+              <div className="relative h-40 w-full overflow-hidden bg-surface-base">
                 {cartridge.meta.coverArt ? (
                   <img
                     src={cartridge.meta.coverArt}
@@ -308,7 +308,7 @@ export function LaunchPage() {
                     <h1 className="truncate text-base font-bold text-white">
                       {cartridge.meta.name}
                     </h1>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-zinc-400">
                       {cartridge.meta.author
                         ? `by ${cartridge.meta.author}`
                         : "Unknown author"}
@@ -317,7 +317,7 @@ export function LaunchPage() {
                   {cartridge.meta.version && (
                     <Badge
                       variant="outline"
-                      className="mt-0.5 shrink-0 border-white/10 bg-white/5 px-1.5 font-mono text-[10px] text-zinc-400"
+                      className="mt-0.5 shrink-0 border-white/10 bg-white/5 px-1.5 font-mono text-[10px] text-zinc-300"
                     >
                       v{cartridge.meta.version}
                     </Badge>
@@ -325,7 +325,7 @@ export function LaunchPage() {
                 </div>
 
                 {cartridge.meta.description && (
-                  <p className="mt-3 text-xs leading-relaxed text-zinc-500">
+                  <p className="mt-3 text-xs leading-relaxed text-zinc-400">
                     {cartridge.meta.description}
                   </p>
                 )}
@@ -375,9 +375,9 @@ export function LaunchPage() {
                 {/* Hardware override */}
                 <div className="w-full">
                   <div className="mb-2 flex items-center gap-1.5">
-                    <CircuitryIcon size={11} className="text-zinc-600" />
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
-                      Hardware
+                    <CircuitryIcon size={11} className="text-zinc-300" />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-200">
+                      Hardware Profile
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -386,7 +386,7 @@ export function LaunchPage() {
                       className={`px-2.5 py-1 text-[11px] font-medium transition ${
                         selectedPreset === "cartridge"
                           ? "bg-violet-600 text-white"
-                          : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                          : "bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-zinc-100"
                       }`}
                     >
                       Cartridge
@@ -398,7 +398,7 @@ export function LaunchPage() {
                         className={`px-2.5 py-1 text-[11px] font-medium transition ${
                           selectedPreset === preset.id
                             ? "bg-violet-600 text-white"
-                            : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                            : "bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-zinc-100"
                         }`}
                       >
                         {preset.name}
@@ -411,7 +411,7 @@ export function LaunchPage() {
                         className={`px-2.5 py-1 text-[11px] font-medium transition ${
                           selectedPreset === preset.id
                             ? "bg-violet-600 text-white"
-                            : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                            : "bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-zinc-100"
                         }`}
                       >
                         {preset.name}
@@ -464,7 +464,7 @@ export function LaunchPage() {
                       className={`px-2.5 py-1 text-[11px] font-medium transition ${
                         selectedPreset === "custom"
                           ? "bg-violet-600 text-white"
-                          : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-zinc-200"
+                          : "bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-zinc-100"
                       }`}
                     >
                       Custom
@@ -473,14 +473,18 @@ export function LaunchPage() {
 
                   {/* Preset description */}
                   {hwOverride && selectedPreset !== "custom" && (
-                    <p className="mt-1.5 text-[10px] text-zinc-600">
+                    <p className="mt-1.5 text-[10px] text-zinc-200">
                       {
                         (
                           HARDWARE_PRESETS.find(
                             (p) => p.id === selectedPreset,
                           ) ??
                           customPresets.find((p) => p.id === selectedPreset)
-                        )?.desc
+                        )?.desc ?? (
+                          <span className="text-sm font-semibold text-zinc-100 italic">
+                        No description provided.
+                      </span>
+                        )
                       }{" "}
                       — overrides cartridge hardware
                     </p>
@@ -491,7 +495,7 @@ export function LaunchPage() {
                     <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
                       {/* Resolution */}
                       <div className="col-span-2">
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-200">
                           Resolution
                         </label>
                         <div className="flex items-center gap-1.5">
@@ -506,9 +510,9 @@ export function LaunchPage() {
                                 width: e.target.value,
                               }))
                             }
-                            className="w-full bg-white/5 px-2 py-1 font-mono text-xs text-zinc-200 outline-none focus:ring-1 focus:ring-violet-500/50"
+                            className="w-full bg-white/5 px-2 py-1 font-mono text-xs text-zinc-100 outline-none focus:ring-1 focus:ring-violet-500/50"
                           />
-                          <span className="text-xs text-zinc-600">×</span>
+                          <span className="text-xs text-zinc-200">×</span>
                           <input
                             type="number"
                             min={1}
@@ -527,7 +531,7 @@ export function LaunchPage() {
 
                       {/* FPS */}
                       <div>
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-300">
                           Max FPS
                         </label>
                         <input
@@ -547,7 +551,7 @@ export function LaunchPage() {
 
                       {/* CPU */}
                       <div>
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-300">
                           CPU Speed
                         </label>
                         <div className="flex gap-1">
@@ -574,7 +578,7 @@ export function LaunchPage() {
                                   | "MIPS",
                               }))
                             }
-                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-400 outline-none focus:ring-1 focus:ring-violet-500/50"
+                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-300 outline-none focus:ring-1 focus:ring-violet-500/50"
                           >
                             <option value="IPS">IPS</option>
                             <option value="KIPS">KIPS</option>
@@ -585,7 +589,7 @@ export function LaunchPage() {
 
                       {/* RAM */}
                       <div>
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-300">
                           RAM
                         </label>
                         <div className="flex gap-1">
@@ -609,7 +613,7 @@ export function LaunchPage() {
                                 memUnit: e.target.value as "KB" | "MB",
                               }))
                             }
-                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-400 outline-none focus:ring-1 focus:ring-violet-500/50"
+                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-300 outline-none focus:ring-1 focus:ring-violet-500/50"
                           >
                             <option value="KB">KB</option>
                             <option value="MB">MB</option>
@@ -619,7 +623,7 @@ export function LaunchPage() {
 
                       {/* Storage */}
                       <div>
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-300">
                           Max Storage
                         </label>
                         <div className="flex gap-1">
@@ -643,7 +647,7 @@ export function LaunchPage() {
                                 storageUnit: e.target.value as "KB" | "MB",
                               }))
                             }
-                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-400 outline-none focus:ring-1 focus:ring-violet-500/50"
+                            className="bg-white/5 px-1.5 py-1 text-[10px] text-zinc-300 outline-none focus:ring-1 focus:ring-violet-500/50"
                           >
                             <option value="KB">KB</option>
                             <option value="MB">MB</option>
@@ -653,7 +657,7 @@ export function LaunchPage() {
 
                       {/* Sprites */}
                       <div>
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-300">
                           Max Sprites
                         </label>
                         <input
@@ -672,7 +676,7 @@ export function LaunchPage() {
 
                       {/* Sounds */}
                       <div>
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-300">
                           Max Sounds
                         </label>
                         <input
@@ -691,7 +695,7 @@ export function LaunchPage() {
 
                       {/* Sprite Size */}
                       <div>
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-300">
                           Sprite Size
                         </label>
                         <select
@@ -714,7 +718,7 @@ export function LaunchPage() {
 
                       {/* SFX Steps */}
                       <div>
-                        <label className="mb-1 block text-[10px] text-zinc-600">
+                        <label className="mb-1 block text-[10px] text-zinc-300">
                           SFX Steps
                         </label>
                         <select
@@ -735,7 +739,7 @@ export function LaunchPage() {
                         </select>
                       </div>
 
-                      <p className="col-span-2 text-[10px] text-zinc-700">
+                      <p className="col-span-2 text-[10px] text-zinc-400">
                         Palette and inputs are inherited from the cartridge.
                       </p>
                     </div>
@@ -754,7 +758,7 @@ export function LaunchPage() {
                 >
                   <PlayIcon size={16} weight="fill" /> Play
                 </Button>
-                <p className="text-center text-[10px] text-zinc-700">
+                <p className="text-center text-[10px] text-zinc-400">
                   Played in memory — nothing is saved to disk.
                 </p>
               </CardFooter>
@@ -767,7 +771,7 @@ export function LaunchPage() {
 
   // ── Drop zone ─────────────────────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen flex-col bg-[#0d0d14] text-white">
+    <div className="flex min-h-screen flex-col bg-surface-base text-white">
       <header className="border-b border-white/8 px-6 py-3">
         <div className="mx-auto flex max-w-lg items-center justify-between">
           <LunaraLogo subtitle="launcher" />
@@ -775,7 +779,7 @@ export function LaunchPage() {
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="h-8 gap-1.5 text-xs text-zinc-500 hover:text-zinc-200"
+            className="h-8 gap-1.5 text-xs text-zinc-400 hover:text-zinc-200"
           >
             <ArrowLeftIcon size={13} /> Projects
           </Button>
@@ -808,7 +812,7 @@ export function LaunchPage() {
             >
               <GameControllerIcon
                 size={32}
-                className={dragging ? "text-violet-400" : "text-zinc-600"}
+                className={dragging ? "text-violet-400" : "text-zinc-300"}
                 weight="duotone"
               />
             </div>
@@ -817,16 +821,16 @@ export function LaunchPage() {
               <p className="font-semibold text-zinc-200">
                 {dragging ? "Release to load" : "Drop a cartridge here"}
               </p>
-              <p className="mt-1.5 text-xs text-zinc-600">
-                Accepts <span className="font-mono text-zinc-400">.png</span>{" "}
-                and <span className="font-mono text-zinc-400">.lun</span> files
+              <p className="mt-1.5 text-xs text-zinc-300">
+                Accepts <span className="font-mono text-zinc-300">.png</span>{" "}
+                and <span className="font-mono text-zinc-300">.lun</span> files
               </p>
             </div>
 
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 border-white/10 bg-transparent text-zinc-400 hover:border-violet-500/50 hover:bg-violet-500/10 hover:text-violet-300"
+              className="gap-1.5 border-white/10 bg-transparent text-zinc-300 hover:border-violet-500/50 hover:bg-violet-500/10 hover:text-violet-300"
               onClick={(e) => {
                 e.stopPropagation();
                 inputRef.current?.click();
@@ -855,7 +859,7 @@ export function LaunchPage() {
             </div>
           )}
 
-          <p className="mt-5 text-center text-[11px] text-zinc-700">
+          <p className="mt-5 text-center text-[11px] text-zinc-400">
             Cartridges run in memory — nothing is saved to disk.
           </p>
         </div>
