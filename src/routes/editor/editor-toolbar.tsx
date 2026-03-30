@@ -11,7 +11,6 @@ import {
   ArrowLeftIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -140,7 +139,8 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
                 <div>
                   <p className="text-sm">Export Game</p>
                   <p className="text-[10px] text-zinc-300">
-                    Play-only <span className="font-mono">.png</span> — cartridge image
+                    Play-only <span className="font-mono">.png</span> —
+                    cartridge image
                   </p>
                   {hasLintErrors && (
                     <p className="text-[10px] text-red-400/70">

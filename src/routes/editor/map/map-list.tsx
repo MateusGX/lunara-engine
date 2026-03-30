@@ -1,4 +1,4 @@
-import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
+import { PlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/store";
 import { InlineEdit } from "../inline-edit";
