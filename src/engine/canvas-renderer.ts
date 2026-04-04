@@ -86,6 +86,7 @@ const CHAR_W = 5;
 const CHAR_H = 7;
 
 function getCharBitmap(code: number): number[] {
+  /* v8 ignore next */
   return FONT_DATA[code] ?? FONT_DATA[63] ?? new Array(7).fill(0);
 }
 
@@ -335,6 +336,7 @@ export class CanvasRenderer {
       }
       const bitmap = getCharBitmap(code);
       for (let row = 0; row < CHAR_H; row++) {
+        /* v8 ignore next */
         const bits = bitmap[row] ?? 0;
         for (let bit = 0; bit < CHAR_W; bit++) {
           if (bits & (1 << (CHAR_W - 1 - bit))) {

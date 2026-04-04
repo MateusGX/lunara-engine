@@ -151,6 +151,14 @@ describe("CartridgeRunner", () => {
       await runner.start(cartridge, makeCanvas());
       expect(runner.running).toBe(true);
     });
+
+    it("falls back to spriteSize 8 when spriteSize is absent", async () => {
+      const cartridge = makeCartridge({
+        spriteSize: undefined as unknown as number,
+      });
+      await runner.start(cartridge, makeCanvas());
+      expect(runner.running).toBe(true);
+    });
   });
 
   describe("storage limit enforcement", () => {

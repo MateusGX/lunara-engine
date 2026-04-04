@@ -469,6 +469,13 @@ describe("CanvasRenderer", () => {
     });
   });
 
+  describe("cursor()", () => {
+    it("does not throw when called", () => {
+      const { renderer } = makeRenderer();
+      expect(() => renderer.cursor(5, 10)).not.toThrow();
+    });
+  });
+
   describe("print()", () => {
     it("draws pixels for a non-space character", () => {
       const { renderer } = makeRenderer();

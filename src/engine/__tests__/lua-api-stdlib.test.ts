@@ -425,6 +425,14 @@ describe("table.sort()", () => {
     tbl().sort(t, (a: unknown, b: unknown) => (a as number) > (b as number)); // descending
     expect([t[1], t[2], t[3]]).toEqual([3, 2, 1]);
   });
+
+  it("handles equal elements (returns 0) with default comparator", () => {
+    const t: Record<number, unknown> = { 1: 2, 2: 2, 3: 1 };
+    tbl().sort(t);
+    expect(t[1]).toBe(1);
+    expect(t[2]).toBe(2);
+    expect(t[3]).toBe(2);
+  });
 });
 
 // ── table.concat ─────────────────────────────────────────────────────────────
