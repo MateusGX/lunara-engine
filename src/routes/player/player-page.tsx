@@ -15,6 +15,7 @@ export function PlayerPage() {
 
   useEffect(() => {
     if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNotFound(true);
       return;
     }
@@ -27,20 +28,22 @@ export function PlayerPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-black">
-        <div className="h-6 w-6 animate-spin border-2 border-violet-500" />
+      <div className="flex h-screen w-screen items-center justify-center bg-surface-base">
+        <span className="animate-pulse font-mono text-xs tracking-widest text-rpg-stone/60">
+          Loading...
+        </span>
       </div>
     );
   }
 
   if (notFound || !cartridge) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-black text-zinc-300">
-        <p>Cartridge not found.</p>
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-surface-base text-rpg-stone/70">
+        <p className="font-mono text-sm">Cartridge not found.</p>
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="text-violet-400"
+          className="text-rpg-gold hover:text-rpg-gold-bright"
         >
           Go back
         </Button>
@@ -55,16 +58,16 @@ export function PlayerPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/")}
-          className="gap-1.5 text-zinc-400 hover:text-zinc-200"
+          onClick={() => navigate("/studio")}
+          className="gap-1.5 text-rpg-stone/60 hover:text-rpg-parchment"
         >
           <ArrowLeftIcon size={13} /> Projects
         </Button>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate(`/editor/${cartridge.meta.id}`)}
-          className="gap-1.5 text-zinc-400 hover:text-zinc-200"
+          onClick={() => navigate(`/studio/editor/${cartridge.meta.id}`)}
+          className="gap-1.5 text-rpg-stone/60 hover:text-rpg-parchment"
         >
           <PencilSimpleIcon size={13} /> Edit
         </Button>
@@ -76,31 +79,36 @@ export function PlayerPage() {
       </div>
 
       {/* Bottom info strip — visible on hover */}
-      <div className="flex items-center gap-4 border-t border-white/5 px-5 py-2.5 opacity-0 transition-opacity duration-200 group-hover/player:opacity-100">
+      <div className="flex items-center gap-4 border-t border-rpg-gold/8 px-5 py-2.5 opacity-0 transition-opacity duration-200 group-hover/player:opacity-100">
         <div className="flex flex-1 items-baseline gap-2 overflow-hidden">
-          <span className="truncate text-sm font-semibold text-zinc-200">
+          <span className="truncate text-sm font-semibold text-rpg-parchment">
             {cartridge.meta.name}
           </span>
           {cartridge.meta.version && (
-            <span className="shrink-0 border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[9px] text-zinc-400">
+            <span className="shrink-0 border border-rpg-gold/20 bg-rpg-gold/5 px-1.5 py-0.5 font-mono text-[9px] text-rpg-stone/60">
               v{cartridge.meta.version}
             </span>
           )}
           {cartridge.meta.author && (
             <>
-              <span className="shrink-0 text-zinc-400">·</span>
-              <span className="shrink-0 text-xs text-zinc-400">{cartridge.meta.author}</span>
+              <span className="shrink-0 text-rpg-gold/30">·</span>
+              <span className="shrink-0 text-xs text-rpg-stone/60">
+                {cartridge.meta.author}
+              </span>
             </>
           )}
           {cartridge.meta.description && (
             <>
-              <span className="shrink-0 text-zinc-400">·</span>
-              <span className="truncate text-xs text-zinc-300">{cartridge.meta.description}</span>
+              <span className="shrink-0 text-rpg-gold/30">·</span>
+              <span className="truncate text-xs text-rpg-stone/70">
+                {cartridge.meta.description}
+              </span>
             </>
           )}
         </div>
-        <span className="shrink-0 font-mono text-[10px] text-zinc-400">
-          {cartridge.hardware.width}×{cartridge.hardware.height} · {cartridge.hardware.palette.length} colors
+        <span className="shrink-0 font-mono text-[10px] text-rpg-stone/50">
+          {cartridge.hardware.width}×{cartridge.hardware.height} ·{" "}
+          {cartridge.hardware.palette.length} colors
         </span>
       </div>
     </div>

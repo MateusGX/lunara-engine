@@ -86,28 +86,28 @@ const WAVE_STYLE: Record<
   { bg: string; dim: string; text: string; btn: string }
 > = {
   sine: {
-    bg: "bg-blue-500",
-    dim: "bg-blue-500/20",
-    text: "text-blue-300",
-    btn: "border-blue-500/60 bg-blue-500/15 text-blue-300",
+    bg: "bg-sky-400",
+    dim: "bg-sky-400/20",
+    text: "text-sky-300",
+    btn: "border-sky-400/50 bg-sky-400/12 text-sky-300",
   },
   square: {
-    bg: "bg-violet-500",
-    dim: "bg-violet-500/20",
-    text: "text-violet-300",
-    btn: "border-violet-500/60 bg-violet-500/15 text-violet-300",
+    bg: "bg-rpg-gold",
+    dim: "bg-rpg-gold/15",
+    text: "text-rpg-gold",
+    btn: "border-rpg-gold/50 bg-rpg-gold/12 text-rpg-gold",
   },
   sawtooth: {
-    bg: "bg-orange-500",
-    dim: "bg-orange-500/20",
+    bg: "bg-orange-400",
+    dim: "bg-orange-400/20",
     text: "text-orange-300",
-    btn: "border-orange-500/60 bg-orange-500/15 text-orange-300",
+    btn: "border-orange-400/50 bg-orange-400/12 text-orange-300",
   },
   triangle: {
-    bg: "bg-emerald-500",
-    dim: "bg-emerald-500/20",
-    text: "text-emerald-300",
-    btn: "border-emerald-500/60 bg-emerald-500/15 text-emerald-300",
+    bg: "bg-rpg-emerald",
+    dim: "bg-rpg-emerald/20",
+    text: "text-rpg-emerald",
+    btn: "border-rpg-emerald/50 bg-rpg-emerald/12 text-rpg-emerald",
   },
 };
 
@@ -144,7 +144,7 @@ function PianoKeyboard({
   const accent = WAVE_STYLE[accentWave];
   const totalW = OCTAVES.length * 7 * WHITE_W;
   return (
-    <div className="overflow-x-auto border border-white/8 bg-black/40">
+    <div className="overflow-x-auto border border-rpg-gold/12 bg-surface-base">
       <div className="relative" style={{ width: totalW, height: 48 }}>
         {OCTAVES.map((oct, octIdx) => {
           const octX = octIdx * 7 * WHITE_W;
@@ -160,10 +160,10 @@ function PianoKeyboard({
                       onChange(midi);
                       onPreview(midi);
                     }}
-                    className={`absolute bottom-0 border border-white/15 transition ${
+                    className={`absolute bottom-0 border border-rpg-gold/20 transition ${
                       sel
                         ? `${accent.bg} border-transparent`
-                        : "bg-white/90 hover:bg-white"
+                        : "bg-[#e8e0d0] hover:bg-white"
                     }`}
                     style={{
                       left: octX + wIdx * WHITE_W,
@@ -185,7 +185,7 @@ function PianoKeyboard({
                       onPreview(midi);
                     }}
                     className={`absolute z-10 transition ${
-                      sel ? `${accent.bg}` : "bg-zinc-900 hover:bg-zinc-700"
+                      sel ? `${accent.bg}` : "bg-surface-base hover:bg-surface-raised"
                     }`}
                     style={{ left: octX + bx, width: 12, height: 30, top: 0 }}
                     title={noteName(midi)}
@@ -225,10 +225,10 @@ function StepCell({
         selected
           ? active
             ? `${style.bg} border-transparent shadow-md`
-            : "border-white/40 bg-white/10"
+            : "border-rpg-gold/40 bg-rpg-gold/10"
           : active
             ? `${style.dim} border-transparent hover:brightness-125`
-            : "border-white/6 bg-white/2 hover:border-white/20 hover:bg-white/5"
+            : "border-rpg-gold/8 bg-rpg-gold/2 hover:border-rpg-gold/20 hover:bg-rpg-gold/5"
       }`}
     >
       {active && (
@@ -259,7 +259,7 @@ function StepCell({
           )}
         </>
       ) : (
-        <span className="font-mono text-[10px] text-zinc-800 group-hover:text-zinc-300">
+        <span className="font-mono text-[10px] text-rpg-stone/30 group-hover:text-rpg-stone/70">
           {index + 1}
         </span>
       )}
@@ -305,8 +305,8 @@ function NoteEditor({
           onClick={onDeactivate}
           className={`flex items-center gap-1 text-[10px] transition ${
             active
-              ? "text-red-500/70 hover:text-red-400"
-              : "text-zinc-400 hover:text-zinc-400"
+              ? "text-rpg-blood/70 hover:text-rpg-blood"
+              : "text-rpg-stone/50 hover:text-rpg-stone"
           }`}
         >
           <XIcon size={10} /> {active ? "Clear" : "Empty"}
@@ -315,7 +315,7 @@ function NoteEditor({
 
       {/* Piano */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
           Tone
         </span>
         <PianoKeyboard
@@ -328,11 +328,11 @@ function NoteEditor({
         />
       </div>
 
-      <Separator className="bg-white/8" />
+      <Separator className="bg-rpg-gold/12" />
 
       {/* Waveform override */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
           Waveform
         </span>
         <div className="flex flex-col gap-1">
@@ -342,8 +342,8 @@ function NoteEditor({
                 onClick={() => onChange({ waveform: null })}
                 className={`flex items-center gap-1.5 border px-2.5 py-1.5 text-xs transition ${
                   !note.waveform
-                    ? "border-white/30 bg-white/10 text-white"
-                    : "border-white/8 text-zinc-300 hover:border-white/15 hover:text-zinc-300"
+                    ? "border-rpg-gold/40 bg-rpg-gold/10 text-rpg-parchment"
+                    : "border-rpg-gold/12 text-rpg-stone/70 hover:border-rpg-gold/25 hover:text-rpg-stone"
                 }`}
               >
                 <span className="font-mono">↺</span> Default
@@ -360,7 +360,7 @@ function NoteEditor({
                 className={`flex items-center gap-1.5 border px-2.5 py-1.5 text-xs transition ${
                   note.waveform === w.id
                     ? ws.btn
-                    : "border-white/8 text-zinc-300 hover:border-white/15 hover:text-zinc-300"
+                    : "border-rpg-gold/12 text-rpg-stone/70 hover:border-rpg-gold/25 hover:text-rpg-stone"
                 }`}
               >
                 <span>{w.symbol}</span> {w.label}
@@ -370,11 +370,11 @@ function NoteEditor({
         </div>
       </div>
 
-      <Separator className="bg-white/8" />
+      <Separator className="bg-rpg-gold/12" />
 
       {/* Duration */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
           Duration
         </span>
         <div className="flex flex-col gap-1">
@@ -387,7 +387,7 @@ function NoteEditor({
                 className={`border px-2.5 py-1.5 text-left font-mono text-xs transition ${
                   sel
                     ? style.btn
-                    : "border-white/8 text-zinc-300 hover:border-white/15 hover:text-zinc-300"
+                    : "border-rpg-gold/12 text-rpg-stone/70 hover:border-rpg-gold/25 hover:text-rpg-stone"
                 }`}
               >
                 {d.label}
@@ -397,13 +397,13 @@ function NoteEditor({
         </div>
       </div>
 
-      <Separator className="bg-white/8" />
+      <Separator className="bg-rpg-gold/12" />
 
       {/* Volume */}
       <div className="flex flex-col gap-2">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
           Volume
-          <span className="ml-1.5 font-mono normal-case text-zinc-400">
+          <span className="ml-1.5 font-mono normal-case text-rpg-stone/60">
             {Math.round((note.volume ?? 1) * 100)}%
           </span>
         </span>
@@ -469,16 +469,17 @@ export function StepSequencer() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Transport */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-white/8 px-3 py-2">
+      <div className="flex shrink-0 items-center gap-3 border-b border-rpg-gold/12 px-3 py-2">
         <Button
           size="sm"
+          variant="emerald"
           onClick={() => new AudioEngine(cart.sounds).sfx(selectedSoundId)}
-          className="shrink-0 gap-1.5 bg-emerald-700/30 text-emerald-300 hover:bg-emerald-700/50"
+          className="shrink-0 gap-1.5"
         >
           <PlayIcon size={12} weight="fill" /> Play
         </Button>
 
-        <Separator orientation="vertical" className="h-5 bg-white/8" />
+        <Separator orientation="vertical" className="h-5 bg-rpg-gold/12" />
 
         {/* Waveform */}
         <div className="flex items-center gap-1">
@@ -493,7 +494,7 @@ export function StepSequencer() {
                     className={`border px-2 py-1 text-sm transition ${
                       active
                         ? ws.btn
-                        : "border-white/8 text-zinc-300 hover:border-white/15 hover:text-zinc-300"
+                        : "border-rpg-gold/12 text-rpg-stone/70 hover:border-rpg-gold/25 hover:text-rpg-stone"
                     }`}
                   >
                     {w.symbol}
@@ -505,11 +506,11 @@ export function StepSequencer() {
           })}
         </div>
 
-        <Separator orientation="vertical" className="h-5 bg-white/8" />
+        <Separator orientation="vertical" className="h-5 bg-rpg-gold/12" />
 
         {/* BPM */}
         <div className="flex flex-1 items-center gap-2">
-          <span className="shrink-0 font-mono text-[10px] text-zinc-300">
+          <span className="shrink-0 font-mono text-[10px] text-rpg-stone/70">
             BPM
           </span>
           <Slider
@@ -520,17 +521,17 @@ export function StepSequencer() {
             onValueChange={([v]) => patchSound({ tempo: v })}
             className="flex-1"
           />
-          <span className="w-8 shrink-0 text-right font-mono text-xs tabular-nums text-zinc-300">
+          <span className="w-8 shrink-0 text-right font-mono text-xs tabular-nums text-rpg-stone/80">
             {sound.tempo}
           </span>
         </div>
 
         {selectedStep !== null && (
           <>
-            <Separator orientation="vertical" className="h-5 bg-white/8" />
+            <Separator orientation="vertical" className="h-5 bg-rpg-gold/12" />
             <button
               onClick={() => setSelectedStep(null)}
-              className="text-zinc-300 hover:text-zinc-300 transition"
+              className="text-rpg-stone/60 hover:text-rpg-parchment transition"
             >
               <XIcon size={13} />
             </button>
@@ -545,7 +546,7 @@ export function StepSequencer() {
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: Math.ceil(sound.notes.length / 4) }, (_, beat) => (
               <div key={beat} className="flex flex-col gap-3">
-                <span className="font-mono text-[9px] text-zinc-400">
+                <span className="font-mono text-[9px] text-rpg-stone/50">
                   Beat {beat + 1}
                 </span>
                 <div className="flex gap-2">

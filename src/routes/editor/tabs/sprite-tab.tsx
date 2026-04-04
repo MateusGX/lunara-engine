@@ -31,7 +31,7 @@ export function SpriteTab() {
       {/* Left panel: canvas + tools */}
       <div className="flex flex-1 flex-col gap-0 overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center justify-between border-b border-white/8 px-3 py-1.5">
+        <div className="flex items-center justify-between border-b border-rpg-gold/12 px-3 py-1.5">
           <SpriteTools />
 
           <div className="flex items-center gap-2">
@@ -43,14 +43,14 @@ export function SpriteTab() {
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => canvasRef.current?.undo()}
-                    className="text-zinc-400 hover:text-zinc-200"
+                    className="text-rpg-stone/60 hover:text-rpg-parchment"
                   >
                     <ArrowCounterClockwiseIcon size={14} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   Undo
-                  <kbd className="ml-1.5 rounded border border-white/10 bg-white/10 px-1 py-0.5 font-mono text-[10px]">
+                  <kbd className="ml-1.5 rounded border border-rpg-gold/20 bg-rpg-gold/8 px-1 py-0.5 font-mono text-[10px]">
                     Ctrl+Z
                   </kbd>
                 </TooltipContent>
@@ -61,21 +61,21 @@ export function SpriteTab() {
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => canvasRef.current?.redo()}
-                    className="text-zinc-400 hover:text-zinc-200"
+                    className="text-rpg-stone/60 hover:text-rpg-parchment"
                   >
                     <ArrowClockwiseIcon size={14} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   Redo
-                  <kbd className="ml-1.5 rounded border border-white/10 bg-white/10 px-1 py-0.5 font-mono text-[10px]">
+                  <kbd className="ml-1.5 rounded border border-rpg-gold/20 bg-rpg-gold/8 px-1 py-0.5 font-mono text-[10px]">
                     Ctrl+Y
                   </kbd>
                 </TooltipContent>
               </Tooltip>
             </div>
 
-            <Separator orientation="vertical" className="h-5 bg-white/8" />
+            <Separator orientation="vertical" className="h-5 bg-rpg-gold/12" />
 
             {/* Zoom */}
             <div className="flex items-center gap-0.5">
@@ -83,18 +83,18 @@ export function SpriteTab() {
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setSpriteZoom(Math.max(4, spriteZoom - 4))}
-                className="text-zinc-400 hover:text-zinc-200"
+                className="text-rpg-stone/60 hover:text-rpg-parchment"
               >
                 <MagnifyingGlassMinusIcon size={14} />
               </Button>
-              <span className="min-w-8 text-center font-mono text-xs text-zinc-300">
+              <span className="min-w-8 text-center font-mono text-xs text-rpg-stone/80">
                 {spriteZoom}x
               </span>
               <Button
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setSpriteZoom(Math.min(32, spriteZoom + 4))}
-                className="text-zinc-400 hover:text-zinc-200"
+                className="text-rpg-stone/60 hover:text-rpg-parchment"
               >
                 <MagnifyingGlassPlusIcon size={14} />
               </Button>
@@ -108,33 +108,33 @@ export function SpriteTab() {
         </div>
 
         {/* Status bar */}
-        <div className="flex items-center justify-between border-t border-white/8 px-3 py-1">
+        <div className="flex items-center justify-between border-t border-rpg-gold/12 px-3 py-1">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] text-zinc-300">
+            <span className="font-mono text-[10px] text-rpg-stone/80">
               {sprite ? `#${sprite.id}` : ""}
             </span>
             {sprite?.name && (
-              <span className="text-[10px] text-zinc-400">{sprite.name}</span>
+              <span className="text-[10px] text-rpg-stone/60">{sprite.name}</span>
             )}
             {sprite && (
-              <span className="font-mono text-[10px] text-zinc-400">
+              <span className="font-mono text-[10px] text-rpg-stone/60">
                 {sprite.width}×{sprite.height}
               </span>
             )}
           </div>
-          <span className="font-mono text-[10px] text-zinc-300">
+          <span className="font-mono text-[10px] text-rpg-stone/80">
             {hovered ? `x: ${hovered[0]}  y: ${hovered[1]}` : ""}
           </span>
         </div>
       </div>
 
-      <Separator orientation="vertical" className="bg-white/8" />
+      <Separator orientation="vertical" className="bg-rpg-gold/12" />
 
       {/* Right panel: sprite list + palette */}
       <ScrollArea className="w-52">
         <div className="flex w-52 flex-col gap-4 overflow-x-hidden p-3">
           <SpriteList />
-          <Separator className="bg-white/8" />
+          <Separator className="bg-rpg-gold/12" />
           <PaletteSelector />
         </div>
       </ScrollArea>

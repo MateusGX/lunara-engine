@@ -1,6 +1,9 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
+const LandingPage = lazy(() =>
+  import("@/routes/landing").then((m) => ({ default: m.LandingPage })),
+);
 const HomePage = lazy(() =>
   import("@/routes/home").then((m) => ({ default: m.HomePage })),
 );
@@ -30,12 +33,20 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <Suspense fallback={<PageLoader />}>
+        <LandingPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/studio",
+    element: (
+      <Suspense fallback={<PageLoader />}>
         <HomePage />
       </Suspense>
     ),
   },
   {
-    path: "/editor/:id",
+    path: "/studio/editor/:id",
     element: (
       <Suspense fallback={<PageLoader />}>
         <EditorPage />

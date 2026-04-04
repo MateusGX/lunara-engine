@@ -9,7 +9,7 @@ import {
   mkInfo,
 } from "./engine-api";
 
-const SINGLE_COMMENT_RE = /^--(?![\[-])(.*)$/;
+const SINGLE_COMMENT_RE = /^--(?![[-])(.*)$/;
 const BLOCK_COMMENT_INLINE_RE = /^--\[\[(.+?)\]\]$/;
 const INLINE_COMMENT_RE = /--(?!\[)(.+)$/;
 

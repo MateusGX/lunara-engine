@@ -135,7 +135,7 @@ export function registerStdlibApi(ctx: ApiRegistrationContext): void {
   });
 
   // collectgarbage — no GC access without standard library; returns 0 as stub.
-  L.set("collectgarbage", (_opt?: string) => 0);
+  L.set("collectgarbage", () => 0);
 
   // ── Standard Library — Table ──────────────────────────────────────────────
 

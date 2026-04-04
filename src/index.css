@@ -6,59 +6,76 @@
 :root {
   --radius: 0;
 
-  /* ── Unified surface palette ──────────────────────────────────────
-     Four levels replace every hardcoded hex in the codebase.
-     surface-base  : deepest – page bg, canvas areas, console
-     surface-raised: slightly up – sidebar, toolbar, panel headers
-     surface-card  : elevated – cards, modal content, editor panes
-     surface-overlay: floating – dropdowns, popovers, select menus
-  ────────────────────────────────────────────────────────────────── */
-  --surface-base:    #1a1b26;
-  --surface-raised:  #1f2335;
-  --surface-card:    #24283b;
-  --surface-overlay: #292e42;
+  /* ── RPG Stone Surface Palette ─────────────────────────────────────────
+     surface-base   : deepest dungeon — page bg, canvas, console
+     surface-raised : stone walls — sidebar, toolbar, panel headers
+     surface-card   : carved stone — cards, modal content, editor panes
+     surface-overlay: floating platform — dropdowns, popovers, selects
+  ──────────────────────────────────────────────────────────────────────── */
+  --surface-base:    #0c0c12;
+  --surface-raised:  #111119;
+  --surface-card:    #171720;
+  --surface-overlay: #1e1e2a;
+
+  /* RPG accent tokens */
+  --rpg-gold:         oklch(0.68 0.22 300);
+  --rpg-gold-dim:     oklch(0.50 0.18 300);
+  --rpg-gold-bright:  oklch(0.82 0.18 300);
+  --rpg-parchment:    oklch(0.92 0.04 300);
+  --rpg-stone:        oklch(0.58 0.04 300);
+  --rpg-blood:        oklch(0.55 0.22 25);
+  --rpg-emerald:      oklch(0.60 0.18 145);
 
   --background: var(--surface-base);
-  --foreground: oklch(0.985 0 0);
+  --foreground: var(--rpg-parchment);
   --card: var(--surface-card);
-  --card-foreground: oklch(0.985 0 0);
+  --card-foreground: var(--rpg-parchment);
   --popover: var(--surface-overlay);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.65 0.25 292);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.88 0.012 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 26%);
-  --ring: oklch(0.65 0.016 285.938);
-  --chart-1: oklch(0.811 0.111 293.571);
-  --chart-2: oklch(0.606 0.25 292.717);
-  --chart-3: oklch(0.541 0.281 293.009);
-  --chart-4: oklch(0.491 0.27 292.581);
-  --chart-5: oklch(0.432 0.232 292.759);
+  --popover-foreground: var(--rpg-parchment);
+  --primary: var(--rpg-gold);
+  --primary-foreground: oklch(0.10 0.02 80);
+  --secondary: oklch(0.18 0.02 280);
+  --secondary-foreground: var(--rpg-parchment);
+  --muted: oklch(0.16 0.02 280);
+  --muted-foreground: oklch(0.58 0.04 80);
+  --accent: oklch(0.18 0.02 280);
+  --accent-foreground: var(--rpg-parchment);
+  --destructive: var(--rpg-blood);
+  --border: oklch(0.68 0.22 300 / 18%);
+  --input: oklch(1 0 0 / 8%);
+  --ring: oklch(0.68 0.22 300 / 50%);
+  --chart-1: var(--rpg-gold);
+  --chart-2: var(--rpg-emerald);
+  --chart-3: var(--rpg-blood);
+  --chart-4: oklch(0.65 0.12 200);
+  --chart-5: oklch(0.50 0.08 270);
   --sidebar: var(--surface-raised);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.65 0.25 292);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 14%);
-  --sidebar-ring: oklch(0.552 0.016 285.938);
+  --sidebar-foreground: var(--rpg-parchment);
+  --sidebar-primary: var(--rpg-gold);
+  --sidebar-primary-foreground: oklch(0.10 0.02 80);
+  --sidebar-accent: oklch(0.18 0.02 280);
+  --sidebar-accent-foreground: var(--rpg-parchment);
+  --sidebar-border: oklch(0.68 0.22 300 / 15%);
+  --sidebar-ring: oklch(0.68 0.22 300 / 50%);
 }
 
 @theme inline {
   --font-mono: "JetBrains Mono Variable", monospace;
 
-  /* Surface tokens — use these classes: bg-surface-base / raised / card / overlay */
+  /* Surface tokens */
   --color-surface-base:    var(--surface-base);
   --color-surface-raised:  var(--surface-raised);
   --color-surface-card:    var(--surface-card);
   --color-surface-overlay: var(--surface-overlay);
+
+  /* RPG custom color tokens */
+  --color-rpg-gold:        var(--rpg-gold);
+  --color-rpg-gold-dim:    var(--rpg-gold-dim);
+  --color-rpg-gold-bright: var(--rpg-gold-bright);
+  --color-rpg-parchment:   var(--rpg-parchment);
+  --color-rpg-stone:       var(--rpg-stone);
+  --color-rpg-blood:       var(--rpg-blood);
+  --color-rpg-emerald:     var(--rpg-emerald);
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -112,13 +129,41 @@
   }
 }
 
+/* ── RPG UI Utilities ───────────────────────────────────────────────────── */
+
+/* Gold glow on focus/active interactive elements */
+@layer components {
+  .rpg-glow {
+    box-shadow: 0 0 16px oklch(0.68 0.22 300 / 15%);
+  }
+  .rpg-glow-hover:hover {
+    box-shadow: 0 0 20px oklch(0.68 0.22 300 / 20%);
+  }
+
+  /* Decorative section divider: ◆────────◆ */
+  .rpg-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: oklch(0.68 0.22 300 / 50%);
+    font-size: 10px;
+  }
+  .rpg-divider::before,
+  .rpg-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: oklch(0.68 0.22 300 / 20%);
+  }
+}
+
 /* Pixel-art canvas rendering */
 canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
 
-/* Custom scrollbar for editor panels */
+/* Custom scrollbar — gold-tinted */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -127,21 +172,21 @@ canvas {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  background: oklch(0.68 0.22 300 / 18%);
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: oklch(0.68 0.22 300 / 35%);
 }
 
-/* CodeMirror overrides */
+/* ── CodeMirror overrides ──────────────────────────────────────────────── */
 .cm-editor {
   height: 100%;
   background: var(--surface-base) !important;
 }
 .cm-export-kw,
 .cm-export-kw span {
-  color: #c678dd !important;
+  color: #a259ef !important;
   font-weight: 700 !important;
 }
 .cm-engine-fn,
@@ -158,20 +203,18 @@ canvas {
 }
 .cm-gutters {
   background: var(--surface-base) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-right: 1px solid oklch(0.68 0.22 300 / 8%) !important;
 }
 
 /* ── CodeMirror autocomplete ────────────────────────────────────────────── */
 
-/* Tooltip container */
 .cm-tooltip {
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid oklch(0.68 0.22 300 / 15%) !important;
   background: var(--surface-card) !important;
   border-radius: 0 !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
 }
 
-/* Autocomplete list */
 .cm-tooltip-autocomplete > ul {
   font-family: "JetBrains Mono Variable", monospace !important;
   font-size: 12px !important;
@@ -180,53 +223,49 @@ canvas {
 
 .cm-tooltip-autocomplete > ul > li {
   padding: 3px 10px !important;
-  color: #abb2bf !important;
+  color: oklch(0.75 0.03 80) !important;
   border-radius: 0 !important;
   line-height: 1.5 !important;
 }
 
 .cm-tooltip-autocomplete > ul > li[aria-selected="true"],
 .cm-tooltip-autocomplete > ul > li:hover {
-  background: rgba(139, 92, 246, 0.15) !important;
-  color: #e2e8f0 !important;
+  background: oklch(0.68 0.22 300 / 12%) !important;
+  color: oklch(0.92 0.04 300) !important;
 }
 
-/* Type icon label (function / keyword) */
 .cm-completionIcon {
   opacity: 0.4 !important;
   padding-right: 4px !important;
 }
 
-/* Label */
 .cm-completionLabel {
-  color: #e5c07b !important;
+  color: oklch(0.80 0.12 300) !important;
 }
 
 .cm-tooltip-autocomplete > ul > li[aria-selected="true"] .cm-completionLabel {
-  color: #fff !important;
+  color: oklch(0.95 0.06 300) !important;
 }
 
-/* Detail (signature) */
 .cm-completionDetail {
-  color: #5c6370 !important;
+  color: oklch(0.45 0.02 80) !important;
   font-style: normal !important;
   margin-left: 4px !important;
 }
 
-/* Info popup (the right-side docs panel) */
 .cm-tooltip.cm-completionInfo {
-  border-left: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-left: 1px solid oklch(0.68 0.22 300 / 10%) !important;
   background: var(--surface-raised) !important;
   min-width: 220px !important;
   max-width: 300px !important;
   padding: 0 !important;
 }
 
-/* ── CodeMirror search panel (Ctrl+F) ───────────────────────────────────── */
+/* ── CodeMirror search panel (Ctrl+F) ────────────────────────────────────── */
 
 .cm-search {
   background: var(--surface-card) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-top: 1px solid oklch(0.68 0.22 300 / 10%) !important;
   padding: 6px 10px !important;
   gap: 6px !important;
   font-family: "JetBrains Mono Variable", monospace !important;
@@ -235,9 +274,9 @@ canvas {
 
 .cm-search input[type="text"],
 .cm-search input[type="checkbox"] + label {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #e2e8f0 !important;
+  background: oklch(1 0 0 / 4%) !important;
+  border: 1px solid oklch(0.68 0.22 300 / 15%) !important;
+  color: oklch(0.88 0.05 300) !important;
   border-radius: 0 !important;
   padding: 2px 7px !important;
   font-size: 12px !important;
@@ -246,13 +285,13 @@ canvas {
 }
 
 .cm-search input[type="text"]:focus {
-  border-color: rgba(139, 92, 246, 0.6) !important;
+  border-color: oklch(0.68 0.22 300 / 50%) !important;
 }
 
 .cm-search button {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #abb2bf !important;
+  background: oklch(1 0 0 / 4%) !important;
+  border: 1px solid oklch(0.68 0.22 300 / 15%) !important;
+  color: oklch(0.65 0.04 80) !important;
   border-radius: 0 !important;
   padding: 2px 8px !important;
   font-size: 11px !important;
@@ -262,28 +301,22 @@ canvas {
 }
 
 .cm-search button:hover {
-  background: rgba(139, 92, 246, 0.2) !important;
-  color: #e2e8f0 !important;
-  border-color: rgba(139, 92, 246, 0.4) !important;
+  background: oklch(0.68 0.22 300 / 15%) !important;
+  color: oklch(0.92 0.05 300) !important;
+  border-color: oklch(0.68 0.22 300 / 35%) !important;
 }
 
 .cm-search label {
-  color: #5c6370 !important;
+  color: oklch(0.40 0.02 80) !important;
   font-size: 11px !important;
 }
 
-/* Search match highlight */
 .cm-searchMatch {
-  background: rgba(255, 236, 39, 0.2) !important;
-  outline: 1px solid rgba(255, 236, 39, 0.4) !important;
+  background: oklch(0.68 0.22 300 / 18%) !important;
+  outline: 1px solid oklch(0.68 0.22 300 / 40%) !important;
 }
 
 .cm-searchMatch-selected {
-  background: rgba(255, 236, 39, 0.4) !important;
-  outline: 1px solid rgba(255, 236, 39, 0.8) !important;
+  background: oklch(0.68 0.22 300 / 35%) !important;
+  outline: 1px solid oklch(0.68 0.22 300 / 70%) !important;
 }
-
-/* Range input styling */
-/* input[type="range"] {
-  accent-color: #7c3aed;
-} */

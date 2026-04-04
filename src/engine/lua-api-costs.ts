@@ -3,7 +3,9 @@ const CHAR_W = 5, CHAR_H = 7;
 export type Cost     = { instructions: number; vram?: number };
 export type CostView = { instructions: string; vram?: string };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiEntry = { cost: (...args: any[]) => Cost; view?: CostView };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type BuiltEntry = { label: string; cost: (...args: any[]) => Cost; view: CostView };
 
 /** Pixel-write cost: vram pixels + a fixed instruction overhead. */

@@ -50,14 +50,14 @@ export function MapList() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
           Maps ({maps.length})
         </span>
         <Button
           variant="ghost"
           size="icon-xs"
           onClick={addMap}
-          className="text-zinc-400 hover:text-zinc-300"
+          className="text-rpg-stone hover:text-rpg-gold"
           title="Add map"
         >
           <PlusIcon size={10} />
@@ -70,14 +70,14 @@ export function MapList() {
             key={m.id}
             className={`group flex items-center gap-1 border px-2 py-1.5 transition ${
               m.id === selectedMapId
-                ? "border-violet-500/40 bg-violet-600/10"
-                : "border-transparent hover:border-white/8 hover:bg-white/4"
+                ? "border-rpg-gold/35 bg-rpg-gold/8"
+                : "border-transparent hover:border-rpg-gold/15 hover:bg-rpg-gold/4"
             }`}
           >
             {/* Id */}
             <button
               className={`shrink-0 font-mono text-[9px] ${
-                m.id === selectedMapId ? "text-violet-400" : "text-zinc-400"
+                m.id === selectedMapId ? "text-rpg-gold" : "text-rpg-stone/60"
               }`}
               onClick={() => setSelectedMapId(m.id)}
             >
@@ -94,7 +94,7 @@ export function MapList() {
                 onCommit={(name) => commitRename(m.id, name)}
                 emptyLabel={`Map ${m.id + 1}`}
                 className={`text-xs ${
-                  m.id === selectedMapId ? "text-zinc-200" : "text-zinc-300"
+                  m.id === selectedMapId ? "text-rpg-parchment" : "text-rpg-stone"
                 }`}
                 onDelete={() => {
                   deleteMap(m.id);
@@ -103,7 +103,7 @@ export function MapList() {
             </div>
 
             {/* Tile count */}
-            <span className="shrink-0 font-mono text-[9px] text-zinc-400">
+            <span className="shrink-0 font-mono text-[9px] text-rpg-stone/50">
               {Object.keys(m.tiles).length}
             </span>
           </div>

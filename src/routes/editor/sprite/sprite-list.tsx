@@ -42,7 +42,7 @@ function SpriteThumb({
       ref={canvasRef}
       width={THUMB}
       height={THUMB}
-      className="shrink-0 border border-white/10"
+      className="shrink-0 border border-rpg-gold/15"
       style={{ imageRendering: "pixelated" }}
     />
   );
@@ -101,7 +101,7 @@ export function SpriteList() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
           Sprites ({sprites.length}/{hardware.maxSprites})
         </span>
         <Button
@@ -109,7 +109,7 @@ export function SpriteList() {
           size="icon-xs"
           onClick={addSprite}
           disabled={sprites.length >= hardware.maxSprites}
-          className="text-zinc-400 hover:text-zinc-300"
+          className="text-rpg-stone hover:text-rpg-gold"
           title="Add sprite"
         >
           <PlusIcon size={10} />
@@ -122,8 +122,8 @@ export function SpriteList() {
             key={s.id}
             className={`group flex items-center gap-1 border px-1.5 py-1 transition ${
               s.id === selectedSpriteId
-                ? "border-violet-500/40 bg-violet-600/10"
-                : "border-transparent hover:border-white/8 hover:bg-white/4"
+                ? "border-rpg-gold/35 bg-rpg-gold/8"
+                : "border-transparent hover:border-rpg-gold/15 hover:bg-rpg-gold/4"
             }`}
           >
             {/* Thumbnail */}
@@ -143,8 +143,8 @@ export function SpriteList() {
                 <span
                   className={`shrink-0 font-mono text-[9px] ${
                     s.id === selectedSpriteId
-                      ? "text-violet-400"
-                      : "text-zinc-300"
+                      ? "text-rpg-gold"
+                      : "text-rpg-stone/70"
                   }`}
                 >
                   #{s.id}
@@ -154,15 +154,15 @@ export function SpriteList() {
                   onCommit={(name) => commitRename(s.id, name)}
                   className={`text-[11px] ${
                     s.id === selectedSpriteId
-                      ? "text-zinc-200"
-                      : "text-zinc-300"
+                      ? "text-rpg-parchment"
+                      : "text-rpg-stone"
                   }`}
                   onDelete={() => {
                     deleteSprite(s.id);
                   }}
                 />
               </div>
-              <span className="font-mono text-[9px] text-zinc-400">
+              <span className="font-mono text-[9px] text-rpg-stone/60">
                 {s.width}×{s.height}
               </span>
             </div>

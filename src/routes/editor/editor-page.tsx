@@ -14,7 +14,6 @@ import {
 } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
@@ -36,10 +35,10 @@ import { calcStorageBytes } from "@/cartridge/export";
 import { useRunner } from "@/hooks/use-runner";
 
 const NAV_TABS = [
-  { id: EditorTab.Code, icon: CodeIcon, label: "Code" },
-  { id: EditorTab.Sprite, icon: PaletteIcon, label: "Sprites" },
-  { id: EditorTab.Map, icon: GridFourIcon, label: "Map" },
-  { id: EditorTab.Sound, icon: MusicNoteIcon, label: "Sounds" },
+  { id: EditorTab.Code,   icon: CodeIcon,       label: "Code"    },
+  { id: EditorTab.Sprite, icon: PaletteIcon,    label: "Sprites" },
+  { id: EditorTab.Map,    icon: GridFourIcon,   label: "Map"     },
+  { id: EditorTab.Sound,  icon: MusicNoteIcon,  label: "Sounds"  },
 ];
 const SETTINGS_TAB = {
   id: EditorTab.Settings,
@@ -49,49 +48,37 @@ const SETTINGS_TAB = {
 
 function TabContent({ tab }: { tab: EditorTab }) {
   switch (tab) {
-    case EditorTab.Code:
-      return <CodeTab />;
-    case EditorTab.Sprite:
-      return <SpriteTab />;
-    case EditorTab.Map:
-      return <MapTab />;
-    case EditorTab.Sound:
-      return <SoundTab />;
-    case EditorTab.Settings:
-      return <SettingsTab />;
-    default:
-      return null;
+    case EditorTab.Code:     return <CodeTab />;
+    case EditorTab.Sprite:   return <SpriteTab />;
+    case EditorTab.Map:      return <MapTab />;
+    case EditorTab.Sound:    return <SoundTab />;
+    case EditorTab.Settings: return <SettingsTab />;
+    default:                 return null;
   }
 }
 
 const CONSOLE_HEIGHT = 180;
 
-function ResourceBar({
-  label,
-  pct,
-  fmt,
-}: {
-  label: string;
-  pct: number;
-  fmt: string;
-}) {
+// ── ResourceBar ───────────────────────────────────────────────────────────────
+
+function ResourceBar({ label, pct, fmt }: { label: string; pct: number; fmt: string }) {
   const color =
-    pct > 80 ? "bg-red-500" : pct > 50 ? "bg-yellow-500" : "bg-emerald-500";
+    pct > 80 ? "bg-rpg-blood" : pct > 50 ? "bg-yellow-500" : "bg-rpg-emerald";
   return (
     <div className="flex items-center gap-2">
-      <span className="w-8 font-mono text-[10px] font-medium text-zinc-200">{label}</span>
-      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+      <span className="w-8 font-mono text-[10px] font-medium text-rpg-stone/80">{label}</span>
+      <div className="relative h-1.5 flex-1 overflow-hidden bg-rpg-gold/8">
         <div
-          className={`absolute inset-y-0 left-0 rounded-full transition-all duration-300 ${color}`}
+          className={`absolute inset-y-0 left-0 transition-all duration-300 ${color}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-10 text-right font-mono text-[10px] text-zinc-300">
-        {fmt}
-      </span>
+      <span className="w-10 text-right font-mono text-[10px] text-rpg-stone/70">{fmt}</span>
     </div>
   );
 }
+
+// ── EditorPage ────────────────────────────────────────────────────────────────
 
 export function EditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -115,12 +102,8 @@ export function EditorPage() {
   const [cpu, setCpu] = useState(0);
   const [mem, setMem] = useState(0);
 
-  // Clear console on mount so messages from launcher/player don't bleed in
-  useEffect(() => {
-    clearMessages();
-  }, [clearMessages]);
+  useEffect(() => { clearMessages(); }, [clearMessages]);
 
-  // Load cartridge from idb
   useEffect(() => {
     if (!id) return;
     getCartridge(id).then((cart: Cartridge | undefined) => {
@@ -128,24 +111,17 @@ export function EditorPage() {
     });
   }, [id, setActiveCartridge]);
 
-  // Debounced auto-save
   useEffect(() => {
     if (!activeCartridge) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => {
-      saveActiveCartridge();
-    }, 1000);
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-    };
+    saveTimer.current = setTimeout(() => { saveActiveCartridge(); }, 1000);
+    return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [activeCartridge, saveActiveCartridge]);
 
-  // Auto-scroll console to bottom on new messages
   useEffect(() => {
     consolBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  // Open console automatically on new errors
   useEffect(() => {
     const last = messages[messages.length - 1];
     if (last?.type === "error") setConsoleOpen(true);
@@ -170,77 +146,71 @@ export function EditorPage() {
     stop();
     setCpu(0);
     setMem(0);
-    // Clear the game canvas
     const canvas = previewCanvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
+      if (ctx) { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height); }
     }
   }, [stop]);
 
-  const errorCount = messages.filter(
-    (m: ConsoleMessage) => m.type === "error",
-  ).length;
+  const errorCount = messages.filter((m: ConsoleMessage) => m.type === "error").length;
 
   const typeColors: Record<string, string> = {
-    log: "text-zinc-300",
-    error: "text-red-400",
-    warn: "text-yellow-400",
-    info: "text-blue-400",
+    log:   "text-rpg-stone/80",
+    error: "text-rpg-blood",
+    warn:  "text-yellow-400",
+    info:  "text-blue-400",
   };
 
   if (!activeCartridge) {
     return (
-      <div className="flex h-screen items-center justify-center bg-surface-base text-zinc-300">
-        Loading...
+      <div className="flex h-screen items-center justify-center bg-surface-base text-rpg-stone">
+        <span className="font-mono text-xs tracking-widest animate-pulse">
+          Loading...
+        </span>
       </div>
     );
   }
 
   return (
     <div className="flex h-screen flex-col">
-      <EditorToolbar
-        onRun={handleRun}
-        onStop={handleStop}
-        cpu={cpu}
-        mem={mem}
-      />
+      <EditorToolbar onRun={handleRun} onStop={handleStop} cpu={cpu} mem={mem} />
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="flex w-[60px] shrink-0 flex-col border-r border-white/15 bg-surface-raised">
-          {/* Nav tabs */}
+        {/* ── Left Sidebar — Dungeon Navigation ── */}
+        <aside className="flex w-15 shrink-0 flex-col border-r border-rpg-gold/12 bg-surface-raised">
           <nav className="flex flex-1 flex-col py-1">
             {NAV_TABS.map(({ id: tabId, icon: Icon, label }) => {
               const active = activeTab === tabId;
               return (
                 <Tooltip key={tabId}>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="default"
                       onClick={() => setActiveTab(tabId)}
-                      className={`relative flex w-full flex-col items-center gap-1 py-3 transition cursor-pointer ${active
-                        ? "text-violet-300"
-                        : "text-zinc-400 hover:text-zinc-200"
-                        }`}
+                      className={`relative h-auto w-full flex-col items-center gap-1 rounded-none border-0 py-3 transition ${
+                        active
+                          ? "bg-rpg-gold/8 text-rpg-gold"
+                          : "text-rpg-stone/70 hover:bg-rpg-gold/4 hover:text-rpg-parchment"
+                      }`}
                     >
                       {active && (
-                        <span className="absolute inset-y-0 left-0 w-[3px] rounded-r-full bg-violet-500" />
+                        <span className="absolute inset-y-0 left-0 w-0.75 bg-rpg-gold" />
                       )}
                       <Icon size={20} weight={active ? "fill" : "regular"} />
-                      <span className="text-[10px] font-medium tracking-wide">
-                        {label}
-                      </span>
-                    </button>
+                      <span className="text-[9px] font-medium tracking-wide">{label}</span>
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs">{label}</TooltipContent>
+                  <TooltipContent side="right" className="border-rpg-gold/20 bg-surface-overlay text-rpg-parchment text-xs">
+                    {label}
+                  </TooltipContent>
                 </Tooltip>
               );
             })}
           </nav>
 
-          <Separator className="bg-white/12" />
+          <div className="h-px bg-rpg-gold/12" />
 
           {/* Settings pinned to bottom */}
           <div className="pb-1">
@@ -250,43 +220,48 @@ export function EditorPage() {
               return (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="default"
                       onClick={() => setActiveTab(tabId)}
-                      className={`relative flex w-full flex-col items-center gap-1 py-3 transition cursor-pointer ${active
-                        ? "text-violet-300"
-                        : "text-zinc-400 hover:text-zinc-200"
-                        }`}
+                      className={`relative h-auto w-full flex-col items-center gap-1 rounded-none border-0 py-3 transition ${
+                        active
+                          ? "bg-rpg-gold/8 text-rpg-gold"
+                          : "text-rpg-stone/70 hover:bg-rpg-gold/4 hover:text-rpg-parchment"
+                      }`}
                     >
                       {active && (
-                        <span className="absolute inset-y-0 left-0 w-[3px] rounded-r-full bg-violet-500" />
+                        <span className="absolute inset-y-0 left-0 w-0.75 bg-rpg-gold" />
                       )}
                       <Icon size={20} weight={active ? "fill" : "regular"} />
-                      <span className="text-[10px] font-medium tracking-wide">
-                        {label}
-                      </span>
-                    </button>
+                      <span className="text-[9px] font-medium tracking-wide">{label}</span>
+                    </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs">{label}</TooltipContent>
+                  <TooltipContent side="right" className="border-rpg-gold/20 bg-surface-overlay text-rpg-parchment text-xs">
+                    {label}
+                  </TooltipContent>
                 </Tooltip>
               );
             })()}
           </div>
         </aside>
 
-        {/* Main content */}
+        {/* ── Main Content ── */}
         <main className="flex flex-1 flex-col overflow-hidden">
-          {/* Tab + Preview */}
           <div className="flex flex-1 overflow-hidden">
             <div className="flex flex-1 flex-col overflow-hidden">
               <TabContent tab={activeTab} />
             </div>
 
-            {/* Preview pane */}
+            {/* ── Scrying Glass (preview) ── */}
             {previewVisible && (
-              <div className="flex w-72 shrink-0 flex-col items-center gap-3 border-l border-white/15 bg-surface-base p-4">
-                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
-                  Preview
-                </span>
+              <div className="flex w-72 shrink-0 flex-col items-center gap-3 border-l border-rpg-gold/12 bg-surface-base p-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-rpg-gold/60">
+                    Preview
+                  </span>
+                </div>
+
                 <div className="relative w-full" style={{ maxWidth: "256px" }}>
                   <canvas
                     ref={previewCanvasRef}
@@ -294,79 +269,62 @@ export function EditorPage() {
                       imageRendering: "pixelated",
                       width: "100%",
                       aspectRatio: `${activeCartridge.hardware.width} / ${activeCartridge.hardware.height}`,
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      borderRadius: "8px",
+                      border: "1px solid oklch(0.68 0.22 300 / 20%)",
                       background: "#000",
                       display: "block",
                     }}
                   />
+                  {/* Scrying glass corner ornaments */}
+                  <span className="pointer-events-none absolute top-0 left-0 h-2.5 w-2.5 border-t border-l border-rpg-gold/50" />
+                  <span className="pointer-events-none absolute top-0 right-0 h-2.5 w-2.5 border-t border-r border-rpg-gold/50" />
+                  <span className="pointer-events-none absolute bottom-0 left-0 h-2.5 w-2.5 border-b border-l border-rpg-gold/50" />
+                  <span className="pointer-events-none absolute bottom-0 right-0 h-2.5 w-2.5 border-b border-r border-rpg-gold/50" />
+
                   {crashMessage && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-black/85 backdrop-blur-sm">
-                      <p className="mb-1 font-mono text-sm font-bold text-red-400">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm">
+                      <p className="mb-1 font-mono text-sm font-bold text-rpg-blood">
                         💥 CRASH
                       </p>
-                      <p className="px-2 text-center font-mono text-xs text-red-300/80 break-all">
+                      <p className="px-2 text-center font-mono text-xs text-rpg-blood/80 break-all">
                         {crashMessage}
                       </p>
                     </div>
                   )}
                 </div>
-                <p className="text-center font-mono text-xs text-zinc-300">
-                  {activeCartridge.hardware.width}×
-                  {activeCartridge.hardware.height} ·{" "}
-                  {activeCartridge.hardware.palette.length} colors
+
+                <p className="text-center font-mono text-[10px] text-rpg-stone/60">
+                  {activeCartridge.hardware.width}×{activeCartridge.hardware.height}{" "}
+                  · {activeCartridge.hardware.palette.length} colors
                 </p>
 
                 {/* Resource usage bars */}
                 <div className="w-full space-y-1.5">
-                  <ResourceBar
-                    label="CPU"
-                    pct={cpu}
-                    fmt={`${Math.round(cpu)}%`}
-                  />
+                  <ResourceBar label="CPU" pct={cpu} fmt={`${Math.round(cpu)}%`} />
                   <ResourceBar
                     label="MEM"
                     pct={
                       activeCartridge.hardware.maxMemBytes > 0
-                        ? Math.min(
-                          100,
-                          (mem / activeCartridge.hardware.maxMemBytes) * 100,
-                        )
+                        ? Math.min(100, (mem / activeCartridge.hardware.maxMemBytes) * 100)
                         : 0
                     }
-                    fmt={
-                      mem >= 1024 ? `${(mem / 1024).toFixed(1)}k` : `${mem}b`
-                    }
+                    fmt={mem >= 1024 ? `${(mem / 1024).toFixed(1)}k` : `${mem}b`}
                   />
-
-                  <div className="my-1 border-t border-white/5" />
-
+                  <div className="my-1 border-t border-rpg-gold/8" />
                   <ResourceBar
                     label="SPR"
-                    pct={Math.min(
-                      100,
-                      (activeCartridge.sprites.length /
-                        activeCartridge.hardware.maxSprites) *
-                      100,
-                    )}
+                    pct={Math.min(100, (activeCartridge.sprites.length / activeCartridge.hardware.maxSprites) * 100)}
                     fmt={`${activeCartridge.sprites.length}/${activeCartridge.hardware.maxSprites}`}
                   />
                   <ResourceBar
                     label="SND"
-                    pct={Math.min(
-                      100,
-                      (activeCartridge.sounds.length /
-                        activeCartridge.hardware.maxSounds) *
-                      100,
-                    )}
+                    pct={Math.min(100, (activeCartridge.sounds.length / activeCartridge.hardware.maxSounds) * 100)}
                     fmt={`${activeCartridge.sounds.length}/${activeCartridge.hardware.maxSounds}`}
                   />
                   <ResourceBar
                     label="STG"
                     pct={(() => {
                       const used = calcStorageBytes(activeCartridge);
-                      const limit =
-                        activeCartridge.hardware.maxStorageBytes ?? 512 * 1024;
+                      const limit = activeCartridge.hardware.maxStorageBytes ?? 512 * 1024;
                       return Math.min(100, (used / limit) * 100);
                     })()}
                     fmt={(() => {
@@ -383,19 +341,20 @@ export function EditorPage() {
             )}
           </div>
 
-          {/* Bottom Console Panel */}
-          <div className="shrink-0 border-t border-white/15">
-            {/* Toggle header */}
+          {/* ── Oracle (Console) ── */}
+          <div className="shrink-0 border-t border-rpg-gold/12">
             <div
-              className="flex cursor-pointer items-center gap-2 px-3 py-2 hover:bg-white/3"
+              className="flex cursor-pointer items-center gap-2 px-3 py-2 hover:bg-rpg-gold/4 transition"
               onClick={() => setConsoleOpen(!consoleOpen)}
             >
-              <TerminalIcon size={14} className="text-zinc-300" />
-              <span className="text-xs font-semibold text-zinc-300">Console</span>
+              <TerminalIcon size={14} className="text-rpg-gold/60" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-rpg-gold/70">
+                Console
+              </span>
               {errorCount > 0 && (
                 <Badge
                   variant="destructive"
-                  className="flex h-4 min-w-[16px] items-center justify-center px-1 font-mono text-[9px]"
+                  className="flex h-4 min-w-4 items-center justify-center px-1 font-mono text-[9px]"
                 >
                   {Math.min(9, errorCount)}
                 </Badge>
@@ -409,35 +368,34 @@ export function EditorPage() {
                       e.stopPropagation();
                       clearMessages();
                     }}
-                    className="h-5 gap-1 px-1.5 text-[10px] text-zinc-300 hover:text-red-400"
+                    className="h-5 gap-1 px-1.5 text-[10px] text-rpg-stone/60 hover:text-rpg-blood"
                   >
                     <TrashIcon size={10} /> Clear
                   </Button>
                 )}
                 {consoleOpen ? (
-                  <CaretDownIcon size={13} className="text-zinc-400" />
+                  <CaretDownIcon size={13} className="text-rpg-stone/50" />
                 ) : (
-                  <CaretUpIcon size={13} className="text-zinc-400" />
+                  <CaretUpIcon size={13} className="text-rpg-stone/50" />
                 )}
               </div>
             </div>
 
-            {/* Console body */}
             {consoleOpen && (
               <ScrollArea
                 style={{ height: CONSOLE_HEIGHT }}
-                className="border-t border-white/8 bg-surface-base"
+                className="border-t border-rpg-gold/8 bg-surface-base"
               >
                 <div className="p-3 font-mono text-xs">
                   {messages.length === 0 ? (
-                    <p className="text-zinc-300 italic">
+                    <p className="italic text-rpg-stone/50">
                       No output. Run your game to see logs here.
                     </p>
                   ) : (
                     messages.map((m: ConsoleMessage) => (
                       <div
                         key={m.id}
-                        className={`leading-5.5 ${typeColors[m.type] ?? "text-zinc-200"}`}
+                        className={`leading-5 ${typeColors[m.type] ?? "text-rpg-parchment"}`}
                       >
                         {m.type !== "log" && (
                           <span className="mr-1.5 font-bold uppercase opacity-70">

@@ -22,7 +22,7 @@ export function SpriteTools() {
   const { spriteTool, setSpriteTool } = useStore();
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
         Tools
       </span>
       <div className="flex gap-1">
@@ -33,14 +33,14 @@ export function SpriteTools() {
                 variant={spriteTool === id ? "default" : "ghost"}
                 size="icon-sm"
                 onClick={() => setSpriteTool(id)}
-                className={spriteTool === id ? "bg-violet-600 hover:bg-violet-500" : "text-zinc-400"}
+                className={spriteTool === id ? "bg-rpg-gold text-surface-base hover:bg-rpg-gold-bright" : "text-rpg-stone/60"}
               >
                 <Icon size={15} weight={spriteTool === id ? "fill" : "regular"} />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
               <span>{label}</span>
-              <kbd className="ml-1.5 rounded border border-white/10 bg-white/10 px-1 py-0.5 font-mono text-[10px]">
+              <kbd className="ml-1.5 border border-rpg-gold/20 bg-rpg-gold/8 px-1 py-0.5 font-mono text-[10px]">
                 {shortcut}
               </kbd>
             </TooltipContent>

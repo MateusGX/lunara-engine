@@ -37,7 +37,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 bg-black/60 supports-backdrop-filter:backdrop-blur-xs duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
       {...props}
@@ -59,21 +59,31 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-none bg-background p-4 text-xs/relaxed ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-none p-5 text-xs/relaxed outline-none",
+          "sm:max-w-sm",
+          "bg-surface-card border border-rpg-gold/25",
+          /* corner ornament pseudo — we use a box-shadow trick for the inner glow */
+          "shadow-[0_0_40px_oklch(0.72_0.14_300/8%),inset_0_0_0_1px_oklch(0.72_0.14_300/5%)]",
+          "duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className
         )}
         {...props}
       >
+        {/* Corner ornaments */}
+        <span className="pointer-events-none absolute top-0 left-0 h-3 w-3 border-t border-l border-rpg-gold/50" />
+        <span className="pointer-events-none absolute top-0 right-0 h-3 w-3 border-t border-r border-rpg-gold/50" />
+        <span className="pointer-events-none absolute bottom-0 left-0 h-3 w-3 border-b border-l border-rpg-gold/50" />
+        <span className="pointer-events-none absolute bottom-0 right-0 h-3 w-3 border-b border-r border-rpg-gold/50" />
+
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-2 right-2"
+              className="absolute top-2 right-2 text-rpg-stone hover:text-rpg-gold"
               size="icon-sm"
             >
-              <XIcon
-              />
+              <XIcon />
               <span className="sr-only">Close</span>
             </Button>
           </DialogPrimitive.Close>
@@ -127,7 +137,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-sm font-medium", className)}
+      className={cn("text-sm font-bold tracking-wider text-rpg-gold uppercase", className)}
       {...props}
     />
   )
@@ -141,7 +151,7 @@ function DialogDescription({
     <DialogPrimitive.Description
       data-slot="dialog-description"
       className={cn(
-        "text-xs/relaxed text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
+        "text-xs text-rpg-stone",
         className
       )}
       {...props}

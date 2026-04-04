@@ -132,12 +132,20 @@ const DOCS: Array<Category> = [
           "-- a 4×4 tile grid:\nlocal grid = {\n  { 1, 1, 1, 1 },\n  { 1, 0, 0, 1 },\n  { 1, 0, 0, 1 },\n  { 1, 1, 1, 1 },\n}\n\nfunction _draw()\n  for row = 1, #grid do\n    for col = 1, #grid[row] do\n      local tile = grid[row][col]\n      local x = (col - 1) * 8\n      local y = (row - 1) * 8\n      rectfill(x, y, 8, 8, tile == 1 and 6 or 0)\n    end\n  end\nend",
       },
       {
-        name: "table.insert / remove",
-        signature: "table.insert(t, v)\ntable.remove(t, i)",
+        name: "table.insert",
+        signature: "table.insert(t, v)\ntable.insert(t, i, v)",
         description:
-          "insert appends v (or inserts at index i). remove deletes the element at i (default: last) and shifts everything down. Iterate backwards when removing inside a loop to keep indices valid.",
+          "Appends v to the end of t. With an index i, inserts v at that position and shifts subsequent elements up.",
         example:
-          "local enemies = {}\n\n-- spawn:\ntable.insert(enemies, { x=rnd(120), y=0, hp=2 })\n\n-- update & remove dead enemies:\nfunction _update(dt)\n  for i = #enemies, 1, -1 do\n    local e = enemies[i]\n    e.y = e.y + 30 * dt\n    if e.hp <= 0 or e.y > 130 then\n      table.remove(enemies, i)\n    end\n  end\nend",
+          "local enemies = {}\n\n-- append to end:\ntable.insert(enemies, { x=rnd(120), y=0, hp=2 })\n\n-- insert at front:\ntable.insert(enemies, 1, { x=64, y=0, hp=5, boss=true })\n\nprint(#enemies)  -- 2",
+      },
+      {
+        name: "table.remove",
+        signature: "table.remove(t [, i])",
+        description:
+          "Removes and returns the element at index i (default: last). Shifts subsequent elements down. Iterate backwards when removing inside a loop to keep indices valid.",
+        example:
+          "-- remove dead enemies during update:\nfunction _update(dt)\n  for i = #enemies, 1, -1 do\n    local e = enemies[i]\n    e.y = e.y + 30 * dt\n    if e.hp <= 0 or e.y > 130 then\n      table.remove(enemies, i)\n    end\n  end\nend",
       },
       {
         name: "table as set",
@@ -262,7 +270,7 @@ const DOCS: Array<Category> = [
           "local function aabb(a, b)\n  local ox = abs(a.x - b.x) - (a.w + b.w) / 2\n  local oy = abs(a.y - b.y) - (a.h + b.h) / 2\n  local hit = ox < 0 and oy < 0\n  return hit, ox, oy\nend\n\nlocal hit, ox, oy = aabb(player, enemy)\nif hit then\n  resolve_collision(ox, oy)\nend",
       },
       {
-        name: "anonymous / callback",
+        name: "anonymous functions",
         signature: "local fn = function(a) ... end",
         description:
           "Functions stored in variables or passed directly to other functions. Useful for callbacks, event handlers, and higher-order utilities.",
@@ -283,7 +291,7 @@ const DOCS: Array<Category> = [
     label: "Control Flow",
     entries: [
       {
-        name: "if / elseif / else",
+        name: "if / else",
         signature:
           "if cond then\n  ...\nelseif cond then\n  ...\nelse\n  ...\nend",
         description:
@@ -300,7 +308,7 @@ const DOCS: Array<Category> = [
           "-- generate a non-zero random number:\nlocal function safe_rnd(n)\n  local v\n  while v == nil or v == 0 do\n    v = flr(rnd(n))\n  end\n  return v\nend\n\n-- walk a linked list:\nlocal node = head\nwhile node ~= nil do\n  process(node)\n  node = node.next\nend",
       },
       {
-        name: "repeat / until",
+        name: "repeat",
         signature: "repeat\n  ...\nuntil cond",
         description:
           "Like while, but the body runs at least once and the condition is checked at the end. Variables declared inside the block are visible in the until condition.",
@@ -419,12 +427,20 @@ const DOCS: Array<Category> = [
           "function _draw()\n  cls(0)  -- clear to black each frame\n\n  -- draw everything on top:\n  map(0, 0, 0, 0, 16, 16)\n  spr(0, px, py)\nend\n\n-- trail effect: don't cls, just darken with a transparent rect:\n-- (advanced: draw a semi-opaque black rect instead)",
       },
       {
-        name: "pset / pget",
-        signature: "pset(x, y, c)\npget(x, y)  -->  c",
+        name: "pset",
+        signature: "pset(x, y, c)",
         description:
-          "pset sets one pixel; pget reads one pixel's palette index. Slow for large areas — use rect/circ for fills. Useful for custom pixel-art effects or reading collision masks baked into the screen.",
+          "Sets one pixel at (x,y) to palette colour c. Slow for large areas — use rect/circ for fills. Useful for custom pixel-art effects and procedural drawing.",
         example:
-          "-- draw a starfield:\nfunction _init()\n  stars = {}\n  for i = 1, 40 do\n    table.insert(stars, {\n      x = rnd(128), y = rnd(128),\n      spd = 0.5 + rnd(2)\n    })\n  end\nend\n\nfunction _draw()\n  cls(0)\n  for _, s in ipairs(stars) do\n    pset(flr(s.x), flr(s.y), 7)\n    s.y = (s.y + s.spd) % 128\n  end\nend",
+          "-- scrolling starfield:\nfunction _init()\n  stars = {}\n  for i = 1, 40 do\n    table.insert(stars, {\n      x = rnd(128), y = rnd(128),\n      spd = 0.5 + rnd(2)\n    })\n  end\nend\n\nfunction _draw()\n  cls(0)\n  for _, s in ipairs(stars) do\n    pset(flr(s.x), flr(s.y), 7)\n    s.y = (s.y + s.spd) % 128\n  end\nend",
+      },
+      {
+        name: "pget",
+        signature: "pget(x, y)  -->  c",
+        description:
+          "Returns the palette index of the pixel at (x,y). Useful for reading collision masks baked into the screen or detecting what was drawn at a position.",
+        example:
+          "-- pixel-perfect collision with the map:\n-- draw map to screen first, then check:\nfunction _update(dt)\n  local foot_x = flr(px + 4)\n  local foot_y = flr(py + 8)\n  local c = pget(foot_x, foot_y)\n  -- colour 1 = solid ground\n  if c == 1 then\n    on_ground = true\n    vy = 0\n  end\nend",
       },
       {
         name: "line",
@@ -435,20 +451,36 @@ const DOCS: Array<Category> = [
           "-- draw crosshair at cursor:\nlocal cx, cy = 64, 64\nline(cx - 6, cy,     cx + 6, cy,     7)  -- horizontal\nline(cx,     cy - 6, cx,     cy + 6, 7)  -- vertical\n\n-- draw a velocity vector (debug):\nline(px, py, px + vx * 0.1, py + vy * 0.1, 8)",
       },
       {
-        name: "rect / rectfill",
-        signature: "rect(x, y, w, h, c)\nrectfill(x, y, w, h, c)",
+        name: "rect",
+        signature: "rect(x, y, w, h, c)",
         description:
-          "rect draws a hollow rectangle outline; rectfill draws a solid filled rectangle. x,y is the top-left corner.",
+          "Draws a hollow rectangle outline. x,y is the top-left corner, w,h are the dimensions in pixels.",
         example:
-          "-- health bar:\nlocal function draw_hp_bar(x, y, hp, max)\n  local w = 40\n  local filled = flr(w * hp / max)\n  rectfill(x,          y, w,      5, 1)  -- background\n  rectfill(x,          y, filled, 5, 8)  -- filled (red)\n  rect    (x - 1, y - 1, w + 2,  7, 7)  -- border\nend\n\ndraw_hp_bar(44, 118, player.hp, player.max_hp)",
+          "-- selection box:\nlocal sel_x, sel_y = 20, 20\nlocal sel_w, sel_h = 32, 32\n\nfunction _draw()\n  cls(0)\n  -- outer border:\n  rect(sel_x - 1, sel_y - 1, sel_w + 2, sel_h + 2, 7)\n  -- inner content area:\n  rect(sel_x, sel_y, sel_w, sel_h, 5)\nend",
       },
       {
-        name: "circ / circfill",
-        signature: "circ(x, y, r, c)\ncircfill(x, y, r, c)",
+        name: "rectfill",
+        signature: "rectfill(x, y, w, h, c)",
         description:
-          "circ draws a circle outline; circfill fills it. x,y is the centre, r is the radius in pixels.",
+          "Draws a solid filled rectangle. x,y is the top-left corner. Faster than pset for filling areas.",
         example:
-          "-- pulsing ring effect:\nfunction _draw()\n  cls(0)\n  local r = 20 + sin(time() * 3) * 8\n  circ    (64, 64, r,     7)  -- outer ring\n  circfill(64, 64, r - 4, 1)  -- dark fill\n  spr(0,  60, 60)             -- sprite on top\nend",
+          "-- health bar:\nlocal function draw_hp_bar(x, y, hp, max)\n  local w = 40\n  local filled = flr(w * hp / max)\n  rectfill(x,      y, w,      5, 1)  -- background\n  rectfill(x,      y, filled, 5, 8)  -- filled portion\n  rect    (x - 1, y - 1, w + 2, 7, 7)  -- border\nend\n\ndraw_hp_bar(44, 118, player.hp, player.max_hp)",
+      },
+      {
+        name: "circ",
+        signature: "circ(x, y, r, c)",
+        description:
+          "Draws a circle outline. x,y is the centre, r is the radius in pixels.",
+        example:
+          "-- radar-style pulsing rings:\nfunction _draw()\n  cls(0)\n  for i = 1, 3 do\n    local r = ((time() * 20 + i * 14) % 42)\n    local alpha = 1 - r / 42\n    circ(64, 64, r, 3)\n  end\nend",
+      },
+      {
+        name: "circfill",
+        signature: "circfill(x, y, r, c)",
+        description:
+          "Draws a solid filled circle. x,y is the centre, r is the radius in pixels.",
+        example:
+          "-- pulsing glow effect:\nfunction _draw()\n  cls(0)\n  local r = 20 + sin(time() * 3) * 8\n  circfill(64, 64, r,     1)  -- dark core\n  circfill(64, 64, r - 6, 8)  -- bright centre\n  spr(0, 60, 60)              -- sprite on top\nend",
       },
       {
         name: "spr",
@@ -543,28 +575,60 @@ const DOCS: Array<Category> = [
           '-- random int from 1 to 6 (d6):\nlocal roll = flr(rnd(6)) + 1\n\n-- random position on screen:\nlocal x = rnd(120)\nlocal y = rnd(112)\n\n-- pick a random item from a table:\nlocal loot = {"sword", "bow", "potion"}\nlocal pick = loot[flr(rnd(#loot)) + 1]\n\n-- random angle in radians:\nlocal angle = rnd(3.14159 * 2)',
       },
       {
-        name: "flr / ceil",
-        signature: "flr(n)  ceil(n)",
+        name: "flr",
+        signature: "flr(n)  -->  integer",
         description:
-          "flr returns the largest integer ≤ n (floor); ceil returns the smallest integer ≥ n (ceiling). Use flr for pixel-perfect positions and tile coordinates.",
+          "Returns the largest integer ≤ n (floor). Essential for pixel-perfect positions, tile coordinates, and integer frame indices from floats.",
         example:
-          "-- snap position to 8px grid:\nlocal snap_x = flr(px / 8) * 8\nlocal snap_y = flr(py / 8) * 8\n\n-- tile coordinates from pixel position:\nlocal tile_col = flr(px / 8)\nlocal tile_row = flr(py / 8)\n\n-- number of pages needed:\nlocal pages = ceil(#items / 10)",
+          "-- snap position to 8px tile grid:\nlocal snap_x = flr(px / 8) * 8\nlocal snap_y = flr(py / 8) * 8\n\n-- tile coordinates from pixel position:\nlocal tile_col = flr(px / 8)\nlocal tile_row = flr(py / 8)\n\n-- random integer 0–5:\nlocal roll = flr(rnd(6))",
       },
       {
-        name: "abs / min / max / mid",
-        signature: "abs(n)  min(a,b)  max(a,b)  mid(a,b,c)",
+        name: "ceil",
+        signature: "ceil(n)  -->  integer",
         description:
-          "abs: absolute value. min/max: smaller/larger of two values. mid: middle of three — equivalent to clamp(val, lo, hi) when called as mid(lo, val, hi).",
+          "Returns the smallest integer ≥ n (ceiling). Useful when you need to round up — e.g. number of pages, chunks, or rows needed.",
         example:
-          "-- clamp player inside screen:\nlocal px = mid(0, px, 120)\nlocal py = mid(0, py, 112)\n\n-- approach a target speed smoothly:\nlocal vx = vx + (target_vx - vx) * min(1, 8 * dt)\n\n-- distance check without sqrt:\nlocal dx = abs(ax - bx)\nlocal dy = abs(ay - by)\nif dx < 8 and dy < 8 then\n  on_hit()\nend",
+          "-- pages needed to display a list:\nlocal items_per_page = 10\nlocal pages = ceil(#items / items_per_page)\n\n-- columns needed for a grid:\nlocal cols = ceil(total_width / cell_size)\n\nprint(pages .. \" pages\", 2, 2, 7)",
       },
       {
-        name: "sin / cos",
-        signature: "sin(a)  cos(a)  -- radians",
+        name: "abs",
+        signature: "abs(n)  -->  number",
         description:
-          "Trigonometric functions taking radians. Great for circular movement, oscillation, and smooth animation curves. sin(0)=0, sin(π/2)=1. Use time() as the argument to animate.",
+          "Returns the absolute (non-negative) value of n. Useful for distance checks, speed magnitude, and symmetric ranges.",
         example:
-          "-- orbit an object around a point:\nlocal angle = time() * 1.5\nlocal orbit_r = 30\nlocal ox = 64 + cos(angle) * orbit_r\nlocal oy = 64 + sin(angle) * orbit_r\nspr(5, ox, oy)\n\n-- bobbing idle animation:\nlocal bob_y = py + sin(time() * 4) * 2\nspr(0, px, bob_y)\n\n-- shoot in a direction:\nlocal function shoot(angle)\n  table.insert(bullets, {\n    x=px, y=py,\n    vx=cos(angle)*120,\n    vy=sin(angle)*120\n  })\nend",
+          "-- AABB hit detection without sqrt:\nlocal dx = abs(ax - bx)\nlocal dy = abs(ay - by)\nif dx < 8 and dy < 8 then\n  on_hit()\nend\n\n-- keep speed within limit:\nif abs(vx) > max_speed then\n  vx = max_speed * (vx > 0 and 1 or -1)\nend",
+      },
+      {
+        name: "min / max",
+        signature: "min(a, b)  max(a, b)  -->  number",
+        description:
+          "min returns the smaller of two values; max returns the larger. Chain them for clamping, or use mid() for a one-call clamp.",
+        example:
+          "-- clamp speed:\nvx = max(-max_spd, min(max_spd, vx))\n\n-- approach target speed:\nlocal diff = target_vx - vx\nvx = vx + diff * min(1, 8 * dt)\n\n-- pick furthest enemy:\nlocal farthest = 0\nfor _, e in ipairs(enemies) do\n  farthest = max(farthest, dist(e))\nend",
+      },
+      {
+        name: "mid",
+        signature: "mid(a, b, c)  -->  number",
+        description:
+          "Returns the middle value of three numbers. Calling mid(lo, val, hi) is equivalent to clamp(val, lo, hi) — a clean one-liner to keep a value in range.",
+        example:
+          "-- clamp player inside screen bounds:\npx = mid(0, px, 120)\npy = mid(0, py, 112)\n\n-- clamp health between 0 and max:\nplayer.hp = mid(0, player.hp + heal, player.max_hp)\n\n-- clamp camera scroll:\ncam_x = mid(0, cam_x, map_w - 128)",
+      },
+      {
+        name: "sin",
+        signature: "sin(a)  -->  number  -- radians",
+        description:
+          "Sine of angle a in radians. Returns -1 to 1. Use time() as the argument to animate — produces smooth, endless oscillation without managing timers.",
+        example:
+          "-- vertical bobbing:\nlocal bob_y = py + sin(time() * 4) * 3\nspr(0, px, bob_y)\n\n-- shoot upward fan:\nfor i = -2, 2 do\n  local a = pi/2 + i * 0.25\n  table.insert(bullets, {\n    vx = cos(a) * 80,\n    vy = sin(a) * 80,\n  })\nend",
+      },
+      {
+        name: "cos",
+        signature: "cos(a)  -->  number  -- radians",
+        description:
+          "Cosine of angle a in radians. Returns -1 to 1. Combine with sin() to produce circular motion — cos gives the X component, sin gives the Y component.",
+        example:
+          "-- orbit an object around a point:\nlocal angle = time() * 1.5\nlocal r = 30\nlocal ox = 64 + cos(angle) * r\nlocal oy = 64 + sin(angle) * r\nspr(5, ox - 4, oy - 4)",
       },
       {
         name: "pi",
@@ -575,12 +639,20 @@ const DOCS: Array<Category> = [
           "-- full circle in radians:\nlocal tau = pi * 2\n\n-- point on a circle of radius r:\nlocal angle = time() * tau / 4  -- one full rotation per 4s\nlocal x = 64 + cos(angle) * 30\nlocal y = 64 + sin(angle) * 30\ncircfill(x, y, 3, 8)",
       },
       {
-        name: "atan2 / sqrt",
-        signature: "atan2(y, x)  sqrt(n)",
+        name: "atan2",
+        signature: "atan2(y, x)  -->  radians",
         description:
-          "atan2 returns the angle (in radians) pointing from the origin to (x,y) — use for aiming. sqrt returns the square root — use for distance. Both are somewhat expensive; avoid in tight loops.",
+          "Returns the angle (in radians) of the vector (x, y) from the origin. Use for aiming — pass the difference between target and source positions. Somewhat expensive; cache the result when possible.",
         example:
-          "-- aim bullet towards mouse / target:\nlocal function angle_to(ax, ay, bx, by)\n  return atan2(by - ay, bx - ax)\nend\n\nlocal a = angle_to(px, py, tx, ty)\ntable.insert(bullets, {\n  vx = cos(a) * 100,\n  vy = sin(a) * 100,\n})\n\n-- exact distance between two points:\nlocal function dist(ax, ay, bx, by)\n  local dx = bx - ax\n  local dy = by - ay\n  return sqrt(dx*dx + dy*dy)\nend",
+          "-- aim bullet towards a target:\nlocal function angle_to(ax, ay, bx, by)\n  return atan2(by - ay, bx - ax)\nend\n\nlocal a = angle_to(px, py, tx, ty)\ntable.insert(bullets, {\n  x = px, y = py,\n  vx = cos(a) * 100,\n  vy = sin(a) * 100,\n})",
+      },
+      {
+        name: "sqrt",
+        signature: "sqrt(n)  -->  number",
+        description:
+          "Returns the square root of n. Use for exact Euclidean distance. Somewhat expensive — avoid in tight loops; use squared distance (dx*dx + dy*dy) for comparisons instead.",
+        example:
+          "-- exact distance between two points:\nlocal function dist(ax, ay, bx, by)\n  local dx = bx - ax\n  local dy = by - ay\n  return sqrt(dx*dx + dy*dy)\nend\n\n-- only sqrt when actually needed:\nif dist(px, py, ex, ey) < 16 then\n  trigger_pickup()\nend",
       },
     ],
   },
@@ -612,12 +684,20 @@ const DOCS: Array<Category> = [
           'local cam_x, cam_y = 0, 0\n\nfunction _update(dt)\n  -- follow player with 8px dead-zone:\n  local target_x = px - 60\n  local target_y = py - 56\n  cam_x = cam_x + (target_x - cam_x) * 6 * dt\n  cam_y = cam_y + (target_y - cam_y) * 6 * dt\nend\n\nfunction _draw()\n  cls(1)\n  camera(flr(cam_x), flr(cam_y))  -- world space\n  map(0, 0, 0, 0, 32, 32)\n  spr(0, px, py)\n  camera(0, 0)                     -- reset to screen space\n  print("score: " .. score, 2, 2, 7)  -- HUD\nend',
       },
       {
-        name: "pal / palt",
-        signature: "pal(c0, c1)\npalt(c, transparent)",
+        name: "pal",
+        signature: "pal(c0, c1)",
         description:
-          "pal remaps every draw call that would use color c0 to use c1 instead — great for flash effects, team colours, or day/night. palt sets whether a color index is drawn transparently (default: only color 0 is transparent).",
+          "Remaps every draw call that would use colour c0 to use c1 instead. Great for flash effects, team colours, or day/night palette swaps. Call pal(c, c) to reset a single colour.",
         example:
-          "-- damage flash: replace sprite colours with red for one frame:\nfunction draw_player_hit()\n  pal(7, 8)  -- white → red\n  pal(6, 8)  -- light → red\n  spr(0, px, py)\n  pal(7, 7)  -- reset\n  pal(6, 6)\nend\n\n-- make color 2 transparent so it acts as a second alpha:\npalt(0, true)   -- color 0 transparent (default)\npalt(2, true)   -- also transparent\nspr(4, ex, ey)  -- sprite drawn with both 0 and 2 as clear\npalt(2, false)  -- restore",
+          "-- damage flash: tint sprite red for one frame:\nfunction draw_player_hit()\n  pal(7, 8)   -- white → red\n  pal(6, 8)   -- light grey → red\n  spr(0, px, py)\n  pal(7, 7)   -- reset\n  pal(6, 6)\nend",
+      },
+      {
+        name: "palt",
+        signature: "palt(c, transparent)",
+        description:
+          "Sets whether colour index c is drawn transparently. By default only colour 0 is transparent. Use to designate additional colours as alpha — useful for multi-layer sprites.",
+        example:
+          "-- make colour 2 act as a second transparent index:\npalt(0, true)   -- keep default: 0 is clear\npalt(2, true)   -- also treat 2 as clear\nspr(4, ex, ey)  -- both 0 and 2 pixels are skipped\npalt(2, false)  -- restore afterwards",
       },
     ],
   },
@@ -656,28 +736,28 @@ function EntryCard({ entry }: { entry: ApiEntry }) {
   const cost = api[entry.name]?.view;
 
   return (
-    <div className="rounded border border-white/6 bg-white/3 overflow-hidden">
+    <div className="border border-rpg-gold/12 bg-surface-base overflow-hidden">
       <div className="flex gap-0 min-h-0">
         {/* Left: signature + description */}
-        <div className="flex flex-col gap-2 p-3 w-64 shrink-0 border-r border-white/6">
-          <code className="font-mono text-[11px] text-violet-300 whitespace-pre-wrap leading-relaxed">
+        <div className="flex flex-col gap-2 p-3 w-64 shrink-0 border-r border-rpg-gold/10">
+          <code className="font-mono text-[11px] text-rpg-gold whitespace-pre-wrap leading-relaxed">
             {entry.signature}
           </code>
-          <p className="text-[11px] leading-relaxed text-zinc-300 whitespace-pre-line">
+          <p className="text-[11px] leading-relaxed text-rpg-stone/80 whitespace-pre-line">
             {entry.description}
           </p>
           {cost && (
             <div className="flex gap-1.5 mt-auto pt-1">
               {cost.vram != null && (
-                <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-surface-raised border border-white/6 text-[9px]">
-                  <span className="text-zinc-300">VRAM</span>
-                  <span className="text-cyan-300">{cost.vram}</span>
+                <span className="flex items-center gap-1 px-1.5 py-0.5 bg-surface-raised border border-rpg-gold/12 text-[9px]">
+                  <span className="text-rpg-stone/70">VRAM</span>
+                  <span className="text-rpg-emerald font-mono">{cost.vram}</span>
                 </span>
               )}
               {cost.instructions != null && (
-                <span className="flex items-center gap-1 rounded px-1.5 py-0.5 bg-surface-raised border border-white/6 text-[9px]">
-                  <span className="text-zinc-300">OPS</span>
-                  <span className="text-green-300">{cost.instructions}</span>
+                <span className="flex items-center gap-1 px-1.5 py-0.5 bg-surface-raised border border-rpg-gold/12 text-[9px]">
+                  <span className="text-rpg-stone/70">OPS</span>
+                  <span className="text-rpg-gold font-mono">{cost.instructions}</span>
                 </span>
               )}
             </div>
@@ -685,7 +765,7 @@ function EntryCard({ entry }: { entry: ApiEntry }) {
         </div>
 
         {/* Right: syntax-highlighted code example */}
-        <div className="flex-1 overflow-x-auto bg-surface-overlay">
+        <div className="flex-1 overflow-x-auto bg-surface-base">
           <CodeEditor value={entry.example} basicSetup={false} readOnly />
         </div>
       </div>
@@ -705,7 +785,7 @@ export function LuaDocsDialog() {
             <Button
               variant="ghost"
               size="icon-xs"
-              className="text-zinc-400 hover:text-zinc-300"
+              className="text-rpg-stone hover:text-rpg-gold"
             >
               <QuestionIcon size={10} />
             </Button>
@@ -714,36 +794,36 @@ export function LuaDocsDialog() {
         <TooltipContent side="right">Lua API reference</TooltipContent>
       </Tooltip>
 
-      <DialogContent className="sm:max-w-4xl w-full p-0 gap-0 bg-surface-raised border-white/10 overflow-hidden">
-        <DialogHeader className="px-5 pt-4 pb-3 border-b border-white/8">
-          <DialogTitle className="text-sm font-semibold text-zinc-200">
+      <DialogContent className="sm:max-w-4xl w-full p-0 gap-0 bg-surface-card border-rpg-gold/20 overflow-hidden">
+        <DialogHeader className="px-5 pt-4 pb-3 border-b border-rpg-gold/12">
+          <DialogTitle className="text-sm font-semibold text-rpg-parchment">
             Lua Reference
           </DialogTitle>
-          <p className="text-[11px] text-zinc-300 mt-0.5">
+          <p className="text-[11px] text-rpg-stone/70 mt-0.5">
             Language basics and built-in API for all scripts
           </p>
         </DialogHeader>
 
         <div className="flex" style={{ height: 560 }}>
           {/* Category sidebar */}
-          <nav className="flex w-32 shrink-0 flex-col gap-px border-r border-white/8 p-2 overflow-y-auto">
+          <nav className="flex w-32 shrink-0 flex-col gap-px border-r border-rpg-gold/12 bg-surface-base p-2 overflow-y-auto">
             {DOCS.map((cat) => {
               const active = cat.label === activeCategory;
               return (
                 <button
                   key={cat.label}
                   onClick={() => setActiveCategory(cat.label)}
-                  className={`relative flex items-center rounded px-2.5 py-1.5 text-left text-xs transition ${
+                  className={`relative flex items-center rounded-none px-2.5 py-1.5 text-left text-xs transition ${
                     active
-                      ? "bg-violet-600/15 text-violet-300"
-                      : "text-zinc-400 hover:bg-white/4 hover:text-zinc-300"
+                      ? "bg-rpg-gold/8 text-rpg-gold"
+                      : "text-rpg-stone/70 hover:bg-rpg-gold/4 hover:text-rpg-stone"
                   }`}
                 >
                   {active && (
-                    <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-violet-500" />
+                    <span className="absolute inset-y-0 left-0 w-0.5 bg-rpg-gold" />
                   )}
                   {cat.label}
-                  <span className="ml-auto text-[9px] text-zinc-400">
+                  <span className="ml-auto font-mono text-[9px] text-rpg-stone/50">
                     {cat.entries.length}
                   </span>
                 </button>
@@ -754,7 +834,7 @@ export function LuaDocsDialog() {
           {/* Entries */}
           <ScrollArea className="flex-1">
             <div className="space-y-2.5 p-4">
-              <h3 className="text-[10px] font-medium uppercase tracking-wider text-zinc-300 mb-3">
+              <h3 className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/60 mb-3">
                 {category.label}
               </h3>
               {category.entries.map((entry) => (

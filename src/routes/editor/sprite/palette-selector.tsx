@@ -7,7 +7,7 @@ export function PaletteSelector() {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
         Palette
       </span>
 
@@ -21,8 +21,8 @@ export function PaletteSelector() {
                 style={{ backgroundColor: i === 0 ? "transparent" : hex }}
                 className={`relative h-7 w-7 border transition-all ${
                   activePaletteIndex === i
-                    ? "border-white ring-1 ring-white ring-offset-1 ring-offset-[#13131e]"
-                    : "border-white/15 hover:border-white/40"
+                    ? "border-rpg-gold ring-1 ring-rpg-gold ring-offset-1 ring-offset-surface-base"
+                    : "border-rpg-gold/15 hover:border-rpg-gold/50"
                 } ${i === 0 ? "bg-transparent" : ""}`}
               >
                 {i === 0 && (
@@ -39,7 +39,7 @@ export function PaletteSelector() {
             </TooltipTrigger>
             <TooltipContent>
               <span className="font-mono">
-                {i === 0 ? "Transparent" : hex} <span className="text-zinc-300">#{i}</span>
+                {i === 0 ? "Transparent" : hex} <span className="text-rpg-stone/70">#{i}</span>
               </span>
             </TooltipContent>
           </Tooltip>
@@ -47,9 +47,9 @@ export function PaletteSelector() {
       </div>
 
       {/* Active color info */}
-      <div className="flex items-center gap-2 border border-white/8 bg-white/4 px-2 py-1.5">
+      <div className="flex items-center gap-2 border border-rpg-gold/12 bg-rpg-gold/4 px-2 py-1.5">
         <div
-          className="h-5 w-5 shrink-0 border border-white/20"
+          className="h-5 w-5 shrink-0 border border-rpg-gold/20"
           style={{
             backgroundColor: activePaletteIndex === 0 ? "transparent" : (palette[activePaletteIndex] ?? "#000"),
           }}
@@ -60,9 +60,9 @@ export function PaletteSelector() {
             </svg>
           )}
         </div>
-        <span className="font-mono text-[11px] text-zinc-300">
+        <span className="font-mono text-[11px] text-rpg-stone/80">
           #{activePaletteIndex}{" "}
-          <span className="text-zinc-300">
+          <span className="text-rpg-parchment">
             {activePaletteIndex === 0 ? "transparent" : (palette[activePaletteIndex] ?? "—")}
           </span>
         </span>

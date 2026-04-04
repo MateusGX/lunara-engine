@@ -74,9 +74,9 @@ export function CodeTab() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* Script list */}
-      <div className="flex w-44 shrink-0 flex-col border-r border-white/8">
+      <div className="flex w-44 shrink-0 flex-col border-r border-rpg-gold/12">
         <div className="flex shrink-0 items-center justify-between px-3 py-2">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-stone/80">
             Scripts
           </span>
           <div className="flex items-center gap-0.5">
@@ -85,7 +85,7 @@ export function CodeTab() {
               variant="ghost"
               size="icon-xs"
               onClick={addScript}
-              className="text-zinc-400 hover:text-zinc-300"
+              className="text-rpg-stone/60 hover:text-rpg-stone"
               title="Add script"
             >
               <PlusIcon size={10} />
@@ -93,7 +93,7 @@ export function CodeTab() {
           </div>
         </div>
 
-        <Separator className="bg-white/8" />
+        <Separator className="bg-rpg-gold/12" />
 
         <ScrollArea className="flex-1">
           <div className="flex w-44 flex-col gap-px overflow-x-hidden p-1.5">
@@ -104,17 +104,17 @@ export function CodeTab() {
                   key={s.id}
                   className={`group relative flex items-center gap-1 border px-1.5 py-1 transition ${
                     active
-                      ? "border-violet-500/40 bg-violet-600/10"
-                      : "border-transparent hover:border-white/8 hover:bg-white/4"
+                      ? "border-rpg-gold/35 bg-rpg-gold/8"
+                      : "border-transparent hover:border-rpg-gold/15 hover:bg-rpg-gold/4"
                   }`}
                 >
                   {active && (
-                    <span className="absolute inset-y-0 left-0 w-0.5 bg-violet-500" />
+                    <span className="absolute inset-y-0 left-0 w-0.5 bg-rpg-gold" />
                   )}
 
                   <button
                     className={`shrink-0 font-mono text-[9px] ${
-                      active ? "text-violet-400" : "text-zinc-400"
+                      active ? "text-rpg-gold" : "text-rpg-stone/60"
                     }`}
                     onClick={() => setSelectedScriptId(s.id)}
                   >
@@ -129,7 +129,7 @@ export function CodeTab() {
                       value={s.name}
                       onCommit={(name) => commitRename(s.id, name)}
                       emptyLabel={`script_${s.id}`}
-                      className={`text-xs ${active ? "text-zinc-200" : "text-zinc-300"}`}
+                      className={`text-xs ${active ? "text-rpg-parchment" : "text-rpg-stone"}`}
                       onDelete={() => {
                         deleteScript(s.id);
                       }}
@@ -142,15 +142,15 @@ export function CodeTab() {
           </div>
         </ScrollArea>
 
-        <Separator className="bg-white/8" />
+        <Separator className="bg-rpg-gold/12" />
 
         <div className="shrink-0 px-3 py-2">
-          <p className="text-[9px] leading-relaxed text-zinc-400">
-            Script <span className="text-zinc-400">#0</span> runs as entry
+          <p className="text-[9px] leading-relaxed text-rpg-stone/60">
+            Script <span className="text-rpg-stone/60">#0</span> runs as entry
             point.
             <br />
             Others load via{" "}
-            <span className="font-mono text-zinc-400">require("name")</span>.
+            <span className="font-mono text-rpg-stone/60">require("name")</span>.
           </p>
         </div>
       </div>

@@ -4,13 +4,13 @@ import {
   PlusIcon,
   FolderOpenIcon,
   UploadIcon,
-  GameControllerIcon,
   MagnifyingGlassIcon,
   CaretDownIcon,
+  ScrollIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,11 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LunaraLogo } from "@/components/lunara-logo";
+import { RpgDivider, RpgGlowBg } from "@/components/rpg-ui";
 import { useStore } from "@/store";
 import { save as saveCartridge } from "@/db/cartridge-repository";
 import { importLun } from "@/cartridge/export";
 import { ProjectCard } from "./project-card";
 import { NewProjectDialog } from "./new-project-dialog";
+import { HardwareProfilesTab } from "./hardware-profiles-tab";
+import type { HardwareConfig } from "@/types/cartridge";
 import type { Template } from "./templates";
 
 export function HomePage() {
@@ -51,12 +54,14 @@ export function HomePage() {
     template: Template,
     name: string,
     author: string,
+    hw: HardwareConfig,
   ) {
     const cartridge = template.create(name, author);
+    cartridge.hardware = hw;
     await saveCartridge(cartridge);
     await loadProjects();
     setShowDialog(false);
-    navigate(`/editor/${cartridge.meta.id}`);
+    navigate(`/studio/editor/${cartridge.meta.id}`);
   }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
@@ -67,7 +72,7 @@ export function HomePage() {
       cartridge.meta.updated = Date.now();
       await saveCartridge(cartridge);
       await loadProjects();
-      navigate(`/editor/${cartridge.meta.id}`);
+      navigate(`/studio/editor/${cartridge.meta.id}`);
     } catch {
       alert("Invalid or corrupted .lun file.");
     }
@@ -75,7 +80,9 @@ export function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-base text-white">
+    <div className="relative flex min-h-screen flex-col bg-surface-base text-rpg-parchment overflow-hidden">
+      <RpgGlowBg position="50% 0%" />
+
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -85,64 +92,55 @@ export function HomePage() {
         onChange={handleImport}
       />
 
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-white/15 bg-surface-base/95 px-6 py-3 backdrop-blur-sm">
+      {/* ── Header / Tavern Sign ── */}
+      <header className="sticky top-0 z-10 border-b border-rpg-gold/15 bg-surface-base/95 px-6 py-3 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center gap-4">
-          {/* Logo */}
-          <button onClick={() => navigate("/")}>
+          <Button
+            variant="ghost"
+            className="p-0 h-auto"
+            onClick={() => navigate("/")}
+          >
             <LunaraLogo />
-          </button>
+          </Button>
 
-          <Separator orientation="vertical" className="h-5 bg-white/15" />
+          <div className="h-5 w-px bg-rpg-gold/15" />
 
-          {/* Search */}
+          {/* Search scroll */}
           <div className="relative max-w-xs flex-1">
             <MagnifyingGlassIcon
               size={13}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-300"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-rpg-stone"
             />
             <Input
               placeholder="Search projects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 border-white/10 bg-white/5 pl-9 text-xs text-zinc-100 placeholder:text-zinc-300 focus-visible:ring-violet-500/50"
+              className="pl-9 text-xs"
             />
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/launch")}
-              className="h-8 gap-1.5 text-xs text-zinc-300 hover:bg-violet-500/10 hover:text-violet-300"
-            >
-              <GameControllerIcon size={14} /> Play .png
-            </Button>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  size="sm"
-                  className="h-8 gap-1.5 bg-violet-600 text-xs hover:bg-violet-500"
-                >
+                <Button size="sm" className="h-8 gap-1.5 text-xs">
                   <PlusIcon size={13} weight="bold" /> New Project
                   <CaretDownIcon size={11} className="ml-0.5 opacity-70" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="border-white/12 bg-surface-overlay"
+                className="border-rpg-gold/20 bg-surface-overlay"
               >
                 <DropdownMenuItem
                   onClick={() => setShowDialog(true)}
-                  className="cursor-pointer gap-2 text-xs focus:bg-white/8 focus:text-white"
+                  className="cursor-pointer gap-2 text-xs text-rpg-parchment focus:bg-rpg-gold/8 focus:text-rpg-gold"
                 >
                   <PlusIcon size={13} weight="bold" /> New Project
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator className="bg-rpg-gold/12" />
                 <DropdownMenuItem
                   onClick={() => fileInputRef.current?.click()}
-                  className="cursor-pointer gap-2 text-xs focus:bg-white/8 focus:text-white"
+                  className="cursor-pointer gap-2 text-xs text-rpg-parchment focus:bg-rpg-gold/8 focus:text-rpg-gold"
                 >
                   <UploadIcon size={13} /> Import .lun
                 </DropdownMenuItem>
@@ -152,118 +150,153 @@ export function HomePage() {
         </div>
       </header>
 
-      {/* Content */}
+      {/* ── Main Content ── */}
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
-        {/* Title row */}
-        <div className="mb-6 flex items-baseline gap-3">
-          <h1 className="text-2xl font-bold text-white">Projects</h1>
-          {projects.length > 0 && (
-            <span className="rounded-full bg-white/8 px-2 py-0.5 font-mono text-xs text-zinc-300">
-              {filtered.length}
-              {search ? `/${projects.length}` : ""}
-            </span>
-          )}
-        </div>
+        <Tabs defaultValue="projects">
+          <TabsList variant="line" className="mb-6">
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="hardware">Hardware Profiles</TabsTrigger>
+          </TabsList>
 
-        {projects.length === 0 ? (
-          /* Empty state */
-          <div className="flex flex-col items-center justify-center border border-dashed border-white/12 py-32 text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center border border-white/12 bg-violet-500/5 shadow-lg shadow-violet-500/10">
-              <FolderOpenIcon
-                size={32}
-                className="text-violet-400"
-                weight="duotone"
-              />
+          <TabsContent value="projects">
+            {/* Title row */}
+            <div className="mb-6 flex items-baseline gap-3">
+              <h1 className="text-xl font-bold tracking-widest text-rpg-gold uppercase">
+                Projects
+              </h1>
+              {projects.length > 0 && (
+                <span className="border border-rpg-gold/20 bg-rpg-gold/8 px-2 py-0.5 font-mono text-[10px] text-rpg-gold/70">
+                  {filtered.length}
+                  {search ? `/${projects.length}` : ""}
+                </span>
+              )}
             </div>
-            <h2 className="text-xl font-semibold text-zinc-100">No projects yet</h2>
-            <p className="mt-1.5 max-w-[280px] text-sm text-zinc-300">
-              Create your first game or import an existing{" "}
-              <span className="font-mono text-zinc-300">.lun</span> file.
-            </p>
-            <div className="mt-6 flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="gap-1.5 border-white/12 bg-transparent text-zinc-300 hover:bg-white/5 hover:text-white"
-              >
-                <UploadIcon size={13} /> Import .lun
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => setShowDialog(true)}
-                className="gap-1.5 bg-violet-600 hover:bg-violet-500"
-              >
-                <PlusIcon size={13} weight="bold" /> New Project
-              </Button>
+
+            {projects.length === 0 ? (
+              /* Empty state */
+              <div className="relative flex flex-col items-center justify-center border border-dashed border-rpg-gold/15 py-32 text-center">
+                <span className="pointer-events-none absolute top-0 left-0 h-3 w-3 border-t border-l border-rpg-gold/40" />
+                <span className="pointer-events-none absolute top-0 right-0 h-3 w-3 border-t border-r border-rpg-gold/40" />
+                <span className="pointer-events-none absolute bottom-0 left-0 h-3 w-3 border-b border-l border-rpg-gold/40" />
+                <span className="pointer-events-none absolute bottom-0 right-0 h-3 w-3 border-b border-r border-rpg-gold/40" />
+
+                <div className="mb-5 flex h-16 w-16 items-center justify-center border border-rpg-gold/20 bg-rpg-gold/5">
+                  <FolderOpenIcon
+                    size={32}
+                    className="text-rpg-gold/50"
+                    weight="duotone"
+                  />
+                </div>
+                <h2 className="text-lg font-semibold tracking-wider text-rpg-parchment">
+                  No projects yet
+                </h2>
+                <p className="mt-1.5 max-w-64 text-sm text-rpg-stone">
+                  Create your first game or import an existing{" "}
+                  <span className="font-mono text-rpg-gold/60">.lun</span> file.
+                </p>
+                <RpgDivider className="my-5 w-40" />
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="gap-1.5"
+                  >
+                    <UploadIcon size={13} /> Import .lun
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowDialog(true)}
+                    className="gap-1.5"
+                  >
+                    <PlusIcon size={13} weight="bold" /> New Project
+                  </Button>
+                </div>
+              </div>
+            ) : filtered.length === 0 ? (
+              /* No search results */
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <ScrollIcon
+                  size={32}
+                  className="mb-4 text-rpg-stone/50"
+                  weight="duotone"
+                />
+                <p className="text-sm text-rpg-stone">
+                  No projects matching{" "}
+                  <span className="font-mono text-rpg-gold/60">"{search}"</span>
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearch("")}
+                  className="mt-2 text-xs"
+                >
+                  Clear search
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {filtered.map((c) => (
+                  <ProjectCard
+                    key={c.meta.id}
+                    cartridge={c}
+                    onDelete={(id) => deleteProject(id)}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="hardware">
+            <div className="mb-6">
+              <h1 className="text-xl font-bold tracking-widest text-rpg-gold uppercase">
+                Hardware Profiles
+              </h1>
+              <p className="mt-1 text-xs text-rpg-stone">
+                Hardware configurations for your game cartridges.
+              </p>
             </div>
-          </div>
-        ) : filtered.length === 0 ? (
-          /* No search results */
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <MagnifyingGlassIcon size={32} className="mb-4 text-zinc-300" />
-            <p className="text-sm text-zinc-300">
-              No projects matching{" "}
-              <span className="font-mono text-zinc-200">"{search}"</span>
-            </p>
-            <button
-              onClick={() => setSearch("")}
-              className="mt-2 text-xs text-violet-400 hover:text-violet-300"
-            >
-              Clear search
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {filtered.map((c) => (
-              <ProjectCard
-                key={c.meta.id}
-                cartridge={c}
-                onDelete={(id) => deleteProject(id)}
-              />
-            ))}
-          </div>
-        )}
+            <HardwareProfilesTab />
+          </TabsContent>
+        </Tabs>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-white/12 px-6 py-6">
+      {/* ── Footer ── */}
+      <footer className="mt-auto border-t border-rpg-gold/12 px-6 py-5">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
           <LunaraLogo />
-
-          <p className="text-[10px] uppercase tracking-widest text-zinc-300">
+          <p className="text-[10px] uppercase tracking-widest text-rpg-stone/50">
             A fantasy console for making retro-style games with Lua.
           </p>
-
-          <div className="flex items-center gap-4 text-[10px] font-medium text-zinc-300">
+          <div className="flex items-center gap-4 text-[10px] font-medium text-rpg-stone/50">
             <a
               href="https://github.com/MateusGX"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors hover:text-violet-400"
+              className="transition-colors hover:text-rpg-gold"
             >
               by Mateus Martins
             </a>
-            <span className="text-white/15">·</span>
+            <span className="text-rpg-gold/15">·</span>
             <a
               href="https://github.com/MateusGX/lunara-engine/blob/main/LICENSE"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors hover:text-violet-400"
+              className="transition-colors hover:text-rpg-gold"
             >
-              Lunara License
+              License
             </a>
-            <span className="text-white/15">·</span>
+            <span className="text-rpg-gold/15">·</span>
             <a
               href="https://github.com/MateusGX/lunara-engine"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors hover:text-violet-400"
+              className="transition-colors hover:text-rpg-gold"
             >
               GitHub
             </a>
-            <span className="text-white/15">·</span>
-            <span className="font-mono text-zinc-400">v1.0.0</span>
+            <span className="text-rpg-gold/15">·</span>
+            <span className="font-mono text-rpg-stone/40">v1.0.0</span>
           </div>
         </div>
       </footer>

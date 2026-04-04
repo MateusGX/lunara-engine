@@ -44,18 +44,18 @@ function TilePreview({
       onClick={onClick}
       className={`group flex flex-col items-center gap-0.5 p-1 transition ${
         selected
-          ? "bg-violet-600/20 outline-2 -outline-offset-1 outline-violet-500"
-          : "hover:bg-white/6"
+          ? "bg-rpg-gold/12 outline-2 -outline-offset-1 outline-rpg-gold"
+          : "hover:bg-rpg-gold/6"
       }`}
     >
       <canvas
         ref={canvasRef}
         width={THUMB}
         height={THUMB}
-        className="border border-white/10"
+        className="border border-rpg-gold/15"
         style={{ imageRendering: "pixelated" }}
       />
-      <span className="font-mono text-[9px] text-zinc-300">{sprite.id}</span>
+      <span className="font-mono text-[9px] text-rpg-stone/70">{sprite.id}</span>
     </button>
   );
 }
@@ -66,7 +66,7 @@ export function TilePicker() {
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-300">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-rpg-gold/70">
         Tiles
       </span>
       <div className="flex flex-wrap gap-0.5">

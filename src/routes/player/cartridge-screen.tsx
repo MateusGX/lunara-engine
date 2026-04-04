@@ -33,6 +33,7 @@ export function CartridgeScreen({ cartridge }: Props) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCrashed(null);
     setError(null);
 
@@ -75,7 +76,7 @@ export function CartridgeScreen({ cartridge }: Props) {
             width: canvasSize,
             height: "auto",
             aspectRatio: `${cartridge.hardware.width} / ${cartridge.hardware.height}`,
-            border: "1px solid rgba(255,255,255,0.05)",
+            border: "1px solid rgba(162,89,239,0.18)",
             display: "block",
             transition: "width 0.2s ease",
           }}
@@ -83,22 +84,22 @@ export function CartridgeScreen({ cartridge }: Props) {
 
         {/* Non-fatal error banner */}
         {error && !crashed && (
-          <div className="absolute bottom-0 left-0 right-0 bg-red-900/80 px-4 py-2 backdrop-blur">
-            <p className="font-mono text-xs text-red-200">{error}</p>
+          <div className="absolute bottom-0 left-0 right-0 bg-rpg-blood/20 px-4 py-2 backdrop-blur">
+            <p className="font-mono text-xs text-rpg-blood/80">{error}</p>
           </div>
         )}
 
         {/* Crash overlay */}
         {crashed && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm">
-            <p className="mb-1 font-mono text-base font-bold text-red-400">
+            <p className="mb-1 font-mono text-base font-bold text-rpg-blood">
               CRASH
             </p>
-            <p className="mb-3 font-mono text-[11px] text-red-300/60">
+            <p className="mb-3 font-mono text-[11px] text-rpg-stone/60">
               the cartridge stopped due to an error
             </p>
-            <div className="max-w-xs rounded border border-red-800 bg-red-950/80 px-4 py-2">
-              <p className="break-all font-mono text-xs text-red-200">
+            <div className="max-w-xs border border-rpg-blood/25 bg-rpg-blood/10 px-4 py-2">
+              <p className="break-all font-mono text-xs text-rpg-blood/80">
                 {crashed}
               </p>
             </div>
@@ -107,9 +108,9 @@ export function CartridgeScreen({ cartridge }: Props) {
       </div>
 
       {/* Hardware info + live stats */}
-      <div className="flex w-full max-w-md flex-col gap-1.5 rounded border border-white/5 bg-white/2 px-4 py-2.5">
+      <div className="flex w-full max-w-md flex-col gap-1.5 border border-rpg-gold/12 bg-rpg-gold/3 px-4 py-2.5">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-300">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-rpg-gold/70">
             Hardware
           </span>
           <ResourceMonitor cpu={stats.cpu} mem={stats.mem} />
@@ -131,10 +132,10 @@ export function CartridgeScreen({ cartridge }: Props) {
         <div className="flex flex-wrap justify-center gap-3">
           {inputs.map((inp) => (
             <div key={inp.button} className="flex items-center gap-1.5">
-              <kbd className="rounded border border-white/15 bg-white/8 px-2 py-0.5 font-mono text-[11px] text-zinc-300">
+              <kbd className="border border-rpg-gold/20 bg-rpg-gold/8 px-2 py-0.5 font-mono text-[11px] text-rpg-stone/80">
                 {inp.key}
               </kbd>
-              <span className="font-mono text-[11px] text-zinc-300">
+              <span className="font-mono text-[11px] text-rpg-stone/70">
                 {inp.label}
               </span>
             </div>
@@ -148,8 +149,8 @@ export function CartridgeScreen({ cartridge }: Props) {
 function HwStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="font-mono text-[10px] text-zinc-300">{label}</span>
-      <span className="font-mono text-[11px] text-zinc-300">{value}</span>
+      <span className="font-mono text-[10px] text-rpg-stone/60">{label}</span>
+      <span className="font-mono text-[11px] text-rpg-parchment">{value}</span>
     </div>
   );
 }

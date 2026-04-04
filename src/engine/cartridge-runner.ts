@@ -208,7 +208,7 @@ export class CartridgeRunner {
       const budgetPerFrame = this.maxIps / this.maxFps;
       const cpuPercent = Math.min(
         200,
-        (this.frameInstructions / budgetPerFrame) * 100,
+        Math.round((this.frameInstructions / budgetPerFrame) * 10000) / 100,
       );
       this.onStats(cpuPercent, this.memEst);
 

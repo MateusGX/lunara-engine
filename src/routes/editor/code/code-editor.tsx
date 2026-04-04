@@ -1,6 +1,5 @@
 import { StreamLanguage } from "@codemirror/language";
 import CodeMirror, {
-  oneDark,
   ViewUpdate,
   type BasicSetupOptions,
 } from "@uiw/react-codemirror";
@@ -9,6 +8,7 @@ import { lua } from "@codemirror/legacy-modes/mode/lua";
 import { autocompletion } from "@codemirror/autocomplete";
 import type { ScriptData } from "@/types/cartridge";
 import { highlights } from "./highlight";
+import { lunaraTheme } from "./lunara-theme";
 import { buildCompletions } from "./completions";
 import { lintGutter, type Diagnostic } from "@codemirror/lint";
 import buildLinter from "./linters";
@@ -34,13 +34,14 @@ export function CodeEditor({
 }: CodeEditorProps) {
   const extensionsLocal = useMemo(
     () => [
+      ...lunaraTheme,
       StreamLanguage.define(lua),
       ...highlights,
       lintGutter(),
       ...buildLinter(onDiagnosticsChange),
       autocompletion({ override: buildCompletions(scripts) }),
     ],
-    [scripts],
+    [scripts, onDiagnosticsChange],
   );
 
   return (
@@ -49,7 +50,7 @@ export function CodeEditor({
       lang="lua"
       readOnly={readOnly}
       height="100%"
-      theme={oneDark}
+      theme="none"
       extensions={extensionsLocal}
       onChange={onChange}
       basicSetup={basicSetup}

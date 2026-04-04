@@ -35,13 +35,14 @@ function makeCtxMock(pixels: Uint8ClampedArray, w: number, h: number) {
     arcTo: vi.fn(), arc: vi.fn(), closePath: vi.fn(), fill: vi.fn(),
     stroke: vi.fn(), clip: vi.fn(), save: vi.fn(), restore: vi.fn(),
     drawImage: vi.fn(), fillText: vi.fn(),
-    roundRect: vi.fn(),
+    roundRect: vi.fn(), strokeRect: vi.fn(), rect: vi.fn(),
     measureText: vi.fn(() => ({ width: 0 })),
     createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
+    createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
     getImageData: vi.fn(() => ({ data: pixels, width: w, height: h })),
     putImageData: vi.fn((d: { data: Uint8ClampedArray }) => pixels.set(d.data)),
     lineWidth: 0, strokeStyle: "", fillStyle: "",
-    font: "", textAlign: "", textBaseline: "",
+    font: "", textAlign: "", textBaseline: "", letterSpacing: "",
   };
 }
 

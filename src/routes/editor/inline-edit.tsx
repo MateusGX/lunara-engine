@@ -1,10 +1,21 @@
-import { useRef, useEffect, useState } from "react";
-import { PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
+import { useRef, useState } from "react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  PencilSimpleIcon,
+  TrashIcon,
+  DotsThreeIcon,
+} from "@phosphor-icons/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +26,6 @@ interface InlineEditProps {
   disableDelete?: boolean;
   placeholder?: string;
   emptyLabel?: string;
-  /** Extra className applied to the display span */
   className?: string;
 }
 
@@ -32,13 +42,6 @@ export function InlineEdit({
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(value);
 
-  useEffect(() => {
-    if (open) {
-      setDraft(value);
-      requestAnimationFrame(() => inputRef.current?.focus());
-    }
-  }, [open, value]);
-
   function commit() {
     onCommit(draft);
     setOpen(false);
@@ -51,68 +54,64 @@ export function InlineEdit({
   return (
     <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
       <span
-        className={`min-w-0 flex-1 truncate ${value ? "" : "text-zinc-400"} ${className}`}
+        className={`min-w-0 flex-1 truncate ${value ? "" : "text-rpg-stone/50"} ${className}`}
       >
         {value || emptyLabel}
       </span>
 
-      <Popover
-        open={open}
-        onOpenChange={(o) => {
-          if (!o) cancel();
-        }}
-      >
-        <PopoverTrigger asChild>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpen(true);
-            }}
+            onClick={(e) => e.stopPropagation()}
             size="icon-xs"
-            variant="secondary"
+            variant="ghost"
+            className="shrink-0 text-rpg-stone hover:bg-rpg-gold/8 hover:text-rpg-gold"
           >
-            <PencilSimpleIcon size={10} />
+            <DotsThreeIcon size={12} weight="bold" />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-48 border-white/10 bg-zinc-900 p-2 shadow-xl"
-          side="right"
-          align="start"
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start">
+          <DropdownMenuItem
+            onClick={(e) => { e.stopPropagation(); setDraft(value); setOpen(true); }}
+          >
+            <PencilSimpleIcon size={12} />
+            Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            disabled={disableDelete}
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          >
+            <TrashIcon size={12} />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={open} onOpenChange={(o) => { if (!o) cancel(); }}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>Rename</DialogTitle>
+          </DialogHeader>
           <Input
             ref={inputRef}
+            autoFocus
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                commit();
-              }
-              if (e.key === "Escape") {
-                e.preventDefault();
-                cancel();
-              }
+              if (e.key === "Enter") { e.preventDefault(); commit(); }
+              if (e.key === "Escape") { e.preventDefault(); cancel(); }
               e.stopPropagation();
             }}
             onClick={(e) => e.stopPropagation()}
             placeholder={placeholder}
-            className="h-7 border-white/20 bg-zinc-800 text-xs text-white placeholder-zinc-600 focus-visible:border-violet-500 focus-visible:ring-violet-500/30"
           />
-        </PopoverContent>
-      </Popover>
-      <Button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        disabled={disableDelete}
-        variant="destructive"
-        size="icon-xs"
-      >
-        <TrashIcon size={10} />
-      </Button>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={cancel}>Cancel</Button>
+            <Button size="sm" onClick={commit}>Rename</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export function SoundTab() {
         </div>
       </ScrollArea>
 
-      <Separator orientation="vertical" className="bg-white/8" />
+      <Separator orientation="vertical" className="bg-rpg-gold/12" />
 
       {/* Main: sequencer */}
       <div className="flex flex-1 flex-col overflow-hidden">

@@ -195,9 +195,9 @@ export class CanvasRenderer {
     y0 = Math.floor(y0 - this.camY);
     x1 = Math.floor(x1 - this.camX);
     y1 = Math.floor(y1 - this.camY);
-    let dx = Math.abs(x1 - x0),
+    const dx = Math.abs(x1 - x0),
       sx = x0 < x1 ? 1 : -1;
-    let dy = -Math.abs(y1 - y0),
+    const dy = -Math.abs(y1 - y0),
       sy = y0 < y1 ? 1 : -1;
     let err = dx + dy;
     while (true) {
@@ -350,7 +350,8 @@ export class CanvasRenderer {
   }
 
   cursor(_x: number, _y: number) {
-    // Cursor position tracking for future use
+    void _x;
+    void _y;
   }
 
   camera(x: number, y: number) {
@@ -373,7 +374,7 @@ export class CanvasRenderer {
     const palLen = this.hw.palette.length;
     const len = buf.length;
     for (let i = 0; i < len; i++) {
-      let col = this.paletteMap[buf[i]] % palLen;
+      const col = this.paletteMap[buf[i]] % palLen;
       data[i * 4 + 0] = rgba[col * 4 + 0];
       data[i * 4 + 1] = rgba[col * 4 + 1];
       data[i * 4 + 2] = rgba[col * 4 + 2];

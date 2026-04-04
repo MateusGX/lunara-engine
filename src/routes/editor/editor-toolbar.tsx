@@ -46,25 +46,27 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
   } = useStore();
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-white/15 bg-surface-raised px-3">
+    <header className="flex h-12 shrink-0 items-center justify-between border-b border-rpg-gold/15 bg-surface-raised px-3">
       {/* Left */}
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/")}
-          className="h-8 gap-1.5 font-bold text-zinc-300 hover:bg-white/5 hover:text-white pr-0"
+          onClick={() => navigate("/studio")}
+          className="h-8 gap-1.5 font-bold text-rpg-stone hover:text-rpg-parchment"
         >
           <ArrowLeftIcon size={14} /> Projects
         </Button>
-        <span className="text-zinc-400">|</span>
+
+        <span className="text-rpg-gold/20">◆</span>
+
         {activeCartridge && (
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-white">
+            <span className="text-sm font-semibold text-rpg-parchment">
               {activeCartridge.meta.name}
             </span>
             {activeCartridge.meta.author && (
-              <span className="text-xs text-zinc-300">
+              <span className="text-xs text-rpg-stone/70">
                 by {activeCartridge.meta.author}
               </span>
             )}
@@ -83,7 +85,7 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
               variant="ghost"
               size="sm"
               onClick={() => setPreviewVisible(!previewVisible)}
-              className="gap-1.5 text-zinc-300 hover:text-zinc-100"
+              className="gap-1.5 text-rpg-stone hover:text-rpg-parchment"
             >
               {previewVisible ? (
                 <EyeSlashIcon size={14} />
@@ -93,7 +95,7 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
               Preview
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent className="border-rpg-gold/20 bg-surface-overlay text-rpg-parchment text-xs">
             {previewVisible ? "Hide preview" : "Show preview"}
           </TooltipContent>
         </Tooltip>
@@ -101,30 +103,26 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
         {activeCartridge && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1 border-white/10 bg-transparent text-zinc-300 hover:border-white/20 hover:bg-white/5 hover:text-zinc-100"
-              >
+              <Button variant="outline" size="sm" className="gap-1">
                 <ExportIcon size={13} /> Export <CaretDownIcon size={11} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="border-white/10 bg-surface-overlay text-zinc-200 w-60"
+              className="border-rpg-gold/20 bg-surface-overlay text-rpg-parchment w-60"
             >
-              <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-zinc-300">
+              <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-rpg-gold/70">
                 Choose export format
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-white/8" />
+              <DropdownMenuSeparator className="bg-rpg-gold/12" />
               <DropdownMenuItem
                 onClick={() => exportLun(activeCartridge)}
-                className="cursor-pointer gap-2.5 focus:bg-white/8 focus:text-white"
+                className="cursor-pointer gap-2.5 focus:bg-rpg-gold/8 focus:text-rpg-gold"
               >
-                <FileArrowUpIcon size={14} className="text-zinc-300" />
+                <FileArrowUpIcon size={14} className="text-rpg-stone/70" />
                 <div>
-                  <p className="text-sm">Export Project</p>
-                  <p className="text-[10px] text-zinc-300">
+                  <p className="text-sm text-rpg-parchment">Export Project</p>
+                  <p className="text-[10px] text-rpg-stone/60">
                     Editable <span className="font-mono">.lun</span> — full
                     source
                   </p>
@@ -133,17 +131,17 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
               <DropdownMenuItem
                 disabled={hasLintErrors}
                 onClick={() => !hasLintErrors && exportFlat(activeCartridge)}
-                className="cursor-pointer gap-2.5 focus:bg-white/8 focus:text-white"
+                className="cursor-pointer gap-2.5 focus:bg-rpg-gold/8 focus:text-rpg-gold"
               >
-                <FileLockIcon size={14} className="text-violet-400" />
+                <FileLockIcon size={14} className="text-rpg-gold/60" />
                 <div>
-                  <p className="text-sm">Export Game</p>
-                  <p className="text-[10px] text-zinc-300">
+                  <p className="text-sm text-rpg-parchment">Export Game</p>
+                  <p className="text-[10px] text-rpg-stone/60">
                     Play-only <span className="font-mono">.png</span> —
                     cartridge image
                   </p>
                   {hasLintErrors && (
-                    <p className="text-[10px] text-red-400/70">
+                    <p className="text-[10px] text-rpg-blood/70">
                       Fix errors before exporting
                     </p>
                   )}
@@ -154,11 +152,7 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
         )}
 
         {isRunning ? (
-          <Button
-            size="sm"
-            onClick={onStop}
-            className="bg-red-600/80 hover:bg-red-600"
-          >
+          <Button size="sm" variant="destructive" onClick={onStop}>
             <StopIcon size={13} weight="fill" className="mr-1" /> Stop
           </Button>
         ) : (
@@ -166,19 +160,23 @@ export function EditorToolbar({ onRun, onStop, cpu, mem }: Props) {
             <TooltipTrigger asChild>
               <Button
                 size="sm"
+                variant={hasLintErrors ? "ghost" : "emerald"}
                 disabled={hasLintErrors}
                 onClick={() => !hasLintErrors && onRun()}
                 className={
                   hasLintErrors
-                    ? "cursor-not-allowed border border-red-500/30 bg-transparent text-red-400/60 hover:bg-red-500/5 hover:text-red-400"
-                    : "bg-green-700 hover:bg-green-600 border-green-700"
+                    ? "border border-rpg-blood/30 text-rpg-blood/60 cursor-not-allowed"
+                    : ""
                 }
               >
                 <PlayIcon size={13} weight="fill" className="mr-1" /> Run
               </Button>
             </TooltipTrigger>
             {hasLintErrors && (
-              <TooltipContent side="bottom" className=" text-red-400">
+              <TooltipContent
+                side="bottom"
+                className="border-rpg-blood/30 bg-surface-overlay text-rpg-blood text-xs"
+              >
                 Fix errors before running
               </TooltipContent>
             )}
