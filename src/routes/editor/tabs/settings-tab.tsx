@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useStore } from "@/store";
 import { calcStorageBytes } from "@/cartridge/export";
 import { HARDWARE_PRESETS } from "@/cartridge/hardware";
@@ -12,6 +12,9 @@ import {
   PaletteIcon,
   IdentificationCardIcon,
   CircuitryIcon,
+  ArrowSquareOutIcon,
+  CheckIcon,
+  CopyIcon,
 } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +27,15 @@ import {
   RpgSpecPill,
   RpgUsageBar,
 } from "@/components/rpg-ui";
+import type { Cartridge } from "@/types/cartridge";
+
+function buildLunx(cartridge: Cartridge): string {
+  const stripped = {
+    ...cartridge,
+    meta: { ...cartridge.meta, coverArt: undefined },
+  };
+  return btoa(encodeURIComponent(JSON.stringify(stripped)));
+}
 
 function formatBytes(b: number) {
   if (b >= 1024 * 1024) return `${(b / (1024 * 1024)).toFixed(1)} MB`;
@@ -41,9 +53,27 @@ export function SettingsTab() {
   const { activeCartridge, updateActiveCartridge } = useStore();
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [copied, setCopied] = useState(false);
 
   if (!activeCartridge) return null;
   const hw = activeCartridge.hardware;
+
+  const embedSnippet = useMemo(() => {
+    console.log("Generating embed snippet…");
+    const lunx = buildLunx(activeCartridge);
+    const origin = window.location.origin;
+    const src = `${origin}/embed?cart=${lunx}`;
+    const w = hw.width * 4;
+    const h = hw.height * 4;
+    return `<iframe\n  src="${src}"\n  width="${w}"\n  height="${h}"\n  style="border:none;display:block"\n  allowfullscreen\n></iframe>`;
+  }, [activeCartridge, hw.width, hw.height]);
+
+  function copyEmbed() {
+    navigator.clipboard.writeText(embedSnippet).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   const activePresetName =
     HARDWARE_PRESETS.find(
@@ -406,6 +436,41 @@ export function SettingsTab() {
               )}
             </div>
           )}
+        </section>
+
+        {/* ── Embed ── */}
+        <section className="space-y-4">
+          <RpgSectionHeader icon={ArrowSquareOutIcon} title="Embed" />
+          <RpgDivider />
+          <p className="text-[11px] leading-relaxed text-rpg-stone">
+            Paste this snippet into any webpage to embed your game. The
+            cartridge data is embedded directly in the URL — no server needed.
+            Cover art is excluded to keep the URL short.
+          </p>
+          <div className="relative">
+            <textarea
+              readOnly
+              value={embedSnippet}
+              rows={6}
+              className="w-full resize-none border border-rpg-gold/15 bg-surface-base px-3 py-2.5 font-mono text-[10px] leading-relaxed text-rpg-stone/70 focus:outline-none"
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={copyEmbed}
+              className="absolute right-2 top-2 h-6 gap-1.5 px-2 text-[10px] text-rpg-stone/60 hover:text-rpg-parchment"
+            >
+              {copied ? (
+                <>
+                  <CheckIcon size={11} className="text-rpg-emerald" /> Copied
+                </>
+              ) : (
+                <>
+                  <CopyIcon size={11} /> Copy
+                </>
+              )}
+            </Button>
+          </div>
         </section>
       </div>
     </ScrollArea>

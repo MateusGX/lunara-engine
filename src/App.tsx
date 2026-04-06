@@ -16,6 +16,9 @@ const PlayerPage = lazy(() =>
 const LaunchPage = lazy(() =>
   import("@/routes/launcher").then((m) => ({ default: m.LaunchPage })),
 );
+const EmbedPage = lazy(() =>
+  import("@/routes/embed").then((m) => ({ default: m.EmbedPage })),
+);
 
 function PageLoader() {
   return (
@@ -66,6 +69,14 @@ const router = createBrowserRouter([
     element: (
       <Suspense fallback={<PageLoader />}>
         <LaunchPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/embed",
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <EmbedPage />
       </Suspense>
     ),
   },

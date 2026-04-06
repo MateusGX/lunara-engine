@@ -6,6 +6,8 @@ import type { Cartridge } from "@/types/cartridge";
 
 interface Props {
   cartridge: Cartridge;
+  size?: string;
+  hideHud?: boolean;
 }
 
 function fmtIps(ips: number): string {
@@ -21,7 +23,7 @@ function fmtBytes(b: number): string {
   return `${b} B`;
 }
 
-export function CartridgeScreen({ cartridge }: Props) {
+export function CartridgeScreen({ cartridge, size, hideHud }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const runnerRef = useRef<CartridgeRunner | null>(null);
   const { addMessage } = useStore();
@@ -63,7 +65,7 @@ export function CartridgeScreen({ cartridge }: Props) {
 
   const { inputs } = cartridge.hardware;
 
-  const canvasSize = "min(70vw, 70vh)";
+  const canvasSize = size ?? "min(70vw, 70vh)";
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -108,27 +110,29 @@ export function CartridgeScreen({ cartridge }: Props) {
       </div>
 
       {/* Hardware info + live stats */}
-      <div className="flex w-full max-w-md flex-col gap-1.5 border border-rpg-gold/12 bg-rpg-gold/3 px-4 py-2.5">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-rpg-gold/70">
-            Hardware
-          </span>
-          <ResourceMonitor cpu={stats.cpu} mem={stats.mem} />
+      {!hideHud && (
+        <div className="flex w-full max-w-md flex-col gap-1.5 border border-rpg-gold/12 bg-rpg-gold/3 px-4 py-2.5">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-rpg-gold/70">
+              Hardware
+            </span>
+            <ResourceMonitor cpu={stats.cpu} mem={stats.mem} />
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <HwStat label="RES" value={`${cartridge.hardware.width}×${cartridge.hardware.height}`} />
+            <HwStat label="FPS" value={`${cartridge.hardware.maxFps ?? 60} fps`} />
+            <HwStat label="CPU" value={fmtIps(cartridge.hardware.maxIps)} />
+            <HwStat label="MEM" value={fmtBytes(cartridge.hardware.maxMemBytes)} />
+            <HwStat label="SPR" value={String(cartridge.hardware.maxSprites)} />
+            <HwStat label="SND" value={String(cartridge.hardware.maxSounds)} />
+            <HwStat label="STG" value={fmtBytes(cartridge.hardware.maxStorageBytes ?? 512 * 1024)} />
+            <HwStat label="PAL" value={`${cartridge.hardware.palette.length} colors`} />
+          </div>
         </div>
-        <div className="flex flex-wrap gap-x-4 gap-y-1">
-          <HwStat label="RES" value={`${cartridge.hardware.width}×${cartridge.hardware.height}`} />
-          <HwStat label="FPS" value={`${cartridge.hardware.maxFps ?? 60} fps`} />
-          <HwStat label="CPU" value={fmtIps(cartridge.hardware.maxIps)} />
-          <HwStat label="MEM" value={fmtBytes(cartridge.hardware.maxMemBytes)} />
-          <HwStat label="SPR" value={String(cartridge.hardware.maxSprites)} />
-          <HwStat label="SND" value={String(cartridge.hardware.maxSounds)} />
-          <HwStat label="STG" value={fmtBytes(cartridge.hardware.maxStorageBytes ?? 512 * 1024)} />
-          <HwStat label="PAL" value={`${cartridge.hardware.palette.length} colors`} />
-        </div>
-      </div>
+      )}
 
       {/* Inputs legend */}
-      {inputs.length > 0 && (
+      {!hideHud && inputs.length > 0 && (
         <div className="flex flex-wrap justify-center gap-3">
           {inputs.map((inp) => (
             <div key={inp.button} className="flex items-center gap-1.5">
